@@ -20,7 +20,7 @@ public class CustomSwords implements Listener {
                     PotionEffect potion = new PotionEffect(PotionEffectType.SLOWNESS, 4*20, 2);
                     potion.apply((LivingEntity) event.getAttacked());
                 } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 2) {
-                    PotionEffect potion = new PotionEffect(PotionEffectType.POISON, 4*20, 3);
+                    PotionEffect potion = new PotionEffect(PotionEffectType.POISON, 3*20, 3);
                     potion.apply((LivingEntity) event.getAttacked());
                 }
             }
