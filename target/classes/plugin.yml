@@ -1,0 +1,4 @@
+name: crystalized-essentials
+version: '1.0-SNAPSHOT'
+main: gg.crystalized.crystalizedessentials.Crystalized_essentials
+api-version: '1.21'
