@@ -16,9 +16,13 @@ public class CustomSwords implements Listener {
         Player player = event.getPlayer();
 
             if (player.getInventory().getItemInMainHand().getType().equals(Material.IRON_SWORD) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData() == true) {
+
+                    // Slime Sword
                 if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
                     PotionEffect potion = new PotionEffect(PotionEffectType.SLOWNESS, 4*20, 2);
                     potion.apply((LivingEntity) event.getAttacked());
+
+                    // Pufferfish Sword
                 } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 2) {
                     PotionEffect potion = new PotionEffect(PotionEffectType.POISON, 3*20, 3);
                     potion.apply((LivingEntity) event.getAttacked());

@@ -9,6 +9,7 @@ public final class crystalized_essentials extends JavaPlugin {
     public void onEnable() {
         getLogger().log(Level.INFO, "Crystalized Essentials Plugin Enabled!");
         this.getServer().getPluginManager().registerEvents(new CustomSwords(), this);
+        this.getServer().getPluginManager().registerEvents(new CustomCoalBasedItems(), this);
     }
 
     @Override
