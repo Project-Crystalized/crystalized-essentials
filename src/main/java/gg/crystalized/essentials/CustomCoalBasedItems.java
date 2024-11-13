@@ -2,11 +2,11 @@ package gg.crystalized.essentials;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
@@ -22,8 +22,8 @@ public class CustomCoalBasedItems implements Listener {
         if (event.getAction().isRightClick()) {
             if (player.hasCooldown(Material.COAL)) {
                 player.sendMessage(Component.text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
-                            .append(Component.text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
-                            .append(Component.text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
+                        .append(Component.text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
+                        .append(Component.text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
             } else {
                 if (player.getInventory().getItemInMainHand().getType().equals(Material.COAL) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
                     // Boost Orb
@@ -52,7 +52,10 @@ public class CustomCoalBasedItems implements Listener {
 
                         // Grappling Orb
                     } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 4) {
-                        player.sendMessage(Component.text("Grappling orb isn't currently implemented yet")); //TODO
+                        //player.sendMessage(Component.text("Grappling orb isn't currently implemented yet")); //TODO
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Snowball snowball = player.launchProjectile(Snowball.class, direction);
+                        snowball.getLocation().add(snowball.getVelocity().normalize().multiply(3));
                         player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
                         player.setCooldown(Material.COAL, 5);
 
