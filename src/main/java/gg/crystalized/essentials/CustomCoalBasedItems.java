@@ -21,10 +21,13 @@ public class CustomCoalBasedItems implements Listener {
         if (event.getHand() != EquipmentSlot.HAND) return;
         if (event.getAction().isRightClick()) {
             if (player.hasCooldown(Material.COAL)) {
-                player.sendMessage(Component.text("This item is on cooldown!").color(NamedTextColor.RED));
+                player.sendMessage(Component.text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
+                            .append(Component.text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
+                            .append(Component.text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
             } else {
                 if (player.getInventory().getItemInMainHand().getType().equals(Material.COAL) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
                     // Boost Orb
+                    // TODO make particles for when you launch
                     if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
                         player.playSound(player, "minecraft:item.armor.equip_elytra", 50, 1); //TODO either make a sound(s) for the boost orb or figure out what exact sound(s) TubNet used.
                         player.setVelocity(new Vector(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()));
