@@ -34,7 +34,7 @@ public class CustomCoalBasedItems implements Listener {
 
                     // Explosive Orb
                 } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 3) {
-                    player.getPlayer().getWorld().spawnEntity(new Location(player.getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(), player.getLocation().getYaw(), player.getLocation().getPitch()), EntityType.FIREBALL);
+                    player.getPlayer().getWorld().spawnEntity(new Location(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() + 0.8, player.getLocation().getZ(), player.getLocation().getYaw(), player.getLocation().getPitch()), EntityType.FIREBALL);
                     player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 
                     // Grappling Orb
