@@ -26,9 +26,11 @@ public class CustomCoalBasedItems implements Listener {
                 if (player.getInventory().getItemInMainHand().getType().equals(Material.COAL) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
                     // Boost Orb
                     if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
-                        player.sendMessage(Component.text("Boost orb isn't currently implemented yet")); //TODO
+                        player.playSound(player, "minecraft:item.armor.equip_elytra", 50, 1); //TODO either make a sound(s) for the boost orb or figure out what exact sound(s) TubNet used.
+                        player.setVelocity(new Vector(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()));
+                        player.setVelocity(player.getLocation().getDirection().multiply(2));
                         player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-                        player.setCooldown(Material.COAL, 5);
+                        player.setCooldown(Material.COAL, 40);
 
                         // Bridge Orb
                     } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 2) {
