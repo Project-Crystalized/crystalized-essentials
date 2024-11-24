@@ -15,7 +15,7 @@ public class CustomSwords implements Listener {
     public void onLeftClick(PrePlayerAttackEntityEvent event) {
         Player player = event.getPlayer();
 
-            if (player.getInventory().getItemInMainHand().getType().equals(Material.IRON_SWORD) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
+            if (player.getInventory().getItemInMainHand().getType().equals(Material.STONE_SWORD) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
 
                     // Slime Sword
                 if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
