@@ -53,12 +53,12 @@ public class CustomCoalBasedItems implements Listener {
                         // Grappling Orb
                     } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 4) {
                         player.sendMessage(Component.text("Grappling orb isn't currently implemented yet")); //TODO
+                        player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+                        player.setCooldown(Material.COAL, 5);
                         /*
                         Vector direction = player.getEyeLocation().getDirection();
                         Snowball snowball = player.launchProjectile(Snowball.class, direction);
                         snowball.getLocation().add(snowball.getVelocity().normalize().multiply(3));
-                        player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-                        player.setCooldown(Material.COAL, 5);
                          */
 
                         // Health Orb
