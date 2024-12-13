@@ -1,5 +1,6 @@
 package gg.crystalized.essentials;
 
+import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ServerLinks;
 import org.bukkit.entity.Player;
@@ -16,9 +17,10 @@ public class CrystalizedLinks implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
         Crystalized.addLink(Component.text("Discord"), URI.create("https://discord.gg/4H8ADwFZyk"));
         Crystalized.addLink(Component.text("YouTube"), URI.create("https://exmaple.com")); //Placeholders for when LadyCat gives me (Callum) these links
-        Crystalized.addLink(Component.text("Bluesky"), URI.create("https://example.com"));
+        Crystalized.addLink(Component.text("Bluesky"), URI.create("https://bsky.app/profile/projectcrystalized.bsky.social"));
         Crystalized.addLink(Component.text("GitHub"), URI.create("https://github.com/Project-Crystalized"));
 
         player.sendLinks(Crystalized);
