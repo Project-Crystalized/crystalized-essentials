@@ -5,30 +5,32 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class CustomSwords implements Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onLeftClick(PrePlayerAttackEntityEvent event) {
         if (event.isCancelled()) {
             return;
         }
         Player player = event.getPlayer();
-            if (player.getInventory().getItemInMainHand().getType().equals(Material.STONE_SWORD) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
+        if (player.getInventory().getItemInMainHand().getType().equals(Material.STONE_SWORD) && player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
 
-                    // Slime Sword
-                if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
-                    PotionEffect potion = new PotionEffect(PotionEffectType.SLOWNESS, 4*20, 2);
-                    potion.apply((LivingEntity) event.getAttacked());
-                    // Pufferfish Sword
-                } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 2) {
-                    PotionEffect potion = new PotionEffect(PotionEffectType.POISON, 3*20, 3);
-                    potion.apply((LivingEntity) event.getAttacked());
-                }
+            // Slime Sword
+            if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
+                PotionEffect potion = new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 2);
+                potion.apply((LivingEntity) event.getAttacked());
+                // Pufferfish Sword
+            } else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 2) {
+                PotionEffect potion = new PotionEffect(PotionEffectType.POISON, 3 * 20, 3);
+                potion.apply((LivingEntity) event.getAttacked());
             }
         }
     }
+}
 
