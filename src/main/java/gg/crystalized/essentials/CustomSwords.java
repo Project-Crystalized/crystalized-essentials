@@ -22,10 +22,10 @@ public class CustomSwords implements Listener {
 						int item_custom_model = held_item.getItemMeta().getCustomModelData();
             if (item_custom_model == 1) {
             		// Slime Sword
-								((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 2));
+								((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 1));
             } else if (item_custom_model == 2) {
                 // Pufferfish Sword
-								((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.POISON, 3 * 20, 3));
+								((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.POISON, 3 * 20, 1));
             }
         }
     }

@@ -1,7 +1,10 @@
 package gg.crystalized.essentials;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -12,8 +15,11 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
+import java.util.logging.Level;
 
 
 public class CustomBows implements Listener {
@@ -50,7 +56,9 @@ public class CustomBows implements Listener {
             return;
         }
 
-        arrows.put((Projectile) event.getProjectile(), new ArrowData(e, event.getForce(), event.getHand(), type));
+        ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type,  event.getProjectile().getVelocity());
+        arrows.put((Projectile) event.getProjectile(), ard);
+        
     }
 
     @EventHandler
@@ -74,6 +82,17 @@ public class CustomBows implements Listener {
             double distance = Math.floor(shooterLoc.distance(hitLoc)/10);
             data.shooter.sendMessage("damage: "+ distance*0.5);
             e.damage(distance * 0.5, pro);
+        }else if(data.type == ArrowData.bowType.ricochet){
+            BlockFace b = event.getHitBlockFace();
+            if(b == null){
+                Bukkit.getServer().getLogger().log(Level.SEVERE, "blockface is null returning...");
+                return;
+            }
+            Vector v = ar.getLocation().getDirection();
+            Vector vb = b.getDirection();
+            float angel = v.angle(vb);
+            data.shooter.sendMessage(v.toString());
+            data.shooter.sendMessage("angle: " + angel);
         }
     }
 }
