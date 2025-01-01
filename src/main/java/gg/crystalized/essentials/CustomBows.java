@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
@@ -112,6 +113,7 @@ public class CustomBows implements Listener {
 
 			data.timesBounced++;
 			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
+			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
 			// configure the new arrow (fire, pierce, etc)
