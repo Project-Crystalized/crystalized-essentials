@@ -14,13 +14,11 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
-
 import java.util.HashMap;
 import java.util.logging.Level;
 
 
 public class CustomBows implements Listener {
-
 	public HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 	@EventHandler
 	public void onBowShot(EntityShootBowEvent event){
@@ -53,7 +51,7 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type,  event.getProjectile().getVelocity());
+		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type,  event.getProjectile().getVelocity(), 0);
 		arrows.put((Projectile) event.getProjectile(), ard);
 
 	}
@@ -75,25 +73,58 @@ public class CustomBows implements Listener {
 
 		if(data.type == ArrowData.bowType.marksman){
 			LivingEntity e = (LivingEntity) event.getHitEntity();
+
 			if(e == null){
 				return;
 			}
+
 			Location shooterLoc = data.shooter.getLocation();
 			Location hitLoc = e.getLocation();
 			double distance = Math.floor(shooterLoc.distance(hitLoc)/10);
-			data.shooter.sendMessage("damage: "+ distance*0.5);
-			e.damage(distance * 0.5, pro);
+			double damage = ar.getDamage();
+			damage = damage + distance * 0.5;
+			e.damage(damage, pro);
+
 		}else if(data.type == ArrowData.bowType.ricochet){
-			BlockFace b = event.getHitBlockFace();
-			if(b == null){
-				Bukkit.getServer().getLogger().log(Level.SEVERE, "blockface is null returning...");
+			if(event.getHitBlock() == null){
 				return;
 			}
-			Vector v = ar.getLocation().getDirection();
-			Vector vb = b.getDirection();
-			float angel = v.angle(vb);
-			data.shooter.sendMessage(v.toString());
-			data.shooter.sendMessage("angle: " + angel);
+
+			if(ar.isInBlock()){
+				return;
+			}
+			Location loc = event.getEntity().getLocation();
+			Vector velocity = event.getEntity().getVelocity();;
+
+			if(data.timesBounced > 3) {
+				return;
+			}
+			event.setCancelled(true);
+			BlockFace face = event.getHitBlockFace();
+			if (face == BlockFace.UP || face == BlockFace.DOWN)
+			{
+				loc.setY(loc.getY()+0.4);
+				velocity.setY(-velocity.getY());
+			}
+			else if (face == BlockFace.NORTH || face == BlockFace.SOUTH)
+			{
+				loc.setZ(loc.getZ()+0.4);
+				velocity.setZ(-velocity.getZ());
+			}
+			else if (face == BlockFace.EAST || face == BlockFace.WEST)
+			{
+				loc.setX(loc.getX()+0.4);
+				velocity.setX(-velocity.getX());
+			}
+			data.timesBounced++;
+			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, 1, 1);
+			if(arrow.isInBlock()){
+				return;
+			}
+			arrows.remove(event.getEntity());
+			//configure the new arrow (fire, pierce, etc)
+			event.getEntity().remove();
+			arrows.put(arrow, data);
 		}
 	}
 }

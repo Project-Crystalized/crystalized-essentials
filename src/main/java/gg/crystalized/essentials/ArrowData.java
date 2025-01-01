@@ -16,12 +16,14 @@ public class ArrowData {
     EquipmentSlot hand;
     bowType type;
     Vector velocity;
+    int timesBounced;
 
-    public ArrowData(LivingEntity shooter, float force, EquipmentSlot hand, bowType type, Vector velocity){
+    public ArrowData(LivingEntity shooter, float force, EquipmentSlot hand, bowType type, Vector velocity, int timesBounced){
         this.shooter = shooter;
         this.force = force;
         this.hand = hand;
         this.type = type;
         this.velocity = velocity;
+        this.timesBounced = timesBounced;
     }
 }
