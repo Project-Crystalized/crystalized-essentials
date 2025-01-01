@@ -89,10 +89,6 @@ public class CustomBows implements Listener {
 			if(event.getHitBlock() == null){
 				return;
 			}
-
-			if(ar.isInBlock()){
-				return;
-			}
 			Location loc = event.getEntity().getLocation();
 			Vector velocity = event.getEntity().getVelocity();;
 
