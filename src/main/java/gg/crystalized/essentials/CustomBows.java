@@ -1,5 +1,6 @@
 package gg.crystalized.essentials;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -49,7 +50,7 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, event.getProjectile().getVelocity(), 0);
+		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0);
 		arrows.put((Projectile) event.getProjectile(), ard);
 
 	}
@@ -93,30 +94,28 @@ public class CustomBows implements Listener {
 			}
 			Location loc = event.getEntity().getLocation();
 			Vector velocity = event.getEntity().getVelocity();
+			loc.subtract(velocity);
+			velocity.multiply(0.8);
 
-			if (data.timesBounced > 3) {
+			if (data.timesBounced >= 3) {
+				Bukkit.getLogger().severe("finished bounce");
 				return;
 			}
 			event.setCancelled(true);
 			BlockFace face = event.getHitBlockFace();
 			if (face == BlockFace.UP || face == BlockFace.DOWN) {
-				loc.setY(loc.getY() + 0.4);
 				velocity.setY(-velocity.getY());
 			} else if (face == BlockFace.NORTH || face == BlockFace.SOUTH) {
-				loc.setZ(loc.getZ() + 0.4);
 				velocity.setZ(-velocity.getZ());
 			} else if (face == BlockFace.EAST || face == BlockFace.WEST) {
-				loc.setX(loc.getX() + 0.4);
 				velocity.setX(-velocity.getX());
 			}
+
 			data.timesBounced++;
-			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, 1, 1);
-			if (arrow.isInBlock()) {
-				return;
-			}
+			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
 			arrows.remove(event.getEntity());
-			// configure the new arrow (fire, pierce, etc)
 			event.getEntity().remove();
+			// configure the new arrow (fire, pierce, etc)
 			arrows.put(arrow, data);
 		}
 	}
