@@ -95,10 +95,9 @@ public class CustomBows implements Listener {
 			Location loc = event.getEntity().getLocation();
 			Vector velocity = event.getEntity().getVelocity();
 			loc.subtract(velocity);
-			velocity.multiply(0.8);
+			velocity.multiply(0.5);
 
 			if (data.timesBounced >= 3) {
-				Bukkit.getLogger().severe("finished bounce");
 				return;
 			}
 			event.setCancelled(true);
@@ -114,6 +113,7 @@ public class CustomBows implements Listener {
 			data.timesBounced++;
 			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
+			arrow.setShooter(pro.getShooter());
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
 			// configure the new arrow (fire, pierce, etc)
