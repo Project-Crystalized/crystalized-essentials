@@ -1,24 +1,32 @@
 package gg.crystalized.essentials;
 
+import com.destroystokyo.paper.ParticleBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.AbstractArrow;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import static org.bukkit.Color.LIME;
+import static org.bukkit.Color.RED;
+import static org.bukkit.Particle.*;
 
 public class CustomBows implements Listener {
 	public HashMap<Projectile, ArrowData> arrows = new HashMap<>();
+	public HashMap<Integer, BukkitTask> bukkitRunnable = new HashMap<>();
 
 	@EventHandler
 	public void onBowShot(EntityShootBowEvent event) {
@@ -51,9 +59,8 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0);
+		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0, startParticleTrail((Projectile) event.getProjectile()));
 		arrows.put((Projectile) event.getProjectile(), ard);
-
 	}
 
 	@EventHandler
@@ -70,7 +77,7 @@ public class CustomBows implements Listener {
 		if (data == null) {
 			return;
 		}
-
+		stopParticleTrail(data);
 		if (data.type == ArrowData.bowType.marksman) {
 			LivingEntity e = (LivingEntity) event.getHitEntity();
 
@@ -119,5 +126,28 @@ public class CustomBows implements Listener {
 			// configure the new arrow (fire, pierce, etc)
 			arrows.put(arrow, data);
 		}
+	}
+
+	public int startParticleTrail(Projectile pro){
+		BukkitTask buk = new BukkitRunnable(){
+			public void run(){
+				Location loc = pro.getLocation();
+				ParticleBuilder builder = new ParticleBuilder(END_ROD);
+				builder.location(loc);
+				builder.count(3);
+				builder.offset(0, 0, 0);
+				builder.spawn();
+
+			}
+		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 1, 1);
+
+		int id = buk.getTaskId();
+		bukkitRunnable.put(id, buk);
+		return id;
+	}
+
+	public void stopParticleTrail(ArrowData data){
+		BukkitTask task = bukkitRunnable.get(data.TaskID);
+		task.cancel();
 	}
 }
