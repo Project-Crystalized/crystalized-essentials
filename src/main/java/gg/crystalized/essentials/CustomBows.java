@@ -1,10 +1,7 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -20,8 +17,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static org.bukkit.Color.LIME;
-import static org.bukkit.Color.RED;
+import static org.bukkit.Color.*;
 import static org.bukkit.Particle.*;
 
 public class CustomBows implements Listener {
@@ -53,13 +49,15 @@ public class CustomBows implements Listener {
 			type = ArrowData.bowType.marksman;
 		} else if (stack.getType() == Material.BOW && model == 3) {
 			type = ArrowData.bowType.ricochet;
+		} else{
+			type = ArrowData.bowType.normal;
 		}
 
 		if (type == null) {
 			return;
 		}
 
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0, startParticleTrail((Projectile) event.getProjectile()));
+		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0, startParticleTrail((Projectile) event.getProjectile(), type));
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
@@ -77,7 +75,7 @@ public class CustomBows implements Listener {
 		if (data == null) {
 			return;
 		}
-		stopParticleTrail(data);
+
 		if (data.type == ArrowData.bowType.marksman) {
 			LivingEntity e = (LivingEntity) event.getHitEntity();
 
@@ -125,25 +123,36 @@ public class CustomBows implements Listener {
 			event.getEntity().remove();
 			// configure the new arrow (fire, pierce, etc)
 			arrows.put(arrow, data);
+			return;
+		}
+		if(data.TaskID != null) {
+			stopParticleTrail(data);
 		}
 	}
 
-	public int startParticleTrail(Projectile pro){
-		BukkitTask buk = new BukkitRunnable(){
-			public void run(){
-				Location loc = pro.getLocation();
-				ParticleBuilder builder = new ParticleBuilder(END_ROD);
-				builder.location(loc);
-				builder.count(3);
-				builder.offset(0, 0, 0);
-				builder.spawn();
+	public Integer startParticleTrail(Projectile pro, ArrowData.bowType type){
+		if(type != ArrowData.bowType.normal) {
+			BukkitTask buk = new BukkitRunnable() {
+				public void run() {
+					Location loc = pro.getLocation();
+					ParticleBuilder builder = new ParticleBuilder(DUST);
+					if (type == ArrowData.bowType.marksman) {
+						builder.color(ORANGE);
+					} else if (type == ArrowData.bowType.ricochet) {
+						builder.color(LIME);
+					}
+					builder.location(loc);
+					builder.count(3);
+					builder.offset(0, 0, 0);
+					builder.spawn();
+				}
+			}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 1, 1);
 
-			}
-		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 1, 1);
-
-		int id = buk.getTaskId();
-		bukkitRunnable.put(id, buk);
-		return id;
+			int id = buk.getTaskId();
+			bukkitRunnable.put(id, buk);
+			return id;
+		}
+		return null;
 	}
 
 	public void stopParticleTrail(ArrowData data){

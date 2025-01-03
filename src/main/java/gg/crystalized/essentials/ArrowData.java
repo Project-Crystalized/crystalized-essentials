@@ -7,7 +7,8 @@ public class ArrowData {
 
 	enum bowType {
 		marksman,
-		ricochet
+		ricochet,
+		normal
 	}
 
 	LivingEntity shooter;
@@ -15,7 +16,7 @@ public class ArrowData {
 	EquipmentSlot hand;
 	bowType type;
 	int timesBounced;
-	int TaskID;
+	Integer TaskID;
 
 	public ArrowData(LivingEntity shooter, float force, EquipmentSlot hand, bowType type, int timesBounced, int TaskID) {
 		this.shooter = shooter;
