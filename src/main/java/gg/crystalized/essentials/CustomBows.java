@@ -19,9 +19,11 @@ import java.util.HashMap;
 
 import static org.bukkit.Color.*;
 import static org.bukkit.Particle.*;
+import static org.bukkit.entity.EntityType.ARROW;
+import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 
 public class CustomBows implements Listener {
-	public HashMap<Projectile, ArrowData> arrows = new HashMap<>();
+	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 	public HashMap<Integer, BukkitTask> bukkitRunnable = new HashMap<>();
 
 	@EventHandler
@@ -37,17 +39,13 @@ public class CustomBows implements Listener {
 		}
 
 		ItemMeta meta = stack.getItemMeta();
+		ArrowData.bowType type = null;
 
 		if (meta == null || !meta.hasCustomModelData()) {
-			return;
-		}
-
-		int model = meta.getCustomModelData();
-		ArrowData.bowType type = null;
-		// note: model data of silver bow
-		if (stack.getType() == Material.BOW && model == 1) {
+			type = ArrowData.bowType.normal;
+		} else if (stack.getType() == Material.BOW && meta.getCustomModelData() == 1) {
 			type = ArrowData.bowType.marksman;
-		} else if (stack.getType() == Material.BOW && model == 3) {
+		} else if (stack.getType() == Material.BOW && meta.getCustomModelData() == 3) {
 			type = ArrowData.bowType.ricochet;
 		} else{
 			type = ArrowData.bowType.normal;
@@ -56,7 +54,6 @@ public class CustomBows implements Listener {
 		if (type == null) {
 			return;
 		}
-
 		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0, startParticleTrail((Projectile) event.getProjectile(), type));
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
@@ -88,8 +85,9 @@ public class CustomBows implements Listener {
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
 			double damage = ar.getDamage();
 			damage = damage + distance * 0.5;
+			Vector v = ar.getVelocity();
 			e.damage(damage, pro);
-
+			e.setVelocity(v.multiply(0.5));
 		} else if (data.type == ArrowData.bowType.ricochet) {
 			if (event.getHitBlock() == null) {
 				return;
@@ -156,6 +154,9 @@ public class CustomBows implements Listener {
 	}
 
 	public void stopParticleTrail(ArrowData data){
+		if(data.TaskID == null){
+			return;
+		}
 		BukkitTask task = bukkitRunnable.get(data.TaskID);
 		task.cancel();
 	}
