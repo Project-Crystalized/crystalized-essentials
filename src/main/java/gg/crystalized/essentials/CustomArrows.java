@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.BlockFace;
+import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,6 +24,7 @@ import java.util.logging.Level;
 
 import static org.bukkit.Color.PURPLE;
 import static org.bukkit.Particle.DUST;
+import static org.bukkit.damage.DamageType.ARROW;
 import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
 import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 import static org.bukkit.potion.PotionEffectType.GLOWING;
@@ -32,7 +34,6 @@ import static org.bukkit.potion.PotionType.WATER_BREATHING;
 public class CustomArrows implements Listener {
     @EventHandler
     public void onArrowHit(ProjectileHitEvent event){
-        Bukkit.getLogger().log(Level.SEVERE, "arrow hit");
         if(event.isCancelled()){
             return;
         }
@@ -41,7 +42,6 @@ public class CustomArrows implements Listener {
         Arrow arrow;
         Location loc = event.getEntity().getLocation();
         if(event.getEntity().getType() == SPECTRAL_ARROW){
-            Bukkit.getLogger().log(Level.SEVERE, "spectral if");
             Collection<LivingEntity> collect = loc.getNearbyLivingEntities(3);
             for(LivingEntity e : collect){
                 e.addPotionEffect(new PotionEffect(GLOWING, 10*20, 0, false, false, true));
@@ -61,6 +61,12 @@ public class CustomArrows implements Listener {
             AreaEffectCloud cloud = (AreaEffectCloud) event.getEntity().getWorld().spawnEntity(loc, AREA_EFFECT_CLOUD, false);
             cloud.setColor(PURPLE);
             cloud.setParticle(DUST, options);
+
+            DamageSource.Builder builder = DamageSource.builder(ARROW);
+            builder.withCausingEntity((Entity)arrow.getShooter());
+            builder.withDirectEntity(cloud);
+            builder.withDamageLocation(loc);
+            DamageSource source = builder.build();
             new BukkitRunnable(){
                 int i = 0;
                 final Location loc = event.getEntity().getLocation();
@@ -71,13 +77,14 @@ public class CustomArrows implements Listener {
                     }
                     Collection<LivingEntity> collect = loc.getNearbyLivingEntities(2, 1);
                     for(LivingEntity liv : collect){
-                        liv.damage(1, pro);
+                        liv.damage(1, source);
                     }
                     i++;
                 }
             }.runTaskTimer(crystalized_essentials.getInstance(),1,1);
 
         }
+        
     }
 
 }
