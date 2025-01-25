@@ -2,6 +2,7 @@ package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.BlockFace;
@@ -42,6 +43,12 @@ public class CustomArrows implements Listener {
         Arrow arrow;
         Location loc = event.getEntity().getLocation();
         if(event.getEntity().getType() == SPECTRAL_ARROW){
+            ParticleBuilder builder = new ParticleBuilder(DUST);
+            builder.color(Color.YELLOW);
+            builder.location(loc);
+            builder.count(50);
+            builder.offset(3, 3,3);
+            builder.spawn();
             Collection<LivingEntity> collect = loc.getNearbyLivingEntities(3);
             for(LivingEntity e : collect){
                 e.addPotionEffect(new PotionEffect(GLOWING, 10*20, 0, false, false, true));
