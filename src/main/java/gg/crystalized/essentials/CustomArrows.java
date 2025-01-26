@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -23,6 +24,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -97,31 +99,44 @@ public class CustomArrows implements Listener {
             }.runTaskTimer(crystalized_essentials.getInstance(),1,1);
 
         }else if(meta.getCustomModelData() == 2){
-            Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(5);
-            Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(10);
+
+            Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(3);
+            Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(5);
+            ArrayList<LivingEntity> removal = new ArrayList<>();
+
             for(LivingEntity e : notSoNearby){
                 if(nearby.contains(e)){
-                    notSoNearby.remove(e);
+                    removal.add(e);
                 }
             }
 
+            for(LivingEntity e : removal){
+                notSoNearby.remove(e);
+            }
 
             if(event.getHitEntity() != null){
                 for(LivingEntity e : nearby){
                     Location eLoc = e.getLocation();
-                    Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY(), eLoc.getZ() - loc.getZ());
-                    v = v.normalize().multiply(5);
-                    e.damage(3);
+                    Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
+                    v = v.normalize().multiply(1);
+                    e.damage(4, event.getEntity());
                     e.setVelocity(v);
                 }
 
                 for(LivingEntity e : notSoNearby){
                     Location eLoc = e.getLocation();
-                    Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY(), eLoc.getZ() - loc.getZ());
-                    v = v.normalize().multiply(2);
-                    e.damage(1.5);
+                    Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
+                    v = v.normalize().multiply(0.5);
+                    e.damage(2, event.getEntity());
                     e.setVelocity(v);
                 }
+                ParticleBuilder builder = new ParticleBuilder(DUST);
+                builder.color(Color.RED);
+                builder.offset(5, 5, 5);
+                builder.count(150);
+                builder.location(event.getEntity().getLocation());
+                builder.spawn();
+                loc.getWorld().playSound(loc, ENTITY_GENERIC_EXPLODE, 1, 1);
                 return;
             }
 
@@ -131,7 +146,7 @@ public class CustomArrows implements Listener {
                     if(i >= 3){
                         cancel();
                     }
-                    Bukkit.getServer().getWorld("world").playSound(event.getEntity(), BLOCK_NOTE_BLOCK_IMITATE_CREEPER, 1, 1);
+                    loc.getWorld().playSound(loc, BLOCK_NOTE_BLOCK_IMITATE_CREEPER, 1, 1);
                     i++;
                 }
             }.runTaskTimer(crystalized_essentials.getInstance(), 0, 20);
@@ -140,24 +155,41 @@ public class CustomArrows implements Listener {
                 public void run(){
                     for(LivingEntity e : nearby){
                         Location eLoc = e.getLocation();
-                        Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY(), eLoc.getZ() - loc.getZ());
-                        v = v.normalize().multiply(5);
-                        e.damage(3);
+                        Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
+                        v = v.normalize().multiply(1);
+                        e.damage(4, event.getEntity());
                         e.setVelocity(v);
                     }
 
                     for(LivingEntity e : notSoNearby){
                         Location eLoc = e.getLocation();
-                        Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY(), eLoc.getZ() - loc.getZ());
-                        v = v.normalize().multiply(2);
-                        e.damage(1.5);
+                        Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
+                        v = v.normalize().multiply(0.5);
+                        e.damage(2, event.getEntity());
                         e.setVelocity(v);
                     }
-                    Bukkit.getServer().getWorld("world").playSound(event.getEntity(), ENTITY_GENERIC_EXPLODE, 1, 1);
+                    ParticleBuilder builder = new ParticleBuilder(DUST);
+                    builder.color(Color.RED);
+                    builder.offset(5, 5, 5);
+                    builder.count(150);
+                    builder.location(event.getEntity().getLocation());
+                    builder.spawn();
+                    loc.getWorld().playSound(loc, ENTITY_GENERIC_EXPLODE, 1, 1);
+                    event.getEntity().remove();
                 }
             }.runTaskLater(crystalized_essentials.getInstance(), 3*20);
         }
         
+    }
+
+    @EventHandler
+    public void onArrowPickup(PlayerPickupArrowEvent event){
+        ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
+        if(meta != null && meta.hasCustomModelData()){
+            if(meta.getCustomModelData() == 2){
+                event.setCancelled(true);
+            }
+        }
     }
 
 }
