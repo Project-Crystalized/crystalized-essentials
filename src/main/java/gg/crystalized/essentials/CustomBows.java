@@ -38,6 +38,14 @@ public class CustomBows implements Listener {
 			return;
 		}
 
+		ItemStack arrowItem = event.getArrowItem();
+		ItemMeta arrowMeta = arrowItem.getItemMeta();
+		HumanEntity human = (HumanEntity) e;
+
+		if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2){
+			human.setCooldown(arrowItem, 20*3);
+		}
+
 		ItemMeta meta = stack.getItemMeta();
 		ArrowData.bowType type = null;
 
