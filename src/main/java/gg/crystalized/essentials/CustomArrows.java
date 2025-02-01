@@ -17,8 +17,6 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -37,20 +35,22 @@ import static org.bukkit.damage.DamageType.ARROW;
 import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
 import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 import static org.bukkit.potion.PotionEffectType.GLOWING;
-import static org.bukkit.potion.PotionType.WATER_BREATHING;
 
 
-public class CustomArrows implements Listener {
-    @EventHandler
-    public void onArrowHit(ProjectileHitEvent event){
+public class CustomArrows{
+
+    public static void onArrowHit(ProjectileHitEvent event){
+        Bukkit.getLogger().log(Level.SEVERE, "entered onArrowHit");
         if(event.isCancelled()){
+            Bukkit.getLogger().log(Level.SEVERE, "arrowHitEvent is canceled");
             return;
         }
         ArrowData data = CustomBows.arrows.get(event.getEntity());
         Projectile pro = event.getEntity();
         Arrow arrow;
         Location loc = event.getEntity().getLocation();
-        if(event.getEntity().getType() == SPECTRAL_ARROW){
+        Bukkit.getLogger().log(Level.SEVERE, data.arrType.toString());
+        if(data.arrType == ArrowData.arrowType.spectral){
             ParticleBuilder builder = new ParticleBuilder(DUST);
             builder.color(Color.YELLOW);
             builder.location(loc);
@@ -70,7 +70,7 @@ public class CustomArrows implements Listener {
             return;
         }
 
-        if(meta.getCustomModelData() == 1){
+        if(data.arrType == ArrowData.arrowType.dragon){
 
             Particle.DustOptions options = new Particle.DustOptions(PURPLE, 1);
             AreaEffectCloud cloud = (AreaEffectCloud) event.getEntity().getWorld().spawnEntity(loc, AREA_EFFECT_CLOUD, false);
@@ -98,7 +98,7 @@ public class CustomArrows implements Listener {
                 }
             }.runTaskTimer(crystalized_essentials.getInstance(),1,1);
 
-        }else if(meta.getCustomModelData() == 2){
+        }else if(data.arrType == ArrowData.arrowType.explosive){
 
             Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(3);
             Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(5);

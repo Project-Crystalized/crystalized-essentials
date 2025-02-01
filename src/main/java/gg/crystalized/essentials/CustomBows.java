@@ -39,11 +39,26 @@ public class CustomBows implements Listener {
 		}
 
 		ItemStack arrowItem = event.getArrowItem();
-		ItemMeta arrowMeta = arrowItem.getItemMeta();
+		ItemMeta arrowMeta;
+		if(arrowItem.hasItemMeta()){
+			arrowMeta = arrowItem.getItemMeta();
+		}else{
+			arrowMeta = null;
+		}
+
 		HumanEntity human = (HumanEntity) e;
+		ArrowData.arrowType arrType = null;
 
 		if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2){
+			arrType = ArrowData.arrowType.explosive;
 			human.setCooldown(arrowItem, 20*3);
+		}else if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1){
+			arrType = ArrowData.arrowType.dragon;
+		}else if(e.getType() == SPECTRAL_ARROW){
+			arrType = ArrowData.arrowType.spectral;
+		}
+		else{
+			arrType = ArrowData.arrowType.normal;
 		}
 
 		ItemMeta meta = stack.getItemMeta();
@@ -59,10 +74,7 @@ public class CustomBows implements Listener {
 			type = ArrowData.bowType.normal;
 		}
 
-		if (type == null) {
-			return;
-		}
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, 0, startParticleTrail((Projectile) event.getProjectile(), type));
+		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, arrType,0, startParticleTrail((Projectile) event.getProjectile(), type, arrType));
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
@@ -109,6 +121,10 @@ public class CustomBows implements Listener {
 			velocity.multiply(0.5);
 
 			if (data.timesBounced >= 3) {
+				if(data.TaskID != null) {
+					stopParticleTrail(data);
+				}
+				CustomArrows.onArrowHit(event);
 				return;
 			}
 			event.setCancelled(true);
@@ -123,42 +139,73 @@ public class CustomBows implements Listener {
 
 			data.timesBounced++;
 			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
+			ItemStack item = arrow.getItemStack();
+			item.setItemMeta(syncArrowMeta((Arrow) event.getEntity(), arrow));
+			arrow.setItemStack(item);
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
 			arrow.setShooter(pro.getShooter());
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
+			if(data.TaskID != null) {
+				stopParticleTrail(data);
+			}
+			data.TaskID = startParticleTrail(arrow, data.type, data.arrType);
 			// configure the new arrow (fire, pierce, etc)
 			arrows.put(arrow, data);
 			return;
 		}
+		CustomArrows.onArrowHit(event);
 		if(data.TaskID != null) {
 			stopParticleTrail(data);
 		}
 	}
 
-	public Integer startParticleTrail(Projectile pro, ArrowData.bowType type){
-		if(type != ArrowData.bowType.normal) {
-			BukkitTask buk = new BukkitRunnable() {
-				public void run() {
-					Location loc = pro.getLocation();
-					ParticleBuilder builder = new ParticleBuilder(DUST);
+	public Integer startParticleTrail(Projectile pro, ArrowData.bowType type, ArrowData.arrowType arrType){
+		BukkitTask buk = new BukkitRunnable() {
+			public void run() {
+				Location loc = pro.getLocation();
+				ParticleBuilder builder = null;
+				ParticleBuilder builder2 = null;
+				if(type != ArrowData.bowType.normal) {
+					builder = new ParticleBuilder(DUST);
 					if (type == ArrowData.bowType.marksman) {
 						builder.color(ORANGE);
 					} else if (type == ArrowData.bowType.ricochet) {
 						builder.color(LIME);
 					}
+				}
+				if(arrType != ArrowData.arrowType.normal && arrType != ArrowData.arrowType.spectral) {
+					builder2 = new ParticleBuilder(DUST);
+					if (arrType == ArrowData.arrowType.dragon) {
+						builder2.color(PURPLE);
+					} else if (arrType == ArrowData.arrowType.explosive) {
+						builder2.color(RED);
+					}
+				}
+
+				if(builder == null && builder2 == null){
+					return;
+				}
+
+				if(builder != null){
 					builder.location(loc);
-					builder.count(3);
+					builder.count(5);
 					builder.offset(0, 0, 0);
 					builder.spawn();
 				}
-			}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 1, 1);
+				if(builder2 != null){
+					builder2.location(loc);
+					builder2.count(5);
+					builder2.offset(0, 0, 0);
+					builder2.spawn();
+				}
+			}
+		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 1, 1);
 
 			int id = buk.getTaskId();
 			bukkitRunnable.put(id, buk);
 			return id;
-		}
-		return null;
+
 	}
 
 	public void stopParticleTrail(ArrowData data){
@@ -167,5 +214,19 @@ public class CustomBows implements Listener {
 		}
 		BukkitTask task = bukkitRunnable.get(data.TaskID);
 		task.cancel();
+	}
+
+	public ItemMeta syncArrowMeta(Arrow entity, Arrow arrow){
+		ItemStack arrowItem = arrow.getItemStack();
+		ItemMeta meta = arrowItem.getItemMeta();
+
+		ItemStack entityItem = entity.getItemStack();
+		ItemMeta entMeta = entityItem.getItemMeta();
+		if(entMeta.hasCustomModelData()){
+			meta.setCustomModelData(entMeta.getCustomModelData());
+		}
+		meta.displayName(entMeta.displayName());
+		meta.lore(entMeta.lore());
+		return meta;
 	}
 }

@@ -12,7 +12,6 @@ public final class crystalized_essentials extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new CustomCoalBasedItems(), this);
         this.getServer().getPluginManager().registerEvents(new CrystalizedLinks(), this);
         this.getServer().getPluginManager().registerEvents(new CustomBows(), this);
-        this.getServer().getPluginManager().registerEvents(new CustomArrows(), this);
     }
 
     @Override

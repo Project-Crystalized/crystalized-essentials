@@ -11,19 +11,28 @@ public class ArrowData {
 		normal
 	}
 
+	enum arrowType {
+		dragon,
+		explosive,
+		spectral,
+		normal
+	}
+
 	LivingEntity shooter;
 	float force;
 	EquipmentSlot hand;
 	bowType type;
+	arrowType arrType;
 	int timesBounced;
 	Integer TaskID;
 
-	public ArrowData(LivingEntity shooter, float force, EquipmentSlot hand, bowType type, int timesBounced, int TaskID) {
+	public ArrowData(LivingEntity shooter, float force, EquipmentSlot hand, bowType type, arrowType arrType, int timesBounced, Integer TaskID) {
 		this.shooter = shooter;
 		this.force = force;
 		this.hand = hand;
 		this.type = type;
 		this.timesBounced = timesBounced;
 		this.TaskID = TaskID;
+		this.arrType = arrType;
 	}
 }
