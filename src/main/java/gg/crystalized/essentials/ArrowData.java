@@ -8,6 +8,7 @@ public class ArrowData {
 	enum bowType {
 		marksman,
 		ricochet,
+		charged,
 		normal
 	}
 

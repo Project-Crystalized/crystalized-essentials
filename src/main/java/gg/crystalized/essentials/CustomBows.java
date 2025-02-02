@@ -19,6 +19,7 @@ import java.util.HashMap;
 
 import static org.bukkit.Color.*;
 import static org.bukkit.Particle.*;
+import static org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_THUNDER;
 import static org.bukkit.entity.EntityType.ARROW;
 import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 
@@ -70,6 +71,10 @@ public class CustomBows implements Listener {
 			type = ArrowData.bowType.marksman;
 		} else if (stack.getType() == Material.BOW && meta.getCustomModelData() == 3) {
 			type = ArrowData.bowType.ricochet;
+		} else if (stack.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
+			type = ArrowData.bowType.charged;
+			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(2));
+			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 		} else{
 			type = ArrowData.bowType.normal;
 		}
@@ -92,11 +97,15 @@ public class CustomBows implements Listener {
 		if (data == null) {
 			return;
 		}
+		LivingEntity e = (LivingEntity) event.getHitEntity();
+		Vector v = ar.getVelocity();
 
 		if (data.type == ArrowData.bowType.marksman) {
-			LivingEntity e = (LivingEntity) event.getHitEntity();
 
 			if (e == null) {
+				if(data.TaskID != null) {
+					stopParticleTrail(data);
+				}
 				return;
 			}
 
@@ -105,11 +114,29 @@ public class CustomBows implements Listener {
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
 			double damage = ar.getDamage();
 			damage = damage + distance * 0.5;
-			Vector v = ar.getVelocity();
 			e.damage(damage, pro);
 			e.setVelocity(v.multiply(0.5));
+		}else if (data.type == ArrowData.bowType.charged){
+			if(event.getHitEntity() == null){
+				if(data.TaskID != null) {
+					stopParticleTrail(data);
+				}
+				return;
+			}
+			Location eloc = event.getHitEntity().getLocation();
+			Location arrloc = pro.getLocation();
+			if(arrloc.getY() - eloc.getY() >= 1.5 && arrloc.getY() - eloc.getY() <= 2){
+				e.damage(2.5, pro);
+				e.setVelocity(v.multiply(1/4));
+			}else{
+				e.setVelocity(v.multiply(1/4));
+			}
+
 		} else if (data.type == ArrowData.bowType.ricochet) {
 			if (event.getHitBlock() == null) {
+				if(data.TaskID != null) {
+					stopParticleTrail(data);
+				}
 				return;
 			}
 			if (ar.isInBlock()) {
@@ -167,11 +194,17 @@ public class CustomBows implements Listener {
 				ParticleBuilder builder = null;
 				ParticleBuilder builder2 = null;
 				if(type != ArrowData.bowType.normal) {
-					builder = new ParticleBuilder(DUST);
 					if (type == ArrowData.bowType.marksman) {
+						builder = new ParticleBuilder(DUST);
 						builder.color(ORANGE);
+						builder.count(5);
 					} else if (type == ArrowData.bowType.ricochet) {
+						builder = new ParticleBuilder(DUST);
 						builder.color(LIME);
+						builder.count(5);
+					} else if (type == ArrowData.bowType.charged){
+						builder = new ParticleBuilder(SOUL_FIRE_FLAME);
+						builder.count(10);
 					}
 				}
 				if(arrType != ArrowData.arrowType.normal && arrType != ArrowData.arrowType.spectral) {
@@ -189,8 +222,8 @@ public class CustomBows implements Listener {
 
 				if(builder != null){
 					builder.location(loc);
-					builder.count(5);
 					builder.offset(0, 0, 0);
+					builder.extra(0);
 					builder.spawn();
 				}
 				if(builder2 != null){
@@ -200,7 +233,7 @@ public class CustomBows implements Listener {
 					builder2.spawn();
 				}
 			}
-		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 1, 1);
+		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 0, 0);
 
 			int id = buk.getTaskId();
 			bukkitRunnable.put(id, buk);
