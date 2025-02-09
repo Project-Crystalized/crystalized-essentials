@@ -3,6 +3,7 @@ package gg.crystalized.essentials;
 import com.destroystokyo.paper.ParticleBuilder;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockType;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,14 +11,17 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import static org.bukkit.Color.*;
+import static org.bukkit.Material.AIR;
 import static org.bukkit.Particle.*;
 import static org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_THUNDER;
 import static org.bukkit.entity.EntityType.ARROW;
@@ -75,6 +79,7 @@ public class CustomBows implements Listener {
 			type = ArrowData.bowType.charged;
 			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(2));
 			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+			chargedParticleTrail((Projectile) event.getProjectile());
 		} else{
 			type = ArrowData.bowType.normal;
 		}
@@ -193,7 +198,7 @@ public class CustomBows implements Listener {
 				Location loc = pro.getLocation();
 				ParticleBuilder builder = null;
 				ParticleBuilder builder2 = null;
-				if(type != ArrowData.bowType.normal) {
+				if(type != ArrowData.bowType.normal || type != ArrowData.bowType.charged) {
 					if (type == ArrowData.bowType.marksman) {
 						builder = new ParticleBuilder(DUST);
 						builder.color(ORANGE);
@@ -202,9 +207,6 @@ public class CustomBows implements Listener {
 						builder = new ParticleBuilder(DUST);
 						builder.color(LIME);
 						builder.count(5);
-					} else if (type == ArrowData.bowType.charged){
-						builder = new ParticleBuilder(SOUL_FIRE_FLAME);
-						builder.count(10);
 					}
 				}
 				if(arrType != ArrowData.arrowType.normal && arrType != ArrowData.arrowType.spectral) {
@@ -261,5 +263,33 @@ public class CustomBows implements Listener {
 		meta.displayName(entMeta.displayName());
 		meta.lore(entMeta.lore());
 		return meta;
+	}
+
+	public void chargedParticleTrail(Projectile pro){
+		LivingEntity shooter = (LivingEntity)pro.getShooter();
+		if(shooter == null){
+			return;
+		}
+		Location loc = pro.getLocation();
+		Vector v = pro.getVelocity().normalize();
+		double t = 0;
+		Material material = loc.getBlock().getType();
+
+		ParticleBuilder builder = new ParticleBuilder(SOUL_FIRE_FLAME);
+		builder.count(5);
+		builder.offset(0, 0, 0);
+		builder.extra(0);
+
+		Collection<LivingEntity> collect = loc.getNearbyLivingEntities(1);
+		while((collect.isEmpty() || (collect.size() == 1 && collect.contains(shooter))) && material == AIR && t <= 10){
+			builder.location(loc);
+			builder.spawn();
+			loc = new Location(loc.getWorld(), lineEquation(loc.getX(), t, v.getX()), lineEquation(loc.getY(), t, v.getY()), lineEquation(loc.getZ(), t, v.getZ()));
+			t = t + 0.1;
+		}
+	}
+
+	public double lineEquation(double g, double t, double v){
+		return g+(t*v);
 	}
 }
