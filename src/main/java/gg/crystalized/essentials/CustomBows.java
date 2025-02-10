@@ -131,7 +131,7 @@ public class CustomBows implements Listener {
 			Location eloc = event.getHitEntity().getLocation();
 			Location arrloc = pro.getLocation();
 			if(arrloc.getY() - eloc.getY() >= 1.5 && arrloc.getY() - eloc.getY() <= 2){
-				e.damage(2.5, pro);
+				e.damage(3.5, pro);
 				e.setVelocity(v.multiply(1/4));
 			}else{
 				e.setVelocity(v.multiply(1/4));

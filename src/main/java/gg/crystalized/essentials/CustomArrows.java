@@ -72,6 +72,8 @@ public class CustomArrows{
 
         if(data.arrType == ArrowData.arrowType.dragon){
 
+            Arrow arr = (Arrow)event.getEntity();
+            arr.setDamage(1);
             Particle.DustOptions options = new Particle.DustOptions(PURPLE, 1);
             AreaEffectCloud cloud = (AreaEffectCloud) event.getEntity().getWorld().spawnEntity(loc, AREA_EFFECT_CLOUD, false);
             cloud.setColor(PURPLE);
