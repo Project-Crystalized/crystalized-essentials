@@ -78,7 +78,7 @@ public class CustomArrows{
             cloud.setParticle(DUST, options);
 
             DamageSource.Builder builder = DamageSource.builder(ARROW);
-            builder.withCausingEntity((Entity)arrow.getShooter());
+            builder.withCausingEntity(data.shooter);
             builder.withDirectEntity(cloud);
             builder.withDamageLocation(loc);
             DamageSource source = builder.build();
