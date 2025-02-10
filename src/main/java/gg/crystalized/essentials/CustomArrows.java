@@ -40,16 +40,13 @@ import static org.bukkit.potion.PotionEffectType.GLOWING;
 public class CustomArrows{
 
     public static void onArrowHit(ProjectileHitEvent event){
-        Bukkit.getLogger().log(Level.SEVERE, "entered onArrowHit");
         if(event.isCancelled()){
-            Bukkit.getLogger().log(Level.SEVERE, "arrowHitEvent is canceled");
             return;
         }
         ArrowData data = CustomBows.arrows.get(event.getEntity());
         Projectile pro = event.getEntity();
         Arrow arrow;
         Location loc = event.getEntity().getLocation();
-        Bukkit.getLogger().log(Level.SEVERE, data.arrType.toString());
         if(data.arrType == ArrowData.arrowType.spectral){
             ParticleBuilder builder = new ParticleBuilder(DUST);
             builder.color(Color.YELLOW);
