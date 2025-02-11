@@ -36,6 +36,9 @@ public class CustomSwords implements Listener {
             } else if (item_custom_model == 6){
                 LivingEntity entity = (LivingEntity)e.getEntity();
                 entity.damage(e.getDamage()+1.5);
+            } else if (item_custom_model == 7){
+                LivingEntity entity = (LivingEntity)e.getEntity();
+                entity.damage(e.getDamage()+2);
             }
         }
     }
