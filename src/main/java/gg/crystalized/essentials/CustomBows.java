@@ -122,6 +122,11 @@ public class CustomBows implements Listener {
 			e.damage(damage, pro);
 			e.setVelocity(v.multiply(0.5));
 		}else if (data.type == ArrowData.bowType.charged){
+			new BukkitRunnable(){
+				public void run(){
+					pro.remove();
+				}
+			}.runTaskLater(crystalized_essentials.getInstance(), 3);
 			if(event.getHitEntity() == null){
 				if(data.TaskID != null) {
 					stopParticleTrail(data);
