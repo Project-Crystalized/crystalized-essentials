@@ -6,6 +6,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockType;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -31,7 +32,7 @@ public class CustomBows implements Listener {
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 	public HashMap<Integer, BukkitTask> bukkitRunnable = new HashMap<>();
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onBowShot(EntityShootBowEvent event) {
 		if (event.isCancelled()) {
 			return;
@@ -88,7 +89,7 @@ public class CustomBows implements Listener {
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onArrowHit(ProjectileHitEvent event) {
 		Projectile pro = event.getEntity();
 
@@ -109,7 +110,7 @@ public class CustomBows implements Listener {
 
 			if (e == null) {
 				if(data.TaskID != null) {
-					stopParticleTrail(data);
+					stopParticleTrail(data.TaskID);
 				}
 				return;
 			}
@@ -122,14 +123,9 @@ public class CustomBows implements Listener {
 			e.damage(damage, pro);
 			e.setVelocity(v.multiply(0.5));
 		}else if (data.type == ArrowData.bowType.charged){
-			new BukkitRunnable(){
-				public void run(){
-					pro.remove();
-				}
-			}.runTaskLater(crystalized_essentials.getInstance(), 3);
 			if(event.getHitEntity() == null){
 				if(data.TaskID != null) {
-					stopParticleTrail(data);
+					stopParticleTrail(data.TaskID);
 				}
 				return;
 			}
@@ -145,7 +141,7 @@ public class CustomBows implements Listener {
 		} else if (data.type == ArrowData.bowType.ricochet) {
 			if (event.getHitBlock() == null) {
 				if(data.TaskID != null) {
-					stopParticleTrail(data);
+					stopParticleTrail(data.TaskID);
 				}
 				return;
 			}
@@ -159,7 +155,7 @@ public class CustomBows implements Listener {
 
 			if (data.timesBounced >= 3) {
 				if(data.TaskID != null) {
-					stopParticleTrail(data);
+					stopParticleTrail(data.TaskID);
 				}
 				CustomArrows.onArrowHit(event);
 				return;
@@ -184,7 +180,7 @@ public class CustomBows implements Listener {
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
 			if(data.TaskID != null) {
-				stopParticleTrail(data);
+				stopParticleTrail(data.TaskID);
 			}
 			data.TaskID = startParticleTrail(arrow, data.type, data.arrType);
 			// configure the new arrow (fire, pierce, etc)
@@ -193,7 +189,7 @@ public class CustomBows implements Listener {
 		}
 		CustomArrows.onArrowHit(event);
 		if(data.TaskID != null) {
-			stopParticleTrail(data);
+			stopParticleTrail(data.TaskID);
 		}
 	}
 
@@ -242,17 +238,23 @@ public class CustomBows implements Listener {
 			}
 		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 0, 0);
 
-			int id = buk.getTaskId();
-			bukkitRunnable.put(id, buk);
-			return id;
+		new BukkitRunnable(){
+			public void run(){
+				stopParticleTrail(buk.getTaskId());
+			}
+		}.runTaskLater(crystalized_essentials.getInstance(), 175 * 20);
+
+		int id = buk.getTaskId();
+		bukkitRunnable.put(id, buk);
+		return id;
 
 	}
 
-	public void stopParticleTrail(ArrowData data){
-		if(data.TaskID == null){
+	public void stopParticleTrail(Integer TaskID){
+		if(TaskID == null){
 			return;
 		}
-		BukkitTask task = bukkitRunnable.get(data.TaskID);
+		BukkitTask task = bukkitRunnable.get(TaskID);
 		task.cancel();
 	}
 

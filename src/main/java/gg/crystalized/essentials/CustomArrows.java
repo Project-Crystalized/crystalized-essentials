@@ -31,7 +31,7 @@ import static org.bukkit.Color.PURPLE;
 import static org.bukkit.Particle.DUST;
 import static org.bukkit.Sound.BLOCK_NOTE_BLOCK_IMITATE_CREEPER;
 import static org.bukkit.Sound.ENTITY_GENERIC_EXPLODE;
-import static org.bukkit.damage.DamageType.ARROW;
+import static org.bukkit.damage.DamageType.*;
 import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
 import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 import static org.bukkit.potion.PotionEffectType.GLOWING;
@@ -76,7 +76,7 @@ public class CustomArrows{
             cloud.setColor(PURPLE);
             cloud.setParticle(DUST, options);
 
-            DamageSource.Builder builder = DamageSource.builder(ARROW);
+            DamageSource.Builder builder = DamageSource.builder(DRAGON_BREATH);
             builder.withCausingEntity(data.shooter);
             builder.withDirectEntity(cloud);
             builder.withDamageLocation(loc);
@@ -85,7 +85,7 @@ public class CustomArrows{
                 int i = 0;
                 final Location loc = event.getEntity().getLocation();
                 public void run(){
-                    if(i >= 20*20){
+                    if(i >= 5*20){
                         cloud.remove();
                         cancel();
                     }
@@ -95,7 +95,7 @@ public class CustomArrows{
                     }
                     i++;
                 }
-            }.runTaskTimer(crystalized_essentials.getInstance(),1,1);
+            }.runTaskTimer(crystalized_essentials.getInstance(),1,10);
 
         }else if(data.arrType == ArrowData.arrowType.explosive){
 
