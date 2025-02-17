@@ -137,6 +137,11 @@ public class CustomBows implements Listener {
 			}else{
 				e.setVelocity(v.multiply(1/4));
 			}
+			new BukkitRunnable(){
+				public void run(){
+					event.getEntity().remove();
+				}
+			}.runTaskLater(crystalized_essentials.getInstance(), 3);
 
 		} else if (data.type == ArrowData.bowType.ricochet) {
 			if (event.getHitBlock() == null) {
@@ -172,9 +177,6 @@ public class CustomBows implements Listener {
 
 			data.timesBounced++;
 			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
-			ItemStack item = arrow.getItemStack();
-			item.setItemMeta(syncArrowMeta((Arrow) event.getEntity(), arrow));
-			arrow.setItemStack(item);
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
 			arrow.setShooter(pro.getShooter());
 			arrows.remove(event.getEntity());
@@ -258,19 +260,6 @@ public class CustomBows implements Listener {
 		task.cancel();
 	}
 
-	public ItemMeta syncArrowMeta(Arrow entity, Arrow arrow){
-		ItemStack arrowItem = arrow.getItemStack();
-		ItemMeta meta = arrowItem.getItemMeta();
-
-		ItemStack entityItem = entity.getItemStack();
-		ItemMeta entMeta = entityItem.getItemMeta();
-		if(entMeta.hasCustomModelData()){
-			meta.setCustomModelData(entMeta.getCustomModelData());
-		}
-		meta.displayName(entMeta.displayName());
-		meta.lore(entMeta.lore());
-		return meta;
-	}
 
 	public void chargedParticleTrail(Projectile pro){
 		LivingEntity shooter = (LivingEntity)pro.getShooter();
