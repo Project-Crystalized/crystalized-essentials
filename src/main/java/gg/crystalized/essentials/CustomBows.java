@@ -78,7 +78,6 @@ public class CustomBows implements Listener {
 			type = ArrowData.bowType.ricochet;
 		} else if (stack.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
 			type = ArrowData.bowType.charged;
-			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(2));
 			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 			human.setCooldown(stack, 20*5);
 			chargedParticleTrail((Projectile) event.getProjectile());
@@ -133,11 +132,7 @@ public class CustomBows implements Listener {
 			Location eloc = event.getHitEntity().getLocation();
 			Location arrloc = pro.getLocation();
 			if(arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2){
-				ar.setDamage(1.5);
-				e.setVelocity(v.multiply(1/4));
-			}else{
-				ar.setDamage(0);
-				e.setVelocity(v.multiply(1/4));
+				ar.setDamage(2);
 			}
 			new BukkitRunnable(){
 				public void run(){
