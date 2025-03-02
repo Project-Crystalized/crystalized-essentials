@@ -57,7 +57,7 @@ public class CustomBows implements Listener {
 
 		if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2){
 			arrType = ArrowData.arrowType.explosive;
-			human.setCooldown(arrowItem, 20*3);
+			human.setCooldown(stack, 20*3);
 		}else if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1){
 			arrType = ArrowData.arrowType.dragon;
 		}else if(e.getType() == SPECTRAL_ARROW){
@@ -121,7 +121,7 @@ public class CustomBows implements Listener {
 			double damage = ar.getDamage();
 			damage = damage + distance * 0.5;
 			e.damage(damage, pro);
-			e.setVelocity(v.multiply(0.5));
+			e.setVelocity(v.multiply(1/4));
 		}else if (data.type == ArrowData.bowType.charged){
 			if(event.getHitEntity() == null){
 				if(data.TaskID != null) {

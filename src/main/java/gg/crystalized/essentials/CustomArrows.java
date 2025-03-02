@@ -15,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -32,6 +33,7 @@ import static org.bukkit.Particle.DUST;
 import static org.bukkit.Sound.BLOCK_NOTE_BLOCK_IMITATE_CREEPER;
 import static org.bukkit.Sound.ENTITY_GENERIC_EXPLODE;
 import static org.bukkit.damage.DamageType.*;
+import static org.bukkit.entity.AbstractArrow.PickupStatus.DISALLOWED;
 import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
 import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 import static org.bukkit.potion.PotionEffectType.GLOWING;
@@ -71,6 +73,11 @@ public class CustomArrows{
 
             Arrow arr = (Arrow)event.getEntity();
             arr.setDamage(1);
+
+            ItemStack item = arr.getItemStack();
+            item.setItemMeta(null);
+            arr.setItemStack(item);
+
             Particle.DustOptions options = new Particle.DustOptions(PURPLE, 1);
             AreaEffectCloud cloud = (AreaEffectCloud) event.getEntity().getWorld().spawnEntity(loc, AREA_EFFECT_CLOUD, false);
             cloud.setColor(PURPLE);
@@ -85,7 +92,7 @@ public class CustomArrows{
                 int i = 0;
                 final Location loc = event.getEntity().getLocation();
                 public void run(){
-                    if(i >= 5*20){
+                    if(i >= 10){
                         cloud.remove();
                         cancel();
                     }
@@ -95,10 +102,10 @@ public class CustomArrows{
                     }
                     i++;
                 }
-            }.runTaskTimer(crystalized_essentials.getInstance(),1,10);
+            }.runTaskTimer(crystalized_essentials.getInstance(),1,20);
 
         }else if(data.arrType == ArrowData.arrowType.explosive){
-
+            arrow.setPickupStatus(DISALLOWED);
             Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(3);
             Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(5);
             ArrayList<LivingEntity> removal = new ArrayList<>();
@@ -129,6 +136,7 @@ public class CustomArrows{
                     e.damage(2, event.getEntity());
                     e.setVelocity(v);
                 }
+                arrow.remove();
                 ParticleBuilder builder = new ParticleBuilder(DUST);
                 builder.color(Color.RED);
                 builder.offset(5, 5, 5);
