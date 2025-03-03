@@ -106,83 +106,65 @@ public class CustomArrows{
 
         }else if(data.arrType == ArrowData.arrowType.explosive){
             arrow.setPickupStatus(DISALLOWED);
-            Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(3);
-            Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(5);
-            ArrayList<LivingEntity> removal = new ArrayList<>();
 
-            for(LivingEntity e : notSoNearby){
-                if(nearby.contains(e)){
-                    removal.add(e);
-                }
-            }
-
-            for(LivingEntity e : removal){
-                notSoNearby.remove(e);
-            }
-
-            if(event.getHitEntity() != null){
-                for(LivingEntity e : nearby){
-                    Location eLoc = e.getLocation();
-                    Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-                    v = v.normalize().multiply(1);
-                    e.damage(4, event.getEntity());
-                    e.setVelocity(v);
-                }
-
-                for(LivingEntity e : notSoNearby){
-                    Location eLoc = e.getLocation();
-                    Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-                    v = v.normalize().multiply(0.5);
-                    e.damage(2, event.getEntity());
-                    e.setVelocity(v);
-                }
-                arrow.remove();
-                ParticleBuilder builder = new ParticleBuilder(DUST);
-                builder.color(Color.RED);
-                builder.offset(5, 5, 5);
-                builder.count(150);
-                builder.location(event.getEntity().getLocation());
-                builder.spawn();
-                loc.getWorld().playSound(loc, ENTITY_GENERIC_EXPLODE, 1, 1);
-                return;
-            }
-
+            DamageSource.Builder builder = DamageSource.builder(EXPLOSION);
+            builder.withCausingEntity(data.shooter);
+            builder.withDirectEntity(arrow);
+            builder.withDamageLocation(arrow.getLocation());
+            DamageSource source = builder.build();
             new BukkitRunnable(){
                 int i = 0;
                 public void run(){
                     if(i >= 3){
                         cancel();
                     }
-                    loc.getWorld().playSound(loc, BLOCK_NOTE_BLOCK_IMITATE_CREEPER, 1, 1);
+                    loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 2, 1), arrow);
                     i++;
                 }
             }.runTaskTimer(crystalized_essentials.getInstance(), 0, 20);
 
+
             new BukkitRunnable(){
                 public void run(){
-                    for(LivingEntity e : nearby){
-                        Location eLoc = e.getLocation();
-                        Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-                        v = v.normalize().multiply(1);
-                        e.damage(4, event.getEntity());
-                        e.setVelocity(v);
-                    }
+                    Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(2);
+                    Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(4);
+                    ArrayList<LivingEntity> removal = new ArrayList<>();
 
                     for(LivingEntity e : notSoNearby){
-                        Location eLoc = e.getLocation();
-                        Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-                        v = v.normalize().multiply(0.5);
-                        e.damage(2, event.getEntity());
-                        e.setVelocity(v);
+                        if(nearby.contains(e)){
+                            removal.add(e);
+                        }
                     }
-                    ParticleBuilder builder = new ParticleBuilder(DUST);
-                    builder.color(Color.RED);
-                    builder.offset(5, 5, 5);
-                    builder.count(150);
-                    builder.location(event.getEntity().getLocation());
-                    builder.spawn();
-                    loc.getWorld().playSound(loc, ENTITY_GENERIC_EXPLODE, 1, 1);
-                    event.getEntity().remove();
+
+                    for(LivingEntity e : removal){
+                        notSoNearby.remove(e);
+                    }
+
+                    if(event.getHitEntity() == null){
+                        for(LivingEntity e : nearby){
+                            Location eLoc = e.getLocation();
+                            Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
+                            v = v.normalize().multiply(1);
+                            e.damage(4, source);
+                            e.setVelocity(v);
+                        }
+
+                        for(LivingEntity e : notSoNearby){
+                            Location eLoc = e.getLocation();
+                            Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
+                            v = v.normalize().multiply(0.5);
+                            e.damage(2, source);
+                            e.setVelocity(v);
+                        }
+                        ParticleBuilder builder = new ParticleBuilder(DUST);
+                        builder.color(Color.RED);
+                        builder.offset(5, 5, 5);
+                        builder.count(150);
+                        builder.location(event.getEntity().getLocation());
+                        builder.spawn();
+                        loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1), arrow);
+                        arrow.remove();
+                    }
                 }
             }.runTaskLater(crystalized_essentials.getInstance(), 3*20);
         }
