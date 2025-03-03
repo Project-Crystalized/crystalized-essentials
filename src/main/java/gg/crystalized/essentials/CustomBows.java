@@ -79,6 +79,7 @@ public class CustomBows implements Listener {
 		} else if (stack.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
 			type = ArrowData.bowType.charged;
 			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+			event.getProjectile().setGravity(false);
 			human.setCooldown(stack, 20*5);
 			chargedParticleTrail((Projectile) event.getProjectile());
 		} else{
