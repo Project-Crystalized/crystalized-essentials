@@ -3,21 +3,19 @@ package gg.crystalized.essentials;
 import com.destroystokyo.paper.ParticleBuilder;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockType;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -25,7 +23,6 @@ import static org.bukkit.Color.*;
 import static org.bukkit.Material.AIR;
 import static org.bukkit.Particle.*;
 import static org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_THUNDER;
-import static org.bukkit.entity.EntityType.ARROW;
 import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 
 public class CustomBows implements Listener {
@@ -90,6 +87,25 @@ public class CustomBows implements Listener {
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
+	@EventHandler
+	public void onDamage(EntityDamageByEntityEvent e) {
+		if (!(e.getDamager() instanceof Projectile)) {
+			return;
+		}
+		ArrowData data = arrows.get(e.getDamager());
+		if (data == null) {
+			return;
+		}
+		if (data.type == ArrowData.bowType.marksman) {
+			Location shooterLoc = data.shooter.getLocation();
+			Location hitLoc = e.getEntity().getLocation();
+			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
+			Bukkit.getLogger().warning("damage was: " + (e.getDamage() + distance));
+			Bukkit.getLogger().warning("distance was: " + distance);
+			e.setDamage(e.getDamage() + distance * 0.7);
+		}
+	}
+
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onArrowHit(ProjectileHitEvent event) {
 		Projectile pro = event.getEntity();
@@ -104,30 +120,14 @@ public class CustomBows implements Listener {
 		if (data == null) {
 			return;
 		}
-		LivingEntity e = (LivingEntity) event.getHitEntity();
-		Vector v = ar.getVelocity();
-
 		if (data.type == ArrowData.bowType.marksman) {
-
-			if (e == null) {
-				if(data.TaskID != null) {
-					stopParticleTrail(data.TaskID);
-				}
+			if (event.getHitEntity() == null && data.TaskID != null) {
+				stopParticleTrail(data.TaskID);
 				return;
 			}
-
-			Location shooterLoc = data.shooter.getLocation();
-			Location hitLoc = e.getLocation();
-			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
-			double damage = ar.getDamage();
-			damage = damage + distance * 0.5;
-			e.damage(damage, pro);
-			e.setVelocity(v.multiply(1/4));
 		}else if (data.type == ArrowData.bowType.charged){
-			if(event.getHitEntity() == null){
-				if(data.TaskID != null) {
-					stopParticleTrail(data.TaskID);
-				}
+			if(event.getHitEntity() == null && data.TaskID != null){
+				stopParticleTrail(data.TaskID);
 				return;
 			}
 			Location eloc = event.getHitEntity().getLocation();
@@ -142,10 +142,8 @@ public class CustomBows implements Listener {
 			}.runTaskLater(crystalized_essentials.getInstance(), 3);
 
 		} else if (data.type == ArrowData.bowType.ricochet) {
-			if (event.getHitBlock() == null) {
-				if(data.TaskID != null) {
-					stopParticleTrail(data.TaskID);
-				}
+			if(event.getHitEntity() == null && data.TaskID != null){
+				stopParticleTrail(data.TaskID);
 				return;
 			}
 			if (ar.isInBlock()) {
@@ -247,7 +245,6 @@ public class CustomBows implements Listener {
 		int id = buk.getTaskId();
 		bukkitRunnable.put(id, buk);
 		return id;
-
 	}
 
 	public void stopParticleTrail(Integer TaskID){

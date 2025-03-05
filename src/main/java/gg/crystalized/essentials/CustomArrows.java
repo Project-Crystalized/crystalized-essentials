@@ -3,6 +3,8 @@ package gg.crystalized.essentials;
 import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -102,10 +104,12 @@ public class CustomArrows{
             DamageSource source = builder.build();
 
 						// if a entity was hit, explode instantly, and dont do creeper sound
-            if(event.getHitEntity() != null) {
+						Entity hit_player = event.getHitEntity();
+            if(hit_player != null) {
 							exploArrowExplosion(loc, source);
-							loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1), arrow);
+							loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1));
 							arrow.remove();
+							hit_player.setVelocity(hit_player.getVelocity().add(arrow.getVelocity().normalize().multiply(5)));
 							return;
 						}
 
@@ -114,8 +118,9 @@ public class CustomArrows{
                 public void run() {
                     if(i >= 3){
                         cancel();
+												return;
                     }
-                    loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 2, 1), arrow);
+                    loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 2, 1));
                     i++;
                 }
             }.runTaskTimer(crystalized_essentials.getInstance(), 0, 20);
@@ -123,7 +128,7 @@ public class CustomArrows{
             new BukkitRunnable() {
                 public void run() {
 									exploArrowExplosion(loc, source);
-									loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1), arrow);
+									loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1));
 									arrow.remove();
                 }
             }.runTaskLater(crystalized_essentials.getInstance(), 3*20);
@@ -139,17 +144,17 @@ public class CustomArrows{
 			for(LivingEntity e : nearby){
 				Location eLoc = e.getLocation();
 				Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-				v = v.normalize().multiply(1);
+				v = v.normalize().multiply(2);
 				e.damage(4, source);
-				e.setVelocity(v);
+				e.setVelocity(e.getVelocity().add(v));
 			}
 
 			for(LivingEntity e : notSoNearby){
 				Location eLoc = e.getLocation();
 				Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-				v = v.normalize().multiply(0.5);
+				v = v.normalize().multiply(1);
 				e.damage(2, source);
-				e.setVelocity(v);
+				e.setVelocity(e.getVelocity().add(v));
 			}
 			ParticleBuilder builder = new ParticleBuilder(DUST);
 			builder.color(Color.RED);
