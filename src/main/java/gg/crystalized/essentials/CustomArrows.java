@@ -4,7 +4,6 @@ import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -17,12 +16,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 import java.util.Collection;
 
 import static org.bukkit.Color.PURPLE;
 import static org.bukkit.Particle.DUST;
+import static org.bukkit.Particle.RAID_OMEN;
 import static org.bukkit.damage.DamageType.*;
 import static org.bukkit.entity.AbstractArrow.PickupStatus.DISALLOWED;
 import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
@@ -30,6 +29,7 @@ import static org.bukkit.potion.PotionEffectType.GLOWING;
 
 
 public class CustomArrows{
+
 
     public static void onArrowHit(ProjectileHitEvent event){
         if(event.isCancelled()){
@@ -109,9 +109,9 @@ public class CustomArrows{
 							exploArrowExplosion(loc, source);
 							loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1));
 							arrow.remove();
-							hit_player.setVelocity(hit_player.getVelocity().add(arrow.getVelocity().normalize().multiply(5)));
 							return;
 						}
+						arrow.setGlowing(true);
 
             new BukkitRunnable() {
                 int i = 0;
@@ -120,6 +120,7 @@ public class CustomArrows{
                         cancel();
 												return;
                     }
+										loc.getWorld().spawnParticle(RAID_OMEN, loc, 3);
                     loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 2, 1));
                     i++;
                 }
@@ -135,42 +136,29 @@ public class CustomArrows{
         }
     }
 
-	private static void exploArrowExplosion(Location loc, DamageSource source) {
-		Collection<LivingEntity> nearby = loc.getNearbyLivingEntities(2);
-		Collection<LivingEntity> notSoNearby = loc.getNearbyLivingEntities(4);
+	private static void exploArrowExplosion(Location explo_loc, DamageSource source) {
+		Collection<LivingEntity> nearby = explo_loc.getNearbyLivingEntities(2);
+		Collection<LivingEntity> notSoNearby = explo_loc.getNearbyLivingEntities(4);
 
 		notSoNearby.removeAll(nearby);
 
-			for(LivingEntity e : nearby){
-				Location eLoc = e.getLocation();
-				Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-				v = v.normalize().multiply(2);
-				e.damage(4, source);
-				e.setVelocity(e.getVelocity().add(v));
-			}
+		explo_loc.createExplosion(source.getCausingEntity(), (float) 2.3, false, false);
 
-			for(LivingEntity e : notSoNearby){
-				Location eLoc = e.getLocation();
-				Vector v = new Vector(eLoc.getX() - loc.getX(),eLoc.getY() - loc.getY()+0.5, eLoc.getZ() - loc.getZ());
-				v = v.normalize().multiply(1);
-				e.damage(2, source);
-				e.setVelocity(e.getVelocity().add(v));
-			}
-			ParticleBuilder builder = new ParticleBuilder(DUST);
-			builder.color(Color.RED);
-			builder.offset(5, 5, 5);
-			builder.count(150);
-			builder.location(loc);
-			builder.spawn();
+		ParticleBuilder builder = new ParticleBuilder(DUST);
+		builder.color(Color.RED);
+		builder.offset(1, 1, 1);
+		builder.count(300);
+		builder.location(explo_loc);
+		builder.spawn();
 	}
 
-    @EventHandler
-    public void onArrowPickup(PlayerPickupArrowEvent event){
-        ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
-        if(meta != null && meta.hasCustomModelData()){
-            if(meta.getCustomModelData() == 2){
-                event.setCancelled(true);
-            }
-        }
-    }
+	@EventHandler
+	public void onArrowPickup(PlayerPickupArrowEvent event){
+		ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
+		if(meta != null && meta.hasCustomModelData()){
+			if(meta.getCustomModelData() == 2){
+				event.setCancelled(true);
+			}
+		}
+	}
 }

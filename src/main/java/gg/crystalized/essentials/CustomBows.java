@@ -43,24 +43,23 @@ public class CustomBows implements Listener {
 
 		ItemStack arrowItem = event.getArrowItem();
 		ItemMeta arrowMeta;
-		if(arrowItem.hasItemMeta()){
+		if (arrowItem.hasItemMeta()) {
 			arrowMeta = arrowItem.getItemMeta();
-		}else{
+		} else {
 			arrowMeta = null;
 		}
 
 		HumanEntity human = (HumanEntity) e;
 		ArrowData.arrowType arrType = null;
 
-		if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2){
+		if (arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2) {
 			arrType = ArrowData.arrowType.explosive;
-			human.setCooldown(stack, 20*3);
-		}else if(arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1){
+			human.setCooldown(stack, 20 * 3);
+		} else if (arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1) {
 			arrType = ArrowData.arrowType.dragon;
-		}else if(e.getType() == SPECTRAL_ARROW){
+		} else if (e.getType() == SPECTRAL_ARROW) {
 			arrType = ArrowData.arrowType.spectral;
-		}
-		else{
+		} else {
 			arrType = ArrowData.arrowType.normal;
 		}
 
@@ -77,13 +76,14 @@ public class CustomBows implements Listener {
 			type = ArrowData.bowType.charged;
 			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 			event.getProjectile().setGravity(false);
-			human.setCooldown(stack, 20*5);
+			human.setCooldown(stack, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
-		} else{
+		} else {
 			type = ArrowData.bowType.normal;
 		}
 
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, arrType,0, startParticleTrail((Projectile) event.getProjectile(), type, arrType));
+		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, arrType, 0,
+				startParticleTrail((Projectile) event.getProjectile(), type, arrType));
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
@@ -100,8 +100,6 @@ public class CustomBows implements Listener {
 			Location shooterLoc = data.shooter.getLocation();
 			Location hitLoc = e.getEntity().getLocation();
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
-			Bukkit.getLogger().warning("damage was: " + (e.getDamage() + distance));
-			Bukkit.getLogger().warning("distance was: " + distance);
 			e.setDamage(e.getDamage() + distance * 0.7);
 		}
 	}
@@ -125,24 +123,24 @@ public class CustomBows implements Listener {
 				stopParticleTrail(data.TaskID);
 				return;
 			}
-		}else if (data.type == ArrowData.bowType.charged){
-			if(event.getHitEntity() == null && data.TaskID != null){
+		} else if (data.type == ArrowData.bowType.charged) {
+			if (event.getHitEntity() == null && data.TaskID != null) {
 				stopParticleTrail(data.TaskID);
 				return;
 			}
 			Location eloc = event.getHitEntity().getLocation();
 			Location arrloc = pro.getLocation();
-			if(arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2){
+			if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
 				ar.setDamage(2);
 			}
-			new BukkitRunnable(){
-				public void run(){
+			new BukkitRunnable() {
+				public void run() {
 					event.getEntity().remove();
 				}
 			}.runTaskLater(crystalized_essentials.getInstance(), 3);
 
 		} else if (data.type == ArrowData.bowType.ricochet) {
-			if(event.getHitEntity() == null && data.TaskID != null){
+			if (event.getHitEntity() == null && data.TaskID != null) {
 				stopParticleTrail(data.TaskID);
 				return;
 			}
@@ -155,7 +153,7 @@ public class CustomBows implements Listener {
 			velocity.multiply(0.5);
 
 			if (data.timesBounced >= 3) {
-				if(data.TaskID != null) {
+				if (data.TaskID != null) {
 					stopParticleTrail(data.TaskID);
 				}
 				CustomArrows.onArrowHit(event);
@@ -177,7 +175,7 @@ public class CustomBows implements Listener {
 			arrow.setShooter(pro.getShooter());
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
-			if(data.TaskID != null) {
+			if (data.TaskID != null) {
 				stopParticleTrail(data.TaskID);
 			}
 			data.TaskID = startParticleTrail(arrow, data.type, data.arrType);
@@ -186,18 +184,18 @@ public class CustomBows implements Listener {
 			return;
 		}
 		CustomArrows.onArrowHit(event);
-		if(data.TaskID != null) {
+		if (data.TaskID != null) {
 			stopParticleTrail(data.TaskID);
 		}
 	}
 
-	public Integer startParticleTrail(Projectile pro, ArrowData.bowType type, ArrowData.arrowType arrType){
+	public Integer startParticleTrail(Projectile pro, ArrowData.bowType type, ArrowData.arrowType arrType) {
 		BukkitTask buk = new BukkitRunnable() {
 			public void run() {
 				Location loc = pro.getLocation();
 				ParticleBuilder builder = null;
 				ParticleBuilder builder2 = null;
-				if(type != ArrowData.bowType.normal || type != ArrowData.bowType.charged) {
+				if (type != ArrowData.bowType.normal || type != ArrowData.bowType.charged) {
 					if (type == ArrowData.bowType.marksman) {
 						builder = new ParticleBuilder(DUST);
 						builder.color(ORANGE);
@@ -208,7 +206,7 @@ public class CustomBows implements Listener {
 						builder.count(5);
 					}
 				}
-				if(arrType != ArrowData.arrowType.normal && arrType != ArrowData.arrowType.spectral) {
+				if (arrType != ArrowData.arrowType.normal && arrType != ArrowData.arrowType.spectral) {
 					builder2 = new ParticleBuilder(DUST);
 					if (arrType == ArrowData.arrowType.dragon) {
 						builder2.color(PURPLE);
@@ -217,17 +215,17 @@ public class CustomBows implements Listener {
 					}
 				}
 
-				if(builder == null && builder2 == null){
+				if (builder == null && builder2 == null) {
 					return;
 				}
 
-				if(builder != null){
+				if (builder != null) {
 					builder.location(loc);
 					builder.offset(0, 0, 0);
 					builder.extra(0);
 					builder.spawn();
 				}
-				if(builder2 != null){
+				if (builder2 != null) {
 					builder2.location(loc);
 					builder2.count(5);
 					builder2.offset(0, 0, 0);
@@ -236,8 +234,8 @@ public class CustomBows implements Listener {
 			}
 		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 0, 0);
 
-		new BukkitRunnable(){
-			public void run(){
+		new BukkitRunnable() {
+			public void run() {
 				stopParticleTrail(buk.getTaskId());
 			}
 		}.runTaskLater(crystalized_essentials.getInstance(), 175 * 20);
@@ -247,18 +245,17 @@ public class CustomBows implements Listener {
 		return id;
 	}
 
-	public void stopParticleTrail(Integer TaskID){
-		if(TaskID == null){
+	public void stopParticleTrail(Integer TaskID) {
+		if (TaskID == null) {
 			return;
 		}
 		BukkitTask task = bukkitRunnable.get(TaskID);
 		task.cancel();
 	}
 
-
-	public void chargedParticleTrail(Projectile pro){
-		LivingEntity shooter = (LivingEntity)pro.getShooter();
-		if(shooter == null){
+	public void chargedParticleTrail(Projectile pro) {
+		LivingEntity shooter = (LivingEntity) pro.getShooter();
+		if (shooter == null) {
 			return;
 		}
 		Location loc = pro.getLocation();
@@ -272,15 +269,16 @@ public class CustomBows implements Listener {
 		builder.extra(0);
 
 		Collection<LivingEntity> collect = loc.getNearbyLivingEntities(1);
-		while((collect.isEmpty() || (collect.size() == 1 && collect.contains(shooter))) && material == AIR && t <= 10){
+		while ((collect.isEmpty() || (collect.size() == 1 && collect.contains(shooter))) && material == AIR && t <= 10) {
 			builder.location(loc);
 			builder.spawn();
-			loc = new Location(loc.getWorld(), lineEquation(loc.getX(), t, v.getX()), lineEquation(loc.getY(), t, v.getY()), lineEquation(loc.getZ(), t, v.getZ()));
+			loc = new Location(loc.getWorld(), lineEquation(loc.getX(), t, v.getX()), lineEquation(loc.getY(), t, v.getY()),
+					lineEquation(loc.getZ(), t, v.getZ()));
 			t = t + 0.1;
 		}
 	}
 
-	public double lineEquation(double g, double t, double v){
-		return g+(t*v);
+	public double lineEquation(double g, double t, double v) {
+		return g + (t * v);
 	}
 }
