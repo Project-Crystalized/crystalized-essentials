@@ -35,7 +35,6 @@ public class CustomArrows{
         if(event.isCancelled()){
             return;
         }
-				// TODO does this crash with non custom arrow projectiles?
         ArrowData data = CustomBows.arrows.get(event.getEntity());
         Projectile pro = event.getEntity();
         Arrow arrow;
@@ -96,6 +95,8 @@ public class CustomArrows{
 
         } else if(data.arrType == ArrowData.arrowType.explosive){
             arrow.setPickupStatus(DISALLOWED);
+            Arrow arr = (Arrow)event.getEntity();
+            arr.setDamage(1);
 
             DamageSource.Builder builder = DamageSource.builder(EXPLOSION);
             builder.withCausingEntity(data.shooter);
@@ -142,7 +143,7 @@ public class CustomArrows{
 
 		notSoNearby.removeAll(nearby);
 
-		explo_loc.createExplosion(source.getCausingEntity(), (float) 2.3, false, false);
+		explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
 
 		ParticleBuilder builder = new ParticleBuilder(DUST);
 		builder.color(Color.RED);
