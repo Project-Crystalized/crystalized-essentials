@@ -96,7 +96,7 @@ public class CustomArrows{
         } else if(data.arrType == ArrowData.arrowType.explosive){
             arrow.setPickupStatus(DISALLOWED);
             Arrow arr = (Arrow)event.getEntity();
-            arr.setDamage(1);
+            arr.setDamage(2);
 
             DamageSource.Builder builder = DamageSource.builder(EXPLOSION);
             builder.withCausingEntity(data.shooter);
