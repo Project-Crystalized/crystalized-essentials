@@ -34,55 +34,48 @@ public class CustomBows implements Listener {
 		if (event.isCancelled()) {
 			return;
 		}
-		LivingEntity e = event.getEntity();
-		ItemStack stack = event.getBow();
+		ItemStack bow_item = event.getBow();
 
-		if (stack == null) {
+		if (bow_item == null) {
 			return;
 		}
 
-		ItemStack arrowItem = event.getArrowItem();
-		ItemMeta arrowMeta;
+		ItemStack arrowItem = event.getConsumable();
+		ItemMeta arrowMeta = null;
 		if (arrowItem.hasItemMeta()) {
 			arrowMeta = arrowItem.getItemMeta();
-		} else {
-			arrowMeta = null;
 		}
 
-		HumanEntity human = (HumanEntity) e;
-		ArrowData.arrowType arrType = null;
+		HumanEntity human = (HumanEntity) event.getEntity();
+		ArrowData.arrowType arrType = ArrowData.arrowType.normal;
 
 		if (arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2) {
 			arrType = ArrowData.arrowType.explosive;
-			human.setCooldown(stack, 20 * 3);
+			human.setCooldown(bow_item, 20 * 3);
 		} else if (arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1) {
 			arrType = ArrowData.arrowType.dragon;
-		} else if (e.getType() == SPECTRAL_ARROW) {
+		} else if (event.getProjectile().getType() == SPECTRAL_ARROW) {
 			arrType = ArrowData.arrowType.spectral;
-		} else {
-			arrType = ArrowData.arrowType.normal;
 		}
 
-		ItemMeta meta = stack.getItemMeta();
-		ArrowData.bowType type = null;
+		ItemMeta meta = bow_item.getItemMeta();
+		ArrowData.bowType type = ArrowData.bowType.normal;
 
 		if (meta == null || !meta.hasCustomModelData()) {
 			type = ArrowData.bowType.normal;
-		} else if (stack.getType() == Material.BOW && meta.getCustomModelData() == 1) {
+		} else if (bow_item.getType() == Material.BOW && meta.getCustomModelData() == 1) {
 			type = ArrowData.bowType.marksman;
-		} else if (stack.getType() == Material.BOW && meta.getCustomModelData() == 3) {
+		} else if (bow_item.getType() == Material.BOW && meta.getCustomModelData() == 3) {
 			type = ArrowData.bowType.ricochet;
-		} else if (stack.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
+		} else if (bow_item.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
 			type = ArrowData.bowType.charged;
 			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 			event.getProjectile().setGravity(false);
-			human.setCooldown(stack, 20 * 5);
+			human.setCooldown(bow_item, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
-		} else {
-			type = ArrowData.bowType.normal;
 		}
 
-		ArrowData ard = new ArrowData(e, event.getForce(), event.getHand(), type, arrType, 0,
+		ArrowData ard = new ArrowData(event.getEntity(), event.getForce(), event.getHand(), type, arrType, 0,
 				startParticleTrail((Projectile) event.getProjectile(), type, arrType));
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
