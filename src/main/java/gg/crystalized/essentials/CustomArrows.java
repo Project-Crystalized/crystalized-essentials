@@ -4,7 +4,6 @@ import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -120,7 +119,7 @@ public class CustomArrows {
 						return;
 					}
 					arrow_loc.getWorld().spawnParticle(RAID_OMEN, arrow_loc, 3);
-					arrow_loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 2, 1));
+					arrow_loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 1, 1));
 					i++;
 				}
 			}.runTaskTimer(crystalized_essentials.getInstance(), 0, 20);
@@ -135,7 +134,6 @@ public class CustomArrows {
 		} else {
 			AbstractArrow arr = (AbstractArrow) event.getEntity();
 			arr.setDamage(1.5);
-			Bukkit.getLogger().severe("applied arrows mdg");
 		}
 	}
 

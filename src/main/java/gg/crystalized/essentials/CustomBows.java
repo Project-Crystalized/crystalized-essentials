@@ -93,7 +93,8 @@ public class CustomBows implements Listener {
 			Location shooterLoc = data.shooter.getLocation();
 			Location hitLoc = e.getEntity().getLocation();
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
-			e.setDamage(e.getDamage() + distance * 0.7);
+			// e.setDamage(e.getDamage() + distance * 0.7);
+			((LivingEntity) e.getEntity()).damage(distance);
 		}
 	}
 
