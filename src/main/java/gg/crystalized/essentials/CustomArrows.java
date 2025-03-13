@@ -1,8 +1,6 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.sound.Sound;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -100,11 +98,9 @@ public class CustomArrows {
 			builder.withDamageLocation(arrow.getLocation());
 			DamageSource source = builder.build();
 
-			// if a entity was hit, explode instantly, and dont do creeper sound
 			Entity hit_player = event.getHitEntity();
 			if (hit_player != null) {
 				exploArrowExplosion(arrow_loc, source);
-				arrow_loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1));
 				arrow.remove();
 				return;
 			}
@@ -119,7 +115,7 @@ public class CustomArrows {
 						return;
 					}
 					arrow_loc.getWorld().spawnParticle(RAID_OMEN, arrow_loc, 3);
-					arrow_loc.getWorld().playSound(Sound.sound(Key.key("entity.creeper.primed"), Sound.Source.AMBIENT, 1, 1));
+					arrow_loc.getWorld().playSound(arrow_loc, "entity.creeper.primed", 2f, 1);
 					i++;
 				}
 			}.runTaskTimer(crystalized_essentials.getInstance(), 0, 20);
@@ -127,7 +123,6 @@ public class CustomArrows {
 			new BukkitRunnable() {
 				public void run() {
 					exploArrowExplosion(arrow_loc, source);
-					arrow_loc.getWorld().playSound(Sound.sound(Key.key("entity.generic.explode"), Sound.Source.AMBIENT, 1, 1));
 					arrow.remove();
 				}
 			}.runTaskLater(crystalized_essentials.getInstance(), 3 * 20);
