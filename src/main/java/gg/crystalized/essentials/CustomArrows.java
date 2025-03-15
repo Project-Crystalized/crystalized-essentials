@@ -10,9 +10,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -28,7 +26,7 @@ import static org.bukkit.potion.PotionEffectType.GLOWING;
 
 public class CustomArrows {
 
-	@EventHandler(priority = EventPriority.LOW)
+	// @EventHandler(priority = EventPriority.LOW)
 	public static void onArrowHit(ProjectileHitEvent event) {
 		if (event.isCancelled()) {
 			return;
@@ -146,15 +144,5 @@ public class CustomArrows {
 		builder.count(300);
 		builder.location(explo_loc);
 		builder.spawn();
-	}
-
-	@EventHandler
-	public void onArrowPickup(PlayerPickupArrowEvent event) {
-		ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
-		if (meta != null && meta.hasCustomModelData()) {
-			if (meta.getCustomModelData() == 2) {
-				event.setCancelled(true);
-			}
-		}
 	}
 }

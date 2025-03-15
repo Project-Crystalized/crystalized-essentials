@@ -10,24 +10,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.Collection;
 import java.util.HashMap;
 
-import static org.bukkit.Color.*;
 import static org.bukkit.Material.AIR;
-import static org.bukkit.Particle.*;
-import static org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_THUNDER;
-import static org.bukkit.entity.EntityType.SPECTRAL_ARROW;
 
 public class CustomBows implements Listener {
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
-	public HashMap<Integer, BukkitTask> bukkitRunnable = new HashMap<>();
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onBowShot(EntityShootBowEvent event) {
@@ -40,43 +34,19 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		ItemStack arrowItem = event.getConsumable();
-		ItemMeta arrowMeta = null;
-		if (arrowItem.hasItemMeta()) {
-			arrowMeta = arrowItem.getItemMeta();
+		ArrowData.arrowType arrType = get_arrow_type(event.getConsumable());
+		if (arrType == ArrowData.arrowType.explosive) {
+			((Player) event.getEntity()).setCooldown(bow_item, 20 * 3);
 		}
 
-		HumanEntity human = (HumanEntity) event.getEntity();
-		ArrowData.arrowType arrType = ArrowData.arrowType.normal;
-
-		if (arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2) {
-			arrType = ArrowData.arrowType.explosive;
-			human.setCooldown(bow_item, 20 * 3);
-		} else if (arrowMeta != null && arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1) {
-			arrType = ArrowData.arrowType.dragon;
-		} else if (event.getProjectile().getType() == SPECTRAL_ARROW) {
-			arrType = ArrowData.arrowType.spectral;
-		}
-
-		ItemMeta meta = bow_item.getItemMeta();
-		ArrowData.bowType type = ArrowData.bowType.normal;
-
-		if (meta == null || !meta.hasCustomModelData()) {
-			type = ArrowData.bowType.normal;
-		} else if (bow_item.getType() == Material.BOW && meta.getCustomModelData() == 1) {
-			type = ArrowData.bowType.marksman;
-		} else if (bow_item.getType() == Material.BOW && meta.getCustomModelData() == 3) {
-			type = ArrowData.bowType.ricochet;
-		} else if (bow_item.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
-			type = ArrowData.bowType.charged;
-			human.getLocation().getWorld().playSound(human.getLocation(), ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+		ArrowData.bowType type = get_bow_type(bow_item);
+		if (type == ArrowData.bowType.charged) {
 			event.getProjectile().setGravity(false);
-			human.setCooldown(bow_item, 20 * 5);
+			((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
 		}
 
-		ArrowData ard = new ArrowData(event.getEntity(), event.getForce(), event.getHand(), type, arrType, 0,
-				startParticleTrail((Projectile) event.getProjectile(), type, arrType));
+		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0);
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
@@ -89,55 +59,43 @@ public class CustomBows implements Listener {
 		if (data == null) {
 			return;
 		}
+		// deal extra damge for marksman
 		if (data.type == ArrowData.bowType.marksman) {
 			Location shooterLoc = data.shooter.getLocation();
 			Location hitLoc = e.getEntity().getLocation();
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
-			// e.setDamage(e.getDamage() + distance * 0.7);
 			((LivingEntity) e.getEntity()).damage(distance);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onArrowHit(ProjectileHitEvent event) {
-		Projectile pro = event.getEntity();
-
-		if (!(pro instanceof Arrow)) {
+		if (!(event.getEntity() instanceof Arrow)) {
 			return;
 		}
 
-		Arrow ar = (Arrow) pro;
-		ArrowData data = arrows.get(pro);
+		Arrow ar = (Arrow) event.getEntity();
+		ArrowData data = arrows.get(event.getEntity());
 
 		if (data == null) {
 			return;
 		}
+
 		if (data.type == ArrowData.bowType.marksman) {
-			if (event.getHitEntity() == null && data.TaskID != null) {
-				stopParticleTrail(data.TaskID);
-				return;
-			}
 		} else if (data.type == ArrowData.bowType.charged) {
-			if (event.getHitEntity() == null && data.TaskID != null) {
-				stopParticleTrail(data.TaskID);
+			if (event.getHitEntity() == null) {
 				return;
 			}
 			Location eloc = event.getHitEntity().getLocation();
-			Location arrloc = pro.getLocation();
+			Location arrloc = event.getEntity().getLocation();
 			if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
-				ar.setDamage(2);
+				((LivingEntity) event.getHitEntity()).damage(5);
+				ar.getLocation().getWorld().playSound(ar.getLocation(), Sound.ITEM_TRIDENT_THUNDER, 1, 1);
 			}
-			new BukkitRunnable() {
-				public void run() {
-					event.getEntity().remove();
-				}
-			}.runTaskLater(crystalized_essentials.getInstance(), 3);
+			ar.getLocation().getWorld().playSound(ar.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+			event.getEntity().remove();
 
 		} else if (data.type == ArrowData.bowType.ricochet) {
-			if (event.getHitEntity() == null && data.TaskID != null) {
-				stopParticleTrail(data.TaskID);
-				return;
-			}
 			if (ar.isInBlock()) {
 				return;
 			}
@@ -147,9 +105,6 @@ public class CustomBows implements Listener {
 			velocity.multiply(0.5);
 
 			if (data.timesBounced >= 3) {
-				if (data.TaskID != null) {
-					stopParticleTrail(data.TaskID);
-				}
 				CustomArrows.onArrowHit(event);
 				return;
 			}
@@ -166,85 +121,54 @@ public class CustomBows implements Listener {
 			data.timesBounced++;
 			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
-			arrow.setShooter(pro.getShooter());
+			arrow.setShooter(event.getEntity().getShooter());
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
-			if (data.TaskID != null) {
-				stopParticleTrail(data.TaskID);
-			}
-			data.TaskID = startParticleTrail(arrow, data.type, data.arrType);
-			// configure the new arrow (fire, pierce, etc)
 			arrows.put(arrow, data);
 			return;
 		}
 		CustomArrows.onArrowHit(event);
-		if (data.TaskID != null) {
-			stopParticleTrail(data.TaskID);
+	}
+
+	public ArrowData.arrowType get_arrow_type(ItemStack item) {
+		ItemMeta arrowMeta = item.getItemMeta();
+		if (arrowMeta == null) {
+			return ArrowData.arrowType.normal;
+		}
+		if (arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2) {
+			return ArrowData.arrowType.explosive;
+		} else if (arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1) {
+			return ArrowData.arrowType.dragon;
+		} else if (item.getType() == Material.SPECTRAL_ARROW) {
+			return ArrowData.arrowType.spectral;
+		} else {
+			return ArrowData.arrowType.normal;
 		}
 	}
 
-	public Integer startParticleTrail(Projectile pro, ArrowData.bowType type, ArrowData.arrowType arrType) {
-		BukkitTask buk = new BukkitRunnable() {
-			public void run() {
-				Location loc = pro.getLocation();
-				ParticleBuilder builder = null;
-				ParticleBuilder builder2 = null;
-				if (type != ArrowData.bowType.normal || type != ArrowData.bowType.charged) {
-					if (type == ArrowData.bowType.marksman) {
-						builder = new ParticleBuilder(DUST);
-						builder.color(ORANGE);
-						builder.count(5);
-					} else if (type == ArrowData.bowType.ricochet) {
-						builder = new ParticleBuilder(DUST);
-						builder.color(LIME);
-						builder.count(5);
-					}
-				}
-				if (arrType != ArrowData.arrowType.normal && arrType != ArrowData.arrowType.spectral) {
-					builder2 = new ParticleBuilder(DUST);
-					if (arrType == ArrowData.arrowType.dragon) {
-						builder2.color(PURPLE);
-					} else if (arrType == ArrowData.arrowType.explosive) {
-						builder2.color(RED);
-					}
-				}
-
-				if (builder == null && builder2 == null) {
-					return;
-				}
-
-				if (builder != null) {
-					builder.location(loc);
-					builder.offset(0, 0, 0);
-					builder.extra(0);
-					builder.spawn();
-				}
-				if (builder2 != null) {
-					builder2.location(loc);
-					builder2.count(5);
-					builder2.offset(0, 0, 0);
-					builder2.spawn();
-				}
-			}
-		}.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 0, 0);
-
-		new BukkitRunnable() {
-			public void run() {
-				stopParticleTrail(buk.getTaskId());
-			}
-		}.runTaskLater(crystalized_essentials.getInstance(), 175 * 20);
-
-		int id = buk.getTaskId();
-		bukkitRunnable.put(id, buk);
-		return id;
+	public ArrowData.bowType get_bow_type(ItemStack item) {
+		ItemMeta meta = item.getItemMeta();
+		if (meta == null || !meta.hasCustomModelData()) {
+			return ArrowData.bowType.normal;
+		} else if (item.getType() == Material.BOW && meta.getCustomModelData() == 1) {
+			return ArrowData.bowType.marksman;
+		} else if (item.getType() == Material.BOW && meta.getCustomModelData() == 3) {
+			return ArrowData.bowType.ricochet;
+		} else if (item.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
+			return ArrowData.bowType.charged;
+		} else {
+			return ArrowData.bowType.normal;
+		}
 	}
 
-	public void stopParticleTrail(Integer TaskID) {
-		if (TaskID == null) {
-			return;
+	@EventHandler
+	public void onArrowPickup(PlayerPickupArrowEvent event) {
+		ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
+		if (meta != null && meta.hasCustomModelData()) {
+			if (meta.getCustomModelData() == 2) {
+				event.setCancelled(true);
+			}
 		}
-		BukkitTask task = bukkitRunnable.get(TaskID);
-		task.cancel();
 	}
 
 	public void chargedParticleTrail(Projectile pro) {
@@ -257,7 +181,7 @@ public class CustomBows implements Listener {
 		double t = 0;
 		Material material = loc.getBlock().getType();
 
-		ParticleBuilder builder = new ParticleBuilder(SOUL_FIRE_FLAME);
+		ParticleBuilder builder = new ParticleBuilder(Particle.SOUL_FIRE_FLAME);
 		builder.count(5);
 		builder.offset(0, 0, 0);
 		builder.extra(0);
