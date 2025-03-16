@@ -17,8 +17,10 @@ import org.bukkit.util.Vector;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 import static org.bukkit.Material.AIR;
+import static org.bukkit.damage.DamageType.ARROW;
 
 public class CustomBows implements Listener {
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
@@ -41,7 +43,7 @@ public class CustomBows implements Listener {
 
 		ArrowData.bowType type = get_bow_type(bow_item);
 		if (type == ArrowData.bowType.charged) {
-			event.getProjectile().setGravity(false);
+			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
 			((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
 		}
@@ -50,27 +52,42 @@ public class CustomBows implements Listener {
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOW)
 	public void onDamage(EntityDamageByEntityEvent e) {
-		if (!(e.getDamager() instanceof Projectile)) {
+		if(!(e.getDamager() instanceof Projectile)){
 			return;
 		}
-		ArrowData data = arrows.get(e.getDamager());
+
+		ArrowData data = arrows.get((Projectile)e.getDamager());
 		if (data == null) {
 			return;
 		}
+
 		// deal extra damge for marksman
 		if (data.type == ArrowData.bowType.marksman) {
 			Location shooterLoc = data.shooter.getLocation();
 			Location hitLoc = e.getEntity().getLocation();
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
 			((LivingEntity) e.getEntity()).damage(distance);
+
+		}else if(data.type == ArrowData.bowType.charged){
+			e.setCancelled(true);
+			Location eloc = e.getEntity().getLocation();
+			Location arrloc = e.getDamager().getLocation();
+			if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
+				((LivingEntity) e.getEntity()).damage(10);
+			}else{
+				((LivingEntity) e.getEntity()).damage(6);
+			}
+			e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+			e.getDamager().remove();
+
 		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onArrowHit(ProjectileHitEvent event) {
-		if (!(event.getEntity() instanceof Arrow)) {
+		if (!(event.getEntity() instanceof Arrow) || !(event.getEntity() instanceof SpectralArrow)) {
 			return;
 		}
 
@@ -81,21 +98,7 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		if (data.type == ArrowData.bowType.marksman) {
-		} else if (data.type == ArrowData.bowType.charged) {
-			if (event.getHitEntity() == null) {
-				return;
-			}
-			Location eloc = event.getHitEntity().getLocation();
-			Location arrloc = event.getEntity().getLocation();
-			if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
-				((LivingEntity) event.getHitEntity()).damage(5);
-				ar.getLocation().getWorld().playSound(ar.getLocation(), Sound.ITEM_TRIDENT_THUNDER, 1, 1);
-			}
-			ar.getLocation().getWorld().playSound(ar.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
-			event.getEntity().remove();
-
-		} else if (data.type == ArrowData.bowType.ricochet) {
+		else if (data.type == ArrowData.bowType.ricochet) {
 			if (ar.isInBlock()) {
 				return;
 			}
