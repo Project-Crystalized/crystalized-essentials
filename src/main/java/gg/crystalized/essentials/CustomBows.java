@@ -87,7 +87,7 @@ public class CustomBows implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onArrowHit(ProjectileHitEvent event) {
-		if (!(event.getEntity() instanceof Arrow) || !(event.getEntity() instanceof SpectralArrow)) {
+		if (!(event.getEntity() instanceof Arrow || event.getEntity() instanceof SpectralArrow)) {
 			return;
 		}
 
@@ -98,7 +98,7 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		else if (data.type == ArrowData.bowType.ricochet) {
+		if (data.type == ArrowData.bowType.ricochet) {
 			if (ar.isInBlock()) {
 				return;
 			}
