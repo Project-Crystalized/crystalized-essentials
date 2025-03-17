@@ -91,7 +91,7 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		Arrow ar = (Arrow) event.getEntity();
+		AbstractArrow ar = (AbstractArrow)event.getEntity();
 		ArrowData data = arrows.get(event.getEntity());
 
 		if (data == null) {
