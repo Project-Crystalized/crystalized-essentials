@@ -2,6 +2,7 @@ package gg.crystalized.essentials;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.*;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -9,7 +10,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+
+import java.security.spec.NamedParameterSpec;
 
 // Had to make them 1 class because this didn't work with multiple classes checking for the same thing, so yea this files going to be *long* when we actually implement these things lmao. sry for my shit code - Callum
 
@@ -29,30 +33,26 @@ public class CustomCoalBasedItems implements Listener {
 						.append(Component.text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
 						.append(Component.text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
 			} else {
-				if (player.getInventory().getItemInMainHand().getType().equals(Material.COAL)
-						&& player.getEquipment().getItemInMainHand().getItemMeta().hasCustomModelData()) {
+				ItemStack ItemR = player.getInventory().getItemInMainHand();
+				if (ItemR.getItemMeta().hasItemModel()) {
 					// Boost Orb
 					// TODO make particles for when you launch
-					if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 1) {
-						player.playSound(player, "minecraft:item.armor.equip_elytra", 50, 1); // TODO either make a sound(s) for the
-																																									// boost orb or figure out what exact
-																																									// sound(s) TubNet used.
-						player.setVelocity(
-								new Vector(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()));
+					if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "boost_orb"))) {
+						player.playSound(player, "minecraft:item.armor.equip_elytra", 50, 1);
+						player.setVelocity(new Vector(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()));
 						player.setVelocity(player.getLocation().getDirection().multiply(2));
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 40);
 
 						// Bridge Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 2) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "bridge_orb"))) {
 						player.sendMessage(Component.text("Bridge orb isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Explosive Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 3) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "explosive_orb"))) {
 						Vector direction = player.getEyeLocation().getDirection();
 						Fireball fireball = player.launchProjectile(Fireball.class, direction);
 						fireball.getLocation().add(fireball.getVelocity().normalize().multiply(3));
@@ -62,7 +62,7 @@ public class CustomCoalBasedItems implements Listener {
 						player.setCooldown(Material.COAL, 5);
 
 						// Grappling Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 4) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "grappling_orb"))) {
 						player.sendMessage(Component.text("Grappling orb isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
@@ -74,7 +74,7 @@ public class CustomCoalBasedItems implements Listener {
 						 */
 
 						// Health Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 5) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "health_orb"))) {
 						player.sendMessage(Component.text("Health orb isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
@@ -83,14 +83,14 @@ public class CustomCoalBasedItems implements Listener {
 						// very long
 
 						// Knockout Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 6) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "knockout_orb"))) {
 						player.sendMessage(Component.text("Knockout orb isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Poison Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 7) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
 						player.sendMessage(Component.text("Poison orb isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
@@ -99,21 +99,21 @@ public class CustomCoalBasedItems implements Listener {
 						// very long
 
 						// Winged Orb
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 8) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
 						player.sendMessage(Component.text("Winged orb isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Antiair Totem
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 9) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
 						player.sendMessage(Component.text("Antiair Totem isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Cloud Totem
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 10) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "cloud_totem"))) {
 						player.sendMessage(Component.text("Cloud Totem isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
@@ -128,28 +128,28 @@ public class CustomCoalBasedItems implements Listener {
 						 */
 
 						// Defense Totem
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 11) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "defense_totem"))) {
 						player.sendMessage(Component.text("Defence isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Healing Totem
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 12) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "healing_totem"))) {
 						player.sendMessage(Component.text("Healing Totem isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Launch Totem
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 13) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "launch_totem"))) {
 						player.sendMessage(Component.text("Launch Totem isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Slime Totem
-					} else if (player.getEquipment().getItemInMainHand().getItemMeta().getCustomModelData() == 14) {
+					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "slime_totem"))) {
 						player.sendMessage(Component.text("Slime Totem isn't currently implemented yet")); // TODO
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);

@@ -18,6 +18,7 @@ public class CrystalizedLinks implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
+        //TODO fix these spamming the server links menu each time you rejoin
         Crystalized.addLink(Component.text("Discord"), URI.create("https://discord.gg/4H8ADwFZyk"));
         Crystalized.addLink(Component.text("YouTube"), URI.create("https://exmaple.com")); //Placeholders for when LadyCat gives me (Callum) these links
         Crystalized.addLink(Component.text("Bluesky"), URI.create("https://bsky.app/profile/projectcrystalized.bsky.social"));
