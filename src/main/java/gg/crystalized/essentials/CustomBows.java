@@ -151,7 +151,7 @@ public class CustomBows implements Listener {
 
 	public ArrowData.bowType get_bow_type(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();
-		if (meta == null || !meta.hasCustomModelData()) {
+		if (meta == null || !meta.hasItemModel()) {
 			return ArrowData.bowType.normal;
 		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "marksman_bow"))) {
 			return ArrowData.bowType.marksman;
