@@ -7,8 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.*;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -26,7 +24,6 @@ import static org.bukkit.potion.PotionEffectType.GLOWING;
 
 public class CustomArrows {
 
-	// @EventHandler(priority = EventPriority.LOW)
 	public static void onArrowHit(ProjectileHitEvent event) {
 		if (event.isCancelled()) {
 			return;
@@ -45,8 +42,7 @@ public class CustomArrows {
 			builder.count(50);
 			builder.offset(3, 3, 3);
 			builder.spawn();
-			Collection<LivingEntity> collect = arrow_loc.getNearbyLivingEntities(3);
-			for (LivingEntity e : collect) {
+			for (Player e : arrow_loc.getNearbyPlayers(3)) {
 				e.addPotionEffect(new PotionEffect(GLOWING, 10 * 20, 0, false, false, true));
 			}
 			return;
