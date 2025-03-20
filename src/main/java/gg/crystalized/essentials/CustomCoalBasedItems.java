@@ -34,6 +34,7 @@ public class CustomCoalBasedItems implements Listener {
 						.append(Component.text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
 			} else {
 				ItemStack ItemR = player.getInventory().getItemInMainHand();
+				if (!ItemR.hasItemMeta()) {return;}
 				if (ItemR.getItemMeta().hasItemModel()) {
 					// Boost Orb
 					// TODO make particles for when you launch
