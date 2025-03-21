@@ -8,14 +8,11 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.Event.Result;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-
-import java.security.spec.NamedParameterSpec;
-
-// Had to make them 1 class because this didn't work with multiple classes checking for the same thing, so yea this files going to be *long* when we actually implement these things lmao. sry for my shit code - Callum
 
 public class CustomCoalBasedItems implements Listener {
 
@@ -96,15 +93,24 @@ public class CustomCoalBasedItems implements Listener {
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
-						// It's not well known what Poison Orbs did since they weren't in TubNet for
-						// very long
 
 						// Winged Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
-						player.sendMessage(Component.text("Winged orb isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						//player.sendMessage(Component.text("Winged orb isn't currently implemented yet")); // TODO
+						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player);
+						if (pd.isUsingWingedOrb) {return;}
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						player.setVelocity(new Vector(
+								0,
+								1.5,
+								0)
+						);
+						pd.isUsingWingedOrb = true;
+						pd.lastChestPlateBeforeWingedOrb = player.getInventory().getChestplate();
+						player.getInventory().setChestplate(crystalized_essentials.getInstance().WingedOrbElytra);
+						player.setGliding(true);
+
+						player.setCooldown(Material.COAL, 40);
 
 						// Antiair Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
@@ -157,6 +163,21 @@ public class CustomCoalBasedItems implements Listener {
 						player.setCooldown(Material.COAL, 5);
 					}
 				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onElytra(EntityToggleGlideEvent e) {
+		if (!(e.getEntity() instanceof Player)) {return;}
+		Player p = (Player) e.getEntity();
+		if (p.isGliding()) { //Player would be on ground, this should be true
+			PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p);
+			if (!pd.isUsingWingedOrb) {
+				return;
+			} else {
+				pd.isUsingWingedOrb = false;
+				p.getInventory().setChestplate(pd.lastChestPlateBeforeWingedOrb);
 			}
 		}
 	}
