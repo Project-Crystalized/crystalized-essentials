@@ -138,9 +138,9 @@ public class CustomBows implements Listener {
 		if (arrowMeta == null) {
 			return ArrowData.arrowType.normal;
 		}
-		if (arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 2) {
+		if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
 			return ArrowData.arrowType.explosive;
-		} else if (arrowMeta.hasCustomModelData() && arrowMeta.getCustomModelData() == 1) {
+		} else if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "dragon_arrow"))) {
 			return ArrowData.arrowType.dragon;
 		} else if (item.getType() == Material.SPECTRAL_ARROW) {
 			return ArrowData.arrowType.spectral;
@@ -151,13 +151,13 @@ public class CustomBows implements Listener {
 
 	public ArrowData.bowType get_bow_type(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();
-		if (meta == null || !meta.hasCustomModelData()) {
+		if (meta == null || !meta.hasItemModel()) {
 			return ArrowData.bowType.normal;
-		} else if (item.getType() == Material.BOW && meta.getCustomModelData() == 1) {
+		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "marksman_bow"))) {
 			return ArrowData.bowType.marksman;
-		} else if (item.getType() == Material.BOW && meta.getCustomModelData() == 3) {
+		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "ricochet_bow"))) {
 			return ArrowData.bowType.ricochet;
-		} else if (item.getType() == Material.CROSSBOW && meta.getCustomModelData() == 3) {
+		} else if (item.getType() == Material.CROSSBOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "charged_crossbow"))) {
 			return ArrowData.bowType.charged;
 		} else {
 			return ArrowData.bowType.normal;
@@ -167,8 +167,8 @@ public class CustomBows implements Listener {
 	@EventHandler
 	public void onArrowPickup(PlayerPickupArrowEvent event) {
 		ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
-		if (meta != null && meta.hasCustomModelData()) {
-			if (meta.getCustomModelData() == 2) {
+		if (meta != null && meta.hasItemModel()) {
+			if (meta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
 				event.setCancelled(true);
 			}
 		}
