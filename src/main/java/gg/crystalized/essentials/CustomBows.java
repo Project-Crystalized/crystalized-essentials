@@ -138,9 +138,9 @@ public class CustomBows implements Listener {
 		if (arrowMeta == null) {
 			return ArrowData.arrowType.normal;
 		}
-		if (arrowMeta.hasCustomModelData() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
+		if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
 			return ArrowData.arrowType.explosive;
-		} else if (arrowMeta.hasCustomModelData() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "dragon_arrow"))) {
+		} else if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "dragon_arrow"))) {
 			return ArrowData.arrowType.dragon;
 		} else if (item.getType() == Material.SPECTRAL_ARROW) {
 			return ArrowData.arrowType.spectral;
