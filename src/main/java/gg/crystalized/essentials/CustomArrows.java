@@ -36,6 +36,7 @@ public class CustomArrows {
 		Location arrow_loc = event.getEntity().getLocation();
 
 		if (data.arrType == ArrowData.arrowType.spectral) {
+			/*
 			ParticleBuilder builder = new ParticleBuilder(DUST);
 			builder.color(Color.YELLOW);
 			builder.location(arrow_loc);
@@ -45,8 +46,10 @@ public class CustomArrows {
 			for (Player e : arrow_loc.getNearbyPlayers(3)) {
 				e.addPotionEffect(new PotionEffect(GLOWING, 10 * 20, 0, false, false, true));
 			}
+			 */
 			return;
 		}
+
 
 		if (data.arrType == ArrowData.arrowType.dragon) {
 			arrow.setDamage(1);
