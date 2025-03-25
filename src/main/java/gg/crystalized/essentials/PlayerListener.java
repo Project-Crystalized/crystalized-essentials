@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 public class PlayerListener implements Listener {
     @EventHandler
     public void onInventoryMove(InventoryClickEvent e) {
+        if (e.getCurrentItem() == null) {return;}
         if (e.getCurrentItem().equals(crystalized_essentials.getInstance().WingedOrbElytra)) {
             e.setCancelled(true);
         }

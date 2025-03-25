@@ -57,7 +57,9 @@ public class PlayerData {
     public void UseBreezeDaggerDash() {
         if (BreezeDaggerDashes == 0) {return;}
         isUsingBreezeDagger = true;
-        player.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
+        if (!player.hasCooldown(Material.STONE_SWORD)) {
+            player.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
+        }
         BreezeDaggerDashes--;
     }
 
