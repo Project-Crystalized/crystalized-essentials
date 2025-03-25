@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 public final class crystalized_essentials extends JavaPlugin {
 
-	//Might be messed up if someone leaves and rejoines
+	//Might be messed up if someone leaves and rejoines (spoiler alert, it was)
 	List<PlayerData> playerDatas = new ArrayList<>();
 	ItemStack WingedOrbElytra = new ItemStack(Material.ELYTRA); //Had to put this here, ItemMeta just didn't work on CustomCoalBasedItems
 
@@ -42,14 +42,14 @@ public final class crystalized_essentials extends JavaPlugin {
 		return getPlugin(crystalized_essentials.class);
 	}
 
-	public PlayerData getPlayerData(Player p) {
+	public PlayerData getPlayerData(String p) {
 		for (PlayerData pd : playerDatas) {
 			if (pd.player.equals(p)) {
 				return pd;
 			}
 		}
 
-		Bukkit.getLogger().log(Level.SEVERE, "[Crystalized Essentials] getPlayerData failed with user \"" + p.getName() + "\".");
+		Bukkit.getLogger().log(Level.SEVERE, "[Crystalized Essentials] getPlayerData failed with user \"" + p + "\".");
 
 		return null;
 	}
@@ -57,5 +57,9 @@ public final class crystalized_essentials extends JavaPlugin {
 	public void addPlayerToList(Player p)  {
 		PlayerData data = new PlayerData(p);
 		playerDatas.add(data);
+	}
+
+	public void DisconnectPlayerToList(String p) {
+		playerDatas.remove(getPlayerData(p));
 	}
 }

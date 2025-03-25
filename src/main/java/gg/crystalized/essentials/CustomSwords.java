@@ -38,7 +38,7 @@ public class CustomSwords implements Listener {
 	@EventHandler
 	public void onRightClick(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
-		PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p);
+		PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
 		ItemStack held_item = p.getInventory().getItemInMainHand();
 		if (!e.getAction().isRightClick()) {return;}
 		if (!held_item.hasItemMeta()) {return;} //should return if nothing in hand

@@ -97,7 +97,7 @@ public class CustomCoalBasedItems implements Listener {
 						// Winged Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
 						//player.sendMessage(Component.text("Winged orb isn't currently implemented yet")); // TODO
-						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player);
+						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
 						if (pd.isUsingWingedOrb) {return;}
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setVelocity(new Vector(
@@ -172,7 +172,7 @@ public class CustomCoalBasedItems implements Listener {
 		if (!(e.getEntity() instanceof Player)) {return;}
 		Player p = (Player) e.getEntity();
 		if (p.isGliding()) { //Player would be on ground, this should be true
-			PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p);
+			PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
 			if (!pd.isUsingWingedOrb) {
 				return;
 			} else {

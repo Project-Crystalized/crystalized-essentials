@@ -1,6 +1,7 @@
 package gg.crystalized.essentials;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -12,7 +13,8 @@ import static net.kyori.adventure.text.Component.translatable;
 
 public class PlayerData {
 
-    public Player player;
+    public String player;
+    public Player playerObject;
     public boolean isUsingWingedOrb = false;
     public boolean isUsingBreezeDagger = false;
     public ItemStack lastChestPlateBeforeWingedOrb = null; //This is to give the player after the Winged Orb ends
@@ -21,10 +23,10 @@ public class PlayerData {
     public int BreezeDaggerDefaultCooldown = 100; //5 seconds
 
     public PlayerData(Player p) {
-        player = p;
+        player = p.getName();
+        playerObject = p;
 
         new BukkitRunnable() { //Actionbar Text
-            int BDtimer = BreezeDaggerDefaultCooldown;
             public void run() {
                 ItemStack MainHandItem = p.getInventory().getItemInMainHand();
 
@@ -57,8 +59,8 @@ public class PlayerData {
     public void UseBreezeDaggerDash() {
         if (BreezeDaggerDashes == 0) {return;}
         isUsingBreezeDagger = true;
-        if (!player.hasCooldown(Material.STONE_SWORD)) {
-            player.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
+        if (!playerObject.hasCooldown(Material.STONE_SWORD)) {
+            playerObject.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
         }
         BreezeDaggerDashes--;
     }

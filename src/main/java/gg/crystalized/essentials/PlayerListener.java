@@ -1,5 +1,6 @@
 package gg.crystalized.essentials;
 
+import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,10 +20,15 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent e) {
         Player p = (Player) e.getEntity();
-        PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p);
+        PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
         if ((e.getCause().equals(DamageType.FALL) || p.isOnGround()) && pd.isUsingBreezeDagger) { // p.isOnGround() is vulnerable to bug out with people using hacked clients, not my problem tho
             e.setCancelled(true);
             pd.isUsingBreezeDagger = false;
         }
+    }
+
+    @EventHandler
+    public void onPlayerDisconnect(PlayerConnectionCloseEvent e) {
+        crystalized_essentials.getInstance().DisconnectPlayerToList(e.getPlayerName());
     }
 }
