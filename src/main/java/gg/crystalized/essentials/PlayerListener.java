@@ -1,7 +1,10 @@
 package gg.crystalized.essentials;
 
+import org.bukkit.damage.DamageType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 public class PlayerListener implements Listener {
@@ -9,6 +12,16 @@ public class PlayerListener implements Listener {
     public void onInventoryMove(InventoryClickEvent e) {
         if (e.getCurrentItem().equals(crystalized_essentials.getInstance().WingedOrbElytra)) {
             e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDamage(EntityDamageEvent e) {
+        Player p = (Player) e.getEntity();
+        PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p);
+        if ((e.getCause().equals(DamageType.FALL) || p.isOnGround()) && pd.isUsingBreezeDagger) { // p.isOnGround() is vulnerable to bug out with people using hacked clients, not my problem tho
+            e.setCancelled(true);
+            pd.isUsingBreezeDagger = false;
         }
     }
 }
