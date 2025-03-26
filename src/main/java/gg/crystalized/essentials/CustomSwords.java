@@ -46,8 +46,18 @@ public class CustomSwords implements Listener {
 			NamespacedKey item_model = held_item.getItemMeta().getItemModel();
 			if (item_model.equals(new NamespacedKey("crystalized", "breeze_dagger"))) {
 				if (pd.BreezeDaggerDashes != 0) {
-					p.setVelocity(new Vector(p.getVelocity().getX(), p.getVelocity().getY(), p.getVelocity().getZ()));
-					p.setVelocity(p.getLocation().getDirection().multiply(1.05));
+					double y = 0;
+					if (!p.isOnGround()) { //Fixes a bug where dashing while on ground lifts you up in the air slightly
+						y = 0.60;
+					} else {
+						y = p.getVelocity().getY();
+					}
+					p.setVelocity(new Vector(
+							p.getLocation().getDirection().getX() * 1.05, //0.60
+							y,
+							p.getLocation().getDirection().getZ() * 1.05)
+					);
+					//p.setVelocity(p.getLocation().getDirection().multiply(1.05));
 					for (Player every : Bukkit.getOnlinePlayers()) {
 						every.playSound(p, "minecraft:item.armor.equip_elytra", 50, 1); //TODO placeholder sound. Breeze Dagger use
 					}
