@@ -18,9 +18,11 @@ public class PlayerData {
     public boolean isUsingWingedOrb = false;
     public boolean isUsingBreezeDagger = false;
     public ItemStack lastChestPlateBeforeWingedOrb = null; //This is to give the player after the Winged Orb ends
-    public int BreezeDaggerDashes = 2; //Default value that will change, remember to change if CustomSwords.java#BreezeDaggerMaxDashes changes
-    public int BreezeDaggerDefaultDashes = 2; //Should never change. ^
+
+    public int BreezeDaggerDashes = 2; //Current amount of Dashes, this changes
+    public int BreezeDaggerDefaultDashes = 2; //Dash limit
     public int BreezeDaggerDefaultCooldown = 100; //5 seconds
+    public boolean BreezeDaggerDisableRecharge = false; //If true disables recharging, Used in Litestrike during rounds
 
     public PlayerData(Player p) {
         player = p.getName();
@@ -34,20 +36,22 @@ public class PlayerData {
                     if (MainHandItem.getItemMeta().hasItemModel()) {
                         if (MainHandItem.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized","breeze_dagger"))) {
                             p.sendActionBar(
-                                    translatable("crystalized.sword.wind.name").append(text(" | ")).append(getBreezeDaggerDashes()).append(text(" | " + p.getCooldown(Material.STONE_SWORD)))
+                                    translatable("crystalized.sword.wind.name").append(text(" | ")).append(getBreezeDaggerDashes()).append(getBreezeDaggerCooldown())
                             );
                         }
                     }
                 }
 
                 //I hate this, could probably cause visual bugs in LS if you buy a different sword after using a dash after a round ends
-                if (BreezeDaggerDashes != BreezeDaggerDefaultDashes) {
-                    if (BreezeDaggerDashes < BreezeDaggerDefaultDashes) {
-                        if (p.getCooldown(Material.STONE_SWORD) == 0) {
-                            BreezeDaggerDashes++;
-                            p.playSound(p,"minecraft:entity.experience_orb.pickup", 50, 1); //TODO placeholder sound, breeze dagger recharge dash
-                            if (BreezeDaggerDashes != BreezeDaggerDefaultDashes) {
-                                p.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
+                if (!BreezeDaggerDisableRecharge) {
+                    if (BreezeDaggerDashes != BreezeDaggerDefaultDashes) {
+                        if (BreezeDaggerDashes < BreezeDaggerDefaultDashes) {
+                            if (p.getCooldown(Material.STONE_SWORD) == 0) {
+                                BreezeDaggerDashes++;
+                                p.playSound(p,"minecraft:entity.experience_orb.pickup", 50, 1); //TODO placeholder sound, breeze dagger recharge dash
+                                if (BreezeDaggerDashes != BreezeDaggerDefaultDashes) {
+                                    p.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
+                                }
                             }
                         }
                     }
@@ -70,5 +74,13 @@ public class PlayerData {
     private Component getBreezeDaggerDashes() {
         return text("\uE13A".repeat(BreezeDaggerDashes)).append(text("\uE13B".repeat(2 - BreezeDaggerDashes)));
         //return text("" + BreezeDaggerDashes).append(text("/")).append(text("" + BreezeDaggerDefaultDashes)); //debugging
+    }
+
+    private Component getBreezeDaggerCooldown() {
+        if (BreezeDaggerDisableRecharge) {
+            return text("| Dash Recharge Disabled"); //TODO make this translatable
+        } else {
+            return text("| " + playerObject.getCooldown(Material.STONE_SWORD));
+        }
     }
 }
