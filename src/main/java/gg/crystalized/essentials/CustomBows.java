@@ -82,6 +82,9 @@ public class CustomBows implements Listener {
 			e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 			e.getDamager().remove();
 
+		}else if(data.type == ArrowData.bowType.angled){
+			e.setCancelled(true);
+			((LivingEntity)e.getEntity()).damage(e.getDamage() + 2);
 		}
 	}
 
@@ -159,6 +162,8 @@ public class CustomBows implements Listener {
 			return ArrowData.bowType.ricochet;
 		} else if (item.getType() == Material.CROSSBOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "charged_crossbow"))) {
 			return ArrowData.bowType.charged;
+		}else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))){
+			return ArrowData.bowType.angled;
 		} else {
 			return ArrowData.bowType.normal;
 		}

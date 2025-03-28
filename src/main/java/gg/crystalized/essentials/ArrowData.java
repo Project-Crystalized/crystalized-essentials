@@ -17,6 +17,7 @@ public class ArrowData {
 		marksman,
 		ricochet,
 		charged,
+		angled,
 		normal
 	}
 
