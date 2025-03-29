@@ -3,7 +3,6 @@ package gg.crystalized.essentials;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -33,6 +32,14 @@ public class CustomSwords implements Listener {
 				((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
 			} else if (item_model.equals(new NamespacedKey("crystalized", "pufferfish_sword"))) {
 				((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.POISON, 3 * 20, 0));
+			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_2"))) {
+				e.setDamage(e.getDamage() + 1);
+			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_3"))) {
+				e.setDamage(e.getDamage() + 2);
+			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_4"))) {
+				e.setDamage(e.getDamage() + 3);
+			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_5"))) {
+				e.setDamage(e.getDamage() + 4);
 			}
 		}
 	}
