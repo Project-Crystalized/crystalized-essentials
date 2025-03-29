@@ -11,6 +11,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -37,15 +39,22 @@ public class CustomSwords implements Listener {
 
 	@EventHandler
 	public void onRightClick(PlayerInteractEvent e) {
+		if(e.getHand() == EquipmentSlot.OFF_HAND){
+			return;
+		}
 		Player p = e.getPlayer();
 		PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
+		pd.BreezeDaggerDisableRecharge = true;
 		ItemStack held_item = p.getInventory().getItemInMainHand();
 		if (!e.getAction().isRightClick()) {return;}
 		if (!held_item.hasItemMeta()) {return;} //should return if nothing in hand
 		if (held_item.getItemMeta().hasItemModel()) {
 			NamespacedKey item_model = held_item.getItemMeta().getItemModel();
 			if (item_model.equals(new NamespacedKey("crystalized", "breeze_dagger"))) {
-				if (pd.BreezeDaggerDashes != 0) {
+				NamespacedKey key = new NamespacedKey("namespace", "key");
+				Integer dashes = held_item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
+				pd.BreezeDaggerDashes = dashes;
+				if (dashes > 0) {
 					double y = 0;
 					if (!p.isOnGround()) { //Fixes a bug where dashing while on ground lifts you up in the air slightly
 						y = 0.60;
@@ -61,8 +70,12 @@ public class CustomSwords implements Listener {
 					for (Player every : Bukkit.getOnlinePlayers()) {
 						every.playSound(p, "minecraft:item.armor.equip_elytra", 50, 1); //TODO placeholder sound. Breeze Dagger use
 					}
-					pd.UseBreezeDaggerDash(); //Might be messy most of the code being in pd but ehh, I cant think of a better way of doing it since I cant just put it in this class
-
+					 //Might be messy most of the code being in pd but ehh, I cant think of a better way of doing it since I cant just put it in this class
+					dashes--;
+					ItemMeta meta = held_item.getItemMeta();
+					meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, dashes);
+					held_item.setItemMeta(meta);
+					pd.UseBreezeDaggerDash();
 				}
 			}
 		}

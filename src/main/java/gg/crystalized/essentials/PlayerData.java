@@ -58,10 +58,12 @@ public class PlayerData {
                 }
             }
         }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+
+
     }
 
     public void UseBreezeDaggerDash() {
-        if (BreezeDaggerDashes == 0) {return;}
+        //if (BreezeDaggerDashes == 0) {return;}
         isUsingBreezeDagger = true;
         if (!playerObject.hasCooldown(Material.STONE_SWORD)) {
             playerObject.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
