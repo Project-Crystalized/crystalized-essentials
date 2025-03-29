@@ -32,14 +32,23 @@ public class CustomSwords implements Listener {
 				((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
 			} else if (item_model.equals(new NamespacedKey("crystalized", "pufferfish_sword"))) {
 				((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.POISON, 3 * 20, 0));
-			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_2"))) {
-				e.setDamage(e.getDamage() + 1);
-			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_3"))) {
-				e.setDamage(e.getDamage() + 2);
-			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_4"))) {
-				e.setDamage(e.getDamage() + 3);
-			} else if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword_5"))) {
-				e.setDamage(e.getDamage() + 4);
+			}
+
+			if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword"))) {
+				int item_custom_model= held_item.getItemMeta().getCustomModelData();
+				if (item_custom_model == 1) {
+					Bukkit.getLogger().severe("1");
+					e.setDamage(e.getDamage() + 1);
+				} else if (item_custom_model == 2) {
+					Bukkit.getLogger().severe("2");
+					e.setDamage(e.getDamage() + 2);
+				} else if (item_custom_model == 3) {
+					Bukkit.getLogger().severe("3");
+					e.setDamage(e.getDamage() + 3);
+				} else if (item_custom_model == 4) {
+					Bukkit.getLogger().severe("4");
+					e.setDamage(e.getDamage() + 4);
+				}
 			}
 		}
 	}
