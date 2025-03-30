@@ -46,6 +46,8 @@ public class CustomBows implements Listener {
 			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
 			((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
+		}else if (type == ArrowData.bowType.angled){
+			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(1.5));
 		}
 
 		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0);
@@ -84,7 +86,9 @@ public class CustomBows implements Listener {
 
 		}else if(data.type == ArrowData.bowType.angled){
 			e.setCancelled(true);
-			((LivingEntity)e.getEntity()).damage(e.getDamage() + 2);
+			((LivingEntity)e.getEntity()).damage(e.getDamage()/1.5, e.getDamager());
+			e.getEntity().setVelocity(e.getDamager().getVelocity().multiply(1/2));
+			e.getDamager().remove();
 		}
 	}
 
