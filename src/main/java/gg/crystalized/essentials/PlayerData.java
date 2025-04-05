@@ -43,7 +43,7 @@ public class PlayerData {
                 }
 
                 //I hate this, could probably cause visual bugs in LS if you buy a different sword after using a dash after a round ends
-                if (!BreezeDaggerDisableRecharge) {
+                /*if (!BreezeDaggerDisableRecharge) {
                     if (BreezeDaggerDashes != BreezeDaggerDefaultDashes) {
                         if (BreezeDaggerDashes < BreezeDaggerDefaultDashes) {
                             if (p.getCooldown(Material.STONE_SWORD) == 0) {
@@ -56,6 +56,7 @@ public class PlayerData {
                         }
                     }
                 }
+                 */
             }
         }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 
@@ -80,9 +81,9 @@ public class PlayerData {
 
     private Component getBreezeDaggerCooldown() {
         if (BreezeDaggerDisableRecharge) {
-            return text("| Dash Recharge Disabled"); //TODO make this translatable
+            return text(" | Dash Recharge Disabled"); //TODO make this translatable
         } else {
-            return text("| " + playerObject.getCooldown(Material.STONE_SWORD));
+            return text(" | " + playerObject.getCooldown(Material.STONE_SWORD));
         }
     }
 }
