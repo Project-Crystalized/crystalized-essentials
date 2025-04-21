@@ -33,8 +33,6 @@ public final class crystalized_essentials extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		playerDatas.clear();
 
-		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:essentials", new PluginMessaging());
-
 		ItemMeta WingedOrbElytra_im = WingedOrbElytra.getItemMeta();
 		WingedOrbElytra_im.setUnbreakable(true);
 		WingedOrbElytra.setItemMeta(WingedOrbElytra_im);
@@ -68,45 +66,5 @@ public final class crystalized_essentials extends JavaPlugin {
 
 	public void DisconnectPlayerToList(String p) {
 		playerDatas.remove(getPlayerData(p));
-	}
-}
-
-class PluginMessaging implements PluginMessageListener {
-
-	public PluginMessaging() {
-		new BukkitRunnable() {
-			public void run() {
-				//putting this here, idk how plugin messages work but I think I should keep an instance of this class
-			}
-		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
-	}
-
-
-	//I have no idea how this works or if this does work
-	@Override
-	public void onPluginMessageReceived(@NonNull String channel, @NonNull Player player, byte @NonNull [] message) {
-		if (!channel.equals("crystalized:essentials")) {return;}
-		ByteArrayDataInput in = ByteStreams.newDataInput(message);
-		String message1 = in.readUTF();
-
-		switch (message1) {
-			case "BreezeDagger_DisableRecharging:true" -> {
-				Bukkit.getServer().getLogger().log(Level.INFO, "[Crystalized Essentials] A plugin has requested we disable the Breeze Dagger's recharging");
-				for (Player p : Bukkit.getOnlinePlayers()) {
-					PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
-					pd.BreezeDaggerDisableRecharge = true;
-				}
-			}
-			case "BreezeDagger_DisableRecharging:false" -> {
-				Bukkit.getServer().getLogger().log(Level.INFO, "[Crystalized Essentials] A plugin has requested we (re)enable the Breeze Dagger's recharging");
-				for (Player p : Bukkit.getOnlinePlayers()) {
-					PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
-					pd.BreezeDaggerDisableRecharge = false;
-				}
-			}
-			default -> {
-				Bukkit.getServer().getLogger().log(Level.SEVERE, "[Crystalized Essentials] A plugin has sent the message \"" + message1 + "\" but we have no idea what to do with it, this is likely a bug, please report it to crystalized admins.");
-			}
-		}
 	}
 }
