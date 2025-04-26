@@ -44,16 +44,16 @@ public class CustomSwords implements Listener {
 				int item_custom_model= held_item.getItemMeta().getCustomModelData();
 				if (item_custom_model == 1) {
 					Bukkit.getLogger().severe("1");
-					e.setDamage(e.getDamage() + 1);
+					e.setDamage(e.getDamage() + 0.5);
 				} else if (item_custom_model == 2) {
 					Bukkit.getLogger().severe("2");
-					e.setDamage(e.getDamage() + 2);
+					e.setDamage(e.getDamage() + 1);
 				} else if (item_custom_model == 3) {
 					Bukkit.getLogger().severe("3");
-					e.setDamage(e.getDamage() + 3);
+					e.setDamage(e.getDamage() + 1.5);
 				} else if (item_custom_model == 4) {
 					Bukkit.getLogger().severe("4");
-					e.setDamage(e.getDamage() + 4);
+					e.setDamage(e.getDamage() + 2);
 				}
 			}
 		}
