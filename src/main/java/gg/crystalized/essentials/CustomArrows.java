@@ -36,6 +36,8 @@ public class CustomArrows {
 		Location arrow_loc = event.getEntity().getLocation();
 
 		if (data.arrType == ArrowData.arrowType.spectral) {
+			SpectralArrow spec = (SpectralArrow) event.getEntity();
+			spec.setGlowingTicks(40);
 			/*
 			ParticleBuilder builder = new ParticleBuilder(DUST);
 			builder.color(Color.YELLOW);
