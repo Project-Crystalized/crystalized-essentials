@@ -63,7 +63,7 @@ public class PlayerData {
     }
 
     public void UseBreezeDaggerDash() {
-        //if (BreezeDaggerDashes == 0) {return;}
+        if (BreezeDaggerDashes == 0) {return;}
         isUsingBreezeDagger = true;
         if (!playerObject.hasCooldown(Material.STONE_SWORD)) {
             playerObject.setCooldown(Material.STONE_SWORD, BreezeDaggerDefaultCooldown);
@@ -80,9 +80,9 @@ public class PlayerData {
 
     private Component getBreezeDaggerCooldown() {
         if (BreezeDaggerDisableRecharge) {
-            return text("| Dash Recharge Disabled"); //TODO make this translatable
+            return text(" | Dash Recharge Disabled"); //TODO make this translatable
         } else {
-            return text("| " + playerObject.getCooldown(Material.STONE_SWORD));
+            return text(" | " + playerObject.getCooldown(Material.STONE_SWORD));
         }
     }
 }

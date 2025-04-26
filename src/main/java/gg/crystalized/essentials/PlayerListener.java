@@ -19,6 +19,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent e) {
+				if (!(e.getEntity() instanceof Player)) {
+						return;
+				}
         Player p = (Player) e.getEntity();
         PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
         if ((e.getCause().equals(DamageType.FALL) || p.isOnGround()) && pd.isUsingBreezeDagger) { // p.isOnGround() is vulnerable to bug out with people using hacked clients, not my problem tho
