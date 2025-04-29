@@ -17,12 +17,13 @@ public class PlayerData {
     public Player playerObject;
     public boolean isUsingWingedOrb = false;
     public boolean isUsingBreezeDagger = false;
+    public boolean isUsingGrapplingOrb = false;
     public ItemStack lastChestPlateBeforeWingedOrb = null; //This is to give the player after the Winged Orb ends
 
     public int BreezeDaggerDashes = 2; //Current amount of Dashes, this changes
     public int BreezeDaggerDefaultDashes = 2; //Dash limit
     public int BreezeDaggerDefaultCooldown = 100; //5 seconds
-    public boolean BreezeDaggerDisableRecharge = false; //If true disables recharging, Used in Litestrike during rounds
+    public boolean BreezeDaggerDisableRecharge = false; //If true disables recharging
 
     public PlayerData(Player p) {
         player = p.getName();
