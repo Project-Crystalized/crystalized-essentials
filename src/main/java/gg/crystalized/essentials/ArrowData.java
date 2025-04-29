@@ -18,7 +18,8 @@ public class ArrowData {
 		ricochet,
 		charged,
 		angled,
-		normal
+		normal,
+		normalCrossbow
 	}
 
 	enum arrowType {

@@ -137,6 +137,10 @@ public class CustomBows implements Listener {
 			arrows.put(arrow, data);
 			return;
 		}
+		else if (data.type == ArrowData.bowType.normalCrossbow) {
+			//I have no idea what I just wrote but I hope this works
+			((AbstractArrow) event.getEntity()).setDamage(((AbstractArrow) event.getEntity()).getDamage() - 1);
+		}
 		CustomArrows.onArrowHit(event);
 	}
 
@@ -159,7 +163,11 @@ public class CustomBows implements Listener {
 	public ArrowData.bowType get_bow_type(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();
 		if (meta == null || !meta.hasItemModel()) {
-			return ArrowData.bowType.normal;
+			if (item.getType().equals(Material.CROSSBOW)) {
+				return ArrowData.bowType.normalCrossbow;
+			} else {
+				return ArrowData.bowType.normal;
+			}
 		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "marksman_bow"))) {
 			return ArrowData.bowType.marksman;
 		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "ricochet_bow"))) {
@@ -169,7 +177,11 @@ public class CustomBows implements Listener {
 		}else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))){
 			return ArrowData.bowType.angled;
 		} else {
-			return ArrowData.bowType.normal;
+			if (item.getType().equals(Material.CROSSBOW)) {
+				return ArrowData.bowType.normalCrossbow;
+			} else {
+				return ArrowData.bowType.normal;
+			}
 		}
 	}
 
