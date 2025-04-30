@@ -1,7 +1,6 @@
 package gg.crystalized.essentials;
 
-import com.destroystokyo.paper.ParticleBuilder;
-import net.kyori.adventure.text.Component;
+import gg.crystalized.essentials.CustomEntity.CloudTotem;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
@@ -125,18 +124,9 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Cloud Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "cloud_totem"))) {
-						player.sendMessage(text("Cloud Totem isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
-						/*
-						 * Cloud Totems acted differently in different games
-						 * In Crystal Rush, the platform was made from glass (tinted glass?)
-						 * In Knockout the platform was made out of Crystal Blocks that matched your
-						 * team's/leather armor's colour
-						 * We will need to somehow account for that by detecting what game is being
-						 * played.
-						 */
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						player.setCooldown(Material.COAL, 20);
+						new CloudTotem(player);
 
 						// Defense Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "defense_totem"))) {
@@ -294,6 +284,7 @@ public class CustomCoalBasedItems implements Listener {
                             } else {
                                 en.setVelocity(new Vector(x, y, z).normalize());
                             }
+                            makeParticles(en.getLocation(), p.getLocation());
 
 
                         } else if (finalState == grapplingOrbState.TowardsTarget) {
@@ -309,6 +300,7 @@ public class CustomCoalBasedItems implements Listener {
                             z = bz - pz;
 
                             p.setVelocity(new Vector(x, y, z).normalize());
+                            makeParticles(blockLocTempEntity.getLocation(), p.getLocation());
                         }
                     }
 
