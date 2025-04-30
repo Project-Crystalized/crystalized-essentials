@@ -233,13 +233,24 @@ public class CustomCoalBasedItems implements Listener {
                     blockLocTempEntity.remove();
                 }
 				new BukkitRunnable() {
+					int timesGrappled = 0;
 					int timer = 0;
 
 					@Override
 					public void run() {
 						timer++;
+
 						if (timer == 5) {
 							timer = 0;
+							if (timesGrappled == 16 || timesGrappled > 16) {
+								if (finalState == grapplingOrbState.TowardsTarget) {
+									blockLocTempEntity.remove();
+								}
+								grapple(true);
+								pd.isUsingGrapplingOrb = false;
+								cancel();
+								p.playSound(p, "minecraft:item.shield.break", 50, 1);
+							}
                             grapple(false);
 						}
 
@@ -265,6 +276,7 @@ public class CustomCoalBasedItems implements Listener {
 					}
 
                     void grapple(boolean finalGrapple) {
+						timesGrappled++;
                         int x;
                         int y;
                         int z;
