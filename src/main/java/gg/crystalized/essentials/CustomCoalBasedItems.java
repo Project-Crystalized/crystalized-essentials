@@ -1,14 +1,12 @@
 package gg.crystalized.essentials;
 
+import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
-import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.Event.Result;
@@ -71,8 +69,9 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Grappling Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "grappling_orb"))) {
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+                        PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
+                        if (pd.isUsingGrapplingOrb) {return;}
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 						launchGrapplingOrb(player);
 
@@ -190,7 +189,7 @@ public class CustomCoalBasedItems implements Listener {
 	public void launchGrapplingOrb(Player p) {
 		Vector direction = p.getEyeLocation().getDirection();
 		Snowball snowball = p.launchProjectile(Snowball.class, direction);
-		//snowball.getLocation().add(snowball.getVelocity().normalize().multiply(5));
+        snowball.getLocation().add(snowball.getVelocity().normalize().multiply(1.5));
 		ItemStack item = snowball.getItem();
 		ItemMeta meta = item.getItemMeta();
 		meta.setItemModel(new NamespacedKey("crystalized", "grappling_orb"));
@@ -221,70 +220,101 @@ public class CustomCoalBasedItems implements Listener {
 
 				String pname = PlainTextComponentSerializer.plainText().serialize(meta.displayName()); //I dont trust this, I just got this from the Paper discord
 				Player p = Bukkit.getPlayer(pname);
+                PlayerData pd = crystalized_essentials.getInstance().getPlayerData(pname);
+                pd.isUsingGrapplingOrb = true;
 				//Bukkit.getServer().sendMessage(text("ProjectileHitEvent for grapplingorb, Player: " + p.getName()));
-				Location targetLoc = new Location(Bukkit.getWorld("world"), 0, 0, 0);
 				if (en != null) {
-					Bukkit.getServer().sendMessage(text("Grappling Orb hit entity"));
-					targetLoc = en.getLocation();
 					state = grapplingOrbState.PullEntity;
 				} else if (b != null) {
-					Bukkit.getServer().sendMessage(text("Grappling Orb hit wall/block"));
-					targetLoc = b.getLocation();
 					state = grapplingOrbState.TowardsTarget;
 				}
 				boolean isCloseToTarget = false;
 				grapplingOrbState finalState = state;
-
-				Location loc = targetLoc;
+                TextDisplay blockLocTempEntity = p.getWorld().spawn(new Location(Bukkit.getWorld("world"), 0, 0, 0), TextDisplay.class, entity -> {
+                    //entity.text(text("[debug] Grapple Location"));
+                });
+                if (state.equals(grapplingOrbState.TowardsTarget)) {
+                    blockLocTempEntity.teleport(b.getLocation());
+                } else {
+                    blockLocTempEntity.remove();
+                }
 				new BukkitRunnable() {
 					int timer = 0;
 
 					@Override
 					public void run() {
 						timer++;
-						if (timer == 10) {
+
+                        //TODO make particles render when this is activated
+						if (timer == 5) {
 							timer = 0;
-							if (finalState == grapplingOrbState.PullEntity) {
-								int ex = (int) en.getLocation().getX();
-								int ey = (int) en.getLocation().getY();
-								int ez = (int) en.getLocation().getZ();
-								int px = (int) p.getLocation().getX();
-								int py = (int) p.getLocation().getY();
-								int pz = (int) p.getLocation().getZ();
-
-								int x = Math.abs(ex - px) - 3;
-								int y = Math.abs(ey - py) - 3;
-								int z = Math.abs(ez - pz) - 3;
-
-								en.setVelocity(new Vector(x, y, z).normalize());
-								//en.setVelocity(p.getLocation().getDirection().multiply(1.05));
-
-								/*Vector pos = en.getLocation().toVector();
-								Vector target = loc.toVector();
-								Vector velocity = target.subtract(pos);
-								en.setVelocity(velocity.normalize().multiply(2));*/
-
-							} else if (finalState == grapplingOrbState.TowardsTarget) {
-
-							}
+                            grapple(false);
 						}
 
 						if (finalState == grapplingOrbState.PullEntity) {
-							for (Entity entity : p.getNearbyEntities(3, 3, 3)) {
+							for (Entity entity : p.getNearbyEntities(2, 2, 2)) {
 								if (entity == en) {
-									stopGrapple();
+                                    grapple(true);
+                                    pd.isUsingGrapplingOrb = false;
+									cancel();
 								}
 							}
 						} else if (finalState == grapplingOrbState.TowardsTarget) {
-							cancel();
+                            for (Entity entity : p.getNearbyEntities(3, 3, 3)) {
+                                if (entity == blockLocTempEntity) { //this is dumb but it works ig
+                                    blockLocTempEntity.remove();
+                                    grapple(true);
+                                    pd.isUsingGrapplingOrb = false;
+                                    cancel();
+                                }
+                            }
 						}
-
-						p.sendMessage(text("" + timer + ", State:" + finalState.toString()));
+						//p.sendMessage(text("" + timer + ", State:" + finalState.toString()));
 					}
 
-					void stopGrapple() {
-						cancel();
-					}
+                    void grapple(boolean finalGrapple) {
+                        int x;
+                        int y;
+                        int z;
+
+                        p.playSound(p, "minecraft:item.spyglass.use", 100, 1);
+                        if (finalState == grapplingOrbState.PullEntity) {
+                            int ex = (int) en.getLocation().getX();
+                            int ey = (int) en.getLocation().getY();
+                            int ez = (int) en.getLocation().getZ();
+                            int px = (int) p.getLocation().getX();
+                            int py = (int) p.getLocation().getY();
+                            int pz = (int) p.getLocation().getZ();
+
+                            x = px - ex;
+                            y = (int) (py - ey + 0.5);
+                            z = pz - ez;
+                            if (finalGrapple) {
+                                en.setVelocity(new Vector(x, y, z).normalize().multiply(1.2));
+                            } else {
+                                en.setVelocity(new Vector(x, y, z).normalize());
+                            }
+
+
+                        } else if (finalState == grapplingOrbState.TowardsTarget) {
+                            int bx = (int) blockLocTempEntity.getLocation().getX();
+                            int by = (int) blockLocTempEntity.getLocation().getY();
+                            int bz = (int) blockLocTempEntity.getLocation().getZ();
+                            int px = (int) p.getLocation().getX();
+                            int py = (int) p.getLocation().getY();
+                            int pz = (int) p.getLocation().getZ();
+
+                            x = bx - px;
+                            y = (int) (by - py + 0.5);
+                            z = bz - pz;
+
+                            p.setVelocity(new Vector(x, y, z).normalize());
+                        }
+                    }
+
+                    void makeParticles(Location start, Location end) {
+                        //TODO I have no idea how particles work
+                    }
 
 				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 
