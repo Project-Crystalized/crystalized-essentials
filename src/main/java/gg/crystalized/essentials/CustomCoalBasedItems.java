@@ -19,10 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.Collection;
-
 import static net.kyori.adventure.text.Component.text;
-import static org.bukkit.Material.AIR;
 
 //This class name is now sort of misleading with the item model changes a long while ago lmao
 public class CustomCoalBasedItems implements Listener {

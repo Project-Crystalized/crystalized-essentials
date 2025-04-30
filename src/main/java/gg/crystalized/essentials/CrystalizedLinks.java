@@ -1,6 +1,5 @@
 package gg.crystalized.essentials;
 
-import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ServerLinks;
 import org.bukkit.entity.Player;

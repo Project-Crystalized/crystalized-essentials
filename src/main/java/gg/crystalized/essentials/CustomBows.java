@@ -17,10 +17,8 @@ import org.bukkit.util.Vector;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 import static org.bukkit.Material.AIR;
-import static org.bukkit.damage.DamageType.ARROW;
 
 public class CustomBows implements Listener {
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();

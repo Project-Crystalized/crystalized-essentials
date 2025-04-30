@@ -1,7 +1,6 @@
 package gg.crystalized.essentials.CustomEntity;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import gg.crystalized.essentials.CustomBows;
 import gg.crystalized.essentials.crystalized_essentials;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -12,12 +11,10 @@ import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.Set;

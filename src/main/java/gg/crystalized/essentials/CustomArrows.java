@@ -9,7 +9,6 @@ import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
@@ -20,7 +19,6 @@ import static org.bukkit.Particle.RAID_OMEN;
 import static org.bukkit.damage.DamageType.*;
 import static org.bukkit.entity.AbstractArrow.PickupStatus.DISALLOWED;
 import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
-import static org.bukkit.potion.PotionEffectType.GLOWING;
 
 public class CustomArrows {
 
