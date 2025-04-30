@@ -220,7 +220,7 @@ public class CustomBows implements Listener {
 		}
 	}
 
-	public double lineEquation(double g, double t, double v) {
+	public static double lineEquation(double g, double t, double v) {
 		return g + (t * v);
 	}
 }

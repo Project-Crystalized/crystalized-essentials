@@ -19,7 +19,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.Collection;
+
 import static net.kyori.adventure.text.Component.text;
+import static org.bukkit.Material.AIR;
 
 //This class name is now sort of misleading with the item model changes a long while ago lmao
 public class CustomCoalBasedItems implements Listener {
@@ -244,8 +247,6 @@ public class CustomCoalBasedItems implements Listener {
 					@Override
 					public void run() {
 						timer++;
-
-                        //TODO make particles render when this is activated
 						if (timer == 5) {
 							timer = 0;
                             grapple(false);
@@ -286,6 +287,8 @@ public class CustomCoalBasedItems implements Listener {
                             int py = (int) p.getLocation().getY();
                             int pz = (int) p.getLocation().getZ();
 
+							linearParticles(p.getLocation(), en.getLocation());
+
                             x = px - ex;
                             y = (int) (py - ey + 0.5);
                             z = pz - ez;
@@ -304,6 +307,8 @@ public class CustomCoalBasedItems implements Listener {
                             int py = (int) p.getLocation().getY();
                             int pz = (int) p.getLocation().getZ();
 
+							linearParticles(p.getLocation(), blockLocTempEntity.getLocation());
+
                             x = bx - px;
                             y = (int) (by - py + 0.5);
                             z = bz - pz;
@@ -312,8 +317,21 @@ public class CustomCoalBasedItems implements Listener {
                         }
                     }
 
-                    void makeParticles(Location start, Location end) {
-                        //TODO I have no idea how particles work
+                    void linearParticles(Location start, Location end) {
+						double t = 0;
+						ParticleBuilder builder = new ParticleBuilder(Particle.DUST);
+						builder.color(Color.GRAY);
+						builder.count(5);
+						builder.offset(0, 0, 0);
+						builder.extra(0);
+						Vector v = new Vector(end.getX() - start.getX(), end.getY() - start.getY(), end.getZ() - start.getZ());
+						while ((v.length() > 0) && t <= 10) {
+							builder.location(start);
+							builder.spawn();
+							start = new Location(start.getWorld(), CustomBows.lineEquation(start.getX(), t, v.getX()), CustomBows.lineEquation(start.getY(), t, v.getY()),
+									CustomBows.lineEquation(start.getZ(), t, v.getZ()));
+							t = t + 0.1;
+						}
                     }
 
 				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
