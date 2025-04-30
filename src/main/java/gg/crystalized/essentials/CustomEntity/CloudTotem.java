@@ -38,7 +38,13 @@ public class CloudTotem {
 
     public CloudTotem(Player p) {
         owner = p;
-        Location loc = new Location(owner.getWorld(), owner.getLocation().getBlockX() + 0.5, owner.getLocation().getBlockY(), owner.getLocation().getBlockZ() + 0.5, 0, 0);
+        Location loc;
+        if (p.isOnGround()) {
+            loc = new Location(owner.getWorld(), owner.getLocation().getBlockX() + 0.5, owner.getLocation().getBlockY(), owner.getLocation().getBlockZ() + 0.5, 0, 0);
+        } else {
+            loc = new Location(owner.getWorld(), owner.getLocation().getBlockX() + 0.5, owner.getLocation().getBlockY() - 1, owner.getLocation().getBlockZ() + 0.5, 0, 0);
+        }
+
         entity = owner.getWorld().spawn(loc, ArmorStand.class, entity -> {
             ItemStack model = new ItemStack(Material.CHARCOAL);
             ItemMeta modelMeta = model.getItemMeta();
@@ -102,6 +108,18 @@ public class CloudTotem {
         createLineOfBlock(new Location(entity.getWorld(), entity.getX(), entity.getY() - 1, entity.getZ() - 2), 4);
         createLineOfBlock(new Location(entity.getWorld(), entity.getX(), entity.getY() - 1, entity.getZ() - 3), 3);
 
+        Location hitbox1 = new Location(entity.getWorld(), entity.getX(), entity.getY() , entity.getZ());
+        hitbox1.getBlock().setType(Material.BARRIER);
+        hitbox1.getBlock().getState().update();
+        blocks.add(hitbox1.getBlock());
+        Location hitbox2 = new Location(entity.getWorld(), entity.getX(), entity.getY() + 1 , entity.getZ());
+        hitbox2.getBlock().setType(Material.BARRIER);
+        hitbox2.getBlock().getState().update();
+        blocks.add(hitbox2.getBlock());
+        Location hitbox3 = new Location(entity.getWorld(), entity.getX(), entity.getY() + 2 , entity.getZ());
+        hitbox3.getBlock().setType(Material.BARRIER);
+        hitbox3.getBlock().getState().update();
+        blocks.add(hitbox3.getBlock());
     }
 
     //size shouldn't be negative
@@ -210,10 +228,12 @@ public class CloudTotem {
     private boolean inventoryContainsItemModelItem(Player p, NamespacedKey itemModel) {
         PlayerInventory inv = p.getInventory();
         for (ItemStack item : inv.getContents()) {
-            if (item.hasItemMeta()) {
-                if (item.getItemMeta().hasItemModel()) {
-                    if (item.getItemMeta().getItemModel().equals(itemModel)) {
-                        return true;
+            if (item != null) {
+                if (item.hasItemMeta()) {
+                    if (item.getItemMeta().hasItemModel()) {
+                        if (item.getItemMeta().getItemModel().equals(itemModel)) {
+                            return true;
+                        }
                     }
                 }
             }

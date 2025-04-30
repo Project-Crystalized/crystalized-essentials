@@ -36,7 +36,7 @@ public class CustomCoalBasedItems implements Listener {
 		if (event.getHand() != EquipmentSlot.HAND)
 			return;
 		if (event.getAction().isRightClick()) {
-			if (player.hasCooldown(Material.COAL)) {
+			if (player.hasCooldown(Material.COAL) && player.getInventory().getItemInMainHand().equals(Material.COAL)) {
 				player.sendMessage(text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
 						.append(text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
 						.append(text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
@@ -129,7 +129,7 @@ public class CustomCoalBasedItems implements Listener {
 						// Cloud Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "cloud_totem"))) {
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 20);
+						player.setCooldown(Material.COAL, 80);
 						new CloudTotem(player);
 
 						// Defense Totem
