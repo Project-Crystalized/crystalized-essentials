@@ -1,6 +1,7 @@
 package gg.crystalized.essentials.CustomEntity;
 
 import com.destroystokyo.paper.ParticleBuilder;
+import gg.crystalized.essentials.CustomBows;
 import gg.crystalized.essentials.crystalized_essentials;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -47,6 +49,15 @@ public class CloudTotem {
             entity.setDisabledSlots(EquipmentSlot.HEAD, EquipmentSlot.HAND, EquipmentSlot.OFF_HAND);
             entity.setGravity(false);
         });
+        new BukkitRunnable(){
+            public void run(){
+                if(!isActive){
+                    cancel();
+                }
+                helixAnimation(3, 3, entity.getLocation(), 2);
+            }
+        }.runTaskTimer(crystalized_essentials.getInstance(), 0, 30);
+
         name = entity.getWorld().spawn(new Location(entity.getWorld(), entity.getX(), entity.getY() + 3.5, entity.getZ()), TextDisplay.class, entity -> {
             entity.text(text("name here"));
             entity.setBillboard(Display.Billboard.CENTER);
@@ -235,5 +246,48 @@ public class CloudTotem {
 
         entity.remove();
         name.remove();
+    }
+
+    public void helixAnimation(double radius, double height, Location middle, int turns){
+        // X(t) = (r * cos(t) + xm | r * sin(t) + ym | (h/2 * pi) * t) + zm
+        new BukkitRunnable() {
+            double t = 0;
+            Location loc = middle;
+            public void run(){
+                if(!isActive){
+                    cancel();
+                }
+                ParticleBuilder builder = new ParticleBuilder(Particle.DUST);
+                builder.color(Color.AQUA);
+                builder.count(2);
+                builder.offset(0, 0, 0);
+                builder.extra(0);
+                if(t > turns * 2 * Math.PI){
+                    t = 0;
+                }
+
+                builder.location(loc);
+                builder.spawn();
+
+                builder.clone().location(helixEquation(radius, height, middle, t - 0.1));
+                builder.color(Color.AQUA, 0.4F);
+                builder.clone().location(helixEquation(radius, height, middle, t - 0.2));
+                builder.color(Color.AQUA, 0.3F);
+                builder.clone().location(helixEquation(radius, height, middle, t - 0.3));
+                builder.color(Color.AQUA, 0.2F);
+                builder.clone().location(helixEquation(radius, height, middle, t - 0.5));
+                builder.color(Color.AQUA, 0.1F);
+
+                loc = helixEquation(radius, height, middle, t);
+                t = t + 0.1;
+            }
+        }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+    }
+    
+    public static Location helixEquation(double radius, double height, Location middle, double t){
+        double x = radius * Math.cos(t) + middle.getX();
+        double y = (height/(2 * Math.PI) * t) + middle.getY();
+        double z = radius * Math.sin(t) + middle.getZ();
+        return new Location(middle.getWorld(), x, y, z);
     }
 }
