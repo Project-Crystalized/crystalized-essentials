@@ -42,8 +42,19 @@ public class CustomCoalBasedItems implements Listener {
 				if (!ItemR.hasItemMeta()) {return;}
 				if (ItemR.getItemMeta().hasItemModel()) {
 					// Boost Orb
-					// TODO make particles for when you launch
 					if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "boost_orb"))) {
+						new BukkitRunnable(){
+							double count = 0.2;
+							final Location loc = player.getLocation();
+							public void run(){
+								if(count > 0.8){
+									cancel();
+								}
+								circle(loc, count);
+								count = count * 2;
+							}
+						}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
+
 						player.playSound(player, "minecraft:item.armor.equip_elytra", 50, 1);
 						player.setVelocity(new Vector(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()));
 						player.setVelocity(player.getLocation().getDirection().multiply(2));
@@ -101,6 +112,18 @@ public class CustomCoalBasedItems implements Listener {
 						// Winged Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
 						//player.sendMessage(Component.text("Winged orb isn't currently implemented yet")); // TODO
+						new BukkitRunnable(){
+							double count = 0.2;
+							final Location loc = player.getLocation();
+							public void run(){
+								if(count > 0.8){
+									cancel();
+								}
+								circle(loc, count);
+								count = count * 2;
+							}
+						}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
+
 						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
 						if (pd.isUsingWingedOrb) {return;}
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
@@ -339,6 +362,28 @@ public class CustomCoalBasedItems implements Listener {
 			vec = vec.add(vec);
 			count++;
 		}
+	}
+
+	public void circle(Location middle, double radius) {
+		double t = 0;
+		ParticleBuilder builder = new ParticleBuilder(Particle.DUST);
+		builder.color(Color.WHITE);
+		Location loc;
+		while (t <= 2 * Math.PI) {
+			loc = circleEquation(middle, radius, t);
+			builder.location(loc);
+			builder.spawn();
+			t = t + 0.3;
+		}
+	}
+
+
+
+	public Location circleEquation(Location middle, double radius, double t){
+		double x = radius * Math.cos(t) + middle.getX();
+		double y = middle.getY();
+		double z = radius * Math.sin(t) + middle.getZ();
+		return new Location(middle.getWorld(), x, y, z);
 	}
 }
 
