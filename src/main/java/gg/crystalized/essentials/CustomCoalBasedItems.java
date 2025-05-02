@@ -315,20 +315,21 @@ public class CustomCoalBasedItems implements Listener {
 	}
 
 	public void linearParticles(Location start, Location end) {
-		double t = 0;
 		ParticleBuilder builder = new ParticleBuilder(Particle.DUST);
 		builder.color(Color.GRAY);
 		builder.count(5);
 		builder.offset(0, 0, 0);
 		builder.extra(0);
 		Vector v = new Vector(end.getX() - start.getX(), end.getY() - start.getY(), end.getZ() - start.getZ());
-		while ((v.length() > 0) && t <= 10) {
+		int count = 0;
+		Vector vec = v.multiply(0.1 * v.length());
+		while (vec.length() <= v.length() && count < 100) {
 			builder.location(start);
 			builder.spawn();
-			start = new Location(start.getWorld(), CustomBows.lineEquation(start.getX(), t, v.getX()), CustomBows.lineEquation(start.getY(), t, v.getY()),
-					CustomBows.lineEquation(start.getZ(), t, v.getZ()));
-			t = t + 0.1;
+			start = new Location(start.getWorld(), vec.getX() + start.getX(), vec.getY() + start.getY(), vec.getZ() + start.getZ());
+			vec = vec.add(vec);
+			count++;
 		}
 	}
-
 }
+
