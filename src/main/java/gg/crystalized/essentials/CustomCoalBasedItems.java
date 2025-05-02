@@ -19,10 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.Collection;
-
 import static net.kyori.adventure.text.Component.text;
-import static org.bukkit.Material.AIR;
 
 //This class name is now sort of misleading with the item model changes a long while ago lmao
 public class CustomCoalBasedItems implements Listener {
@@ -36,7 +33,7 @@ public class CustomCoalBasedItems implements Listener {
 		if (event.getHand() != EquipmentSlot.HAND)
 			return;
 		if (event.getAction().isRightClick()) {
-			if (player.hasCooldown(Material.COAL)) {
+			if (player.hasCooldown(Material.COAL) && player.getInventory().getItemInMainHand().equals(Material.COAL)) {
 				player.sendMessage(text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
 						.append(text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
 						.append(text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
@@ -129,7 +126,7 @@ public class CustomCoalBasedItems implements Listener {
 						// Cloud Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "cloud_totem"))) {
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 20);
+						player.setCooldown(Material.COAL, 80);
 						new CloudTotem(player);
 
 						// Defense Totem
@@ -233,13 +230,24 @@ public class CustomCoalBasedItems implements Listener {
                     blockLocTempEntity.remove();
                 }
 				new BukkitRunnable() {
+					int timesGrappled = 0;
 					int timer = 0;
 
 					@Override
 					public void run() {
 						timer++;
+
 						if (timer == 5) {
 							timer = 0;
+							if (timesGrappled == 16 || timesGrappled > 16) {
+								if (finalState == grapplingOrbState.TowardsTarget) {
+									blockLocTempEntity.remove();
+								}
+								grapple(true);
+								pd.isUsingGrapplingOrb = false;
+								cancel();
+								p.playSound(p, "minecraft:item.shield.break", 50, 1);
+							}
                             grapple(false);
 						}
 
@@ -265,6 +273,7 @@ public class CustomCoalBasedItems implements Listener {
 					}
 
                     void grapple(boolean finalGrapple) {
+						timesGrappled++;
                         int x;
                         int y;
                         int z;
