@@ -1,6 +1,7 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
+import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import gg.crystalized.essentials.CustomEntity.CloudTotem;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -118,10 +119,9 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Antiair Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
-						player.sendMessage(text("Antiair Totem isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
+						crystalized_essentials.getInstance().antiairTotemList.add(new AntiairTotem(player));
 
 						// Cloud Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "cloud_totem"))) {

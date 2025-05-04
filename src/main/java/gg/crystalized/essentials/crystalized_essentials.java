@@ -1,7 +1,9 @@
 package gg.crystalized.essentials;
 
+import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -16,6 +18,7 @@ public final class crystalized_essentials extends JavaPlugin {
 	//Might be messed up if someone leaves and rejoines (spoiler alert, it was)
 	List<PlayerData> playerDatas = new ArrayList<>();
 	ItemStack WingedOrbElytra = new ItemStack(Material.ELYTRA); //Had to put this here, ItemMeta just didn't work on CustomCoalBasedItems
+	public List<AntiairTotem> antiairTotemList = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -50,7 +53,6 @@ public final class crystalized_essentials extends JavaPlugin {
 		}
 
 		Bukkit.getLogger().log(Level.SEVERE, "[Crystalized Essentials] getPlayerData failed with user \"" + p + "\".");
-
 		return null;
 	}
 
@@ -61,5 +63,15 @@ public final class crystalized_essentials extends JavaPlugin {
 
 	public void DisconnectPlayerToList(String p) {
 		playerDatas.remove(getPlayerData(p));
+	}
+
+	public AntiairTotem getAntiAirTotemByEntity(ArmorStand e) {
+		for (AntiairTotem a : antiairTotemList) {
+			if (a.entity.equals(e)) {
+				return a;
+			}
+		}
+
+		return null;
 	}
 }

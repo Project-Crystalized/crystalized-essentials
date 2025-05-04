@@ -25,7 +25,6 @@ import static net.kyori.adventure.text.Component.translatable;
 public class CloudTotem {
 
     boolean isActive = false;
-    int health = 10;
     Player owner;
     ArmorStand entity;
     TextDisplay name;
