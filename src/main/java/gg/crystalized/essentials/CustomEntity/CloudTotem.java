@@ -105,17 +105,23 @@ public class CloudTotem {
         createLineOfBlock(new Location(entity.getWorld(), entity.getX(), entity.getY() - 1, entity.getZ() - 3), 3);
 
         Location hitbox1 = new Location(entity.getWorld(), entity.getX(), entity.getY() , entity.getZ());
-        hitbox1.getBlock().setType(Material.BARRIER);
-        hitbox1.getBlock().getState().update();
-        blocks.add(hitbox1.getBlock());
+        if (hitbox1.getBlock().isEmpty()) {
+            hitbox1.getBlock().setType(Material.BARRIER);
+            hitbox1.getBlock().getState().update();
+            blocks.add(hitbox1.getBlock());
+        }
         Location hitbox2 = new Location(entity.getWorld(), entity.getX(), entity.getY() + 1 , entity.getZ());
-        hitbox2.getBlock().setType(Material.BARRIER);
-        hitbox2.getBlock().getState().update();
-        blocks.add(hitbox2.getBlock());
+        if (hitbox2.getBlock().isEmpty()) {
+            hitbox2.getBlock().setType(Material.BARRIER);
+            hitbox2.getBlock().getState().update();
+            blocks.add(hitbox2.getBlock());
+        }
         Location hitbox3 = new Location(entity.getWorld(), entity.getX(), entity.getY() + 2 , entity.getZ());
-        hitbox3.getBlock().setType(Material.BARRIER);
-        hitbox3.getBlock().getState().update();
-        blocks.add(hitbox3.getBlock());
+        if (hitbox3.getBlock().isEmpty()) {
+            hitbox3.getBlock().setType(Material.BARRIER);
+            hitbox3.getBlock().getState().update();
+            blocks.add(hitbox3.getBlock());
+        }
     }
 
     //size shouldn't be negative
