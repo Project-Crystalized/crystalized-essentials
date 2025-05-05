@@ -143,16 +143,18 @@ public class CustomCoalBasedItems implements Listener {
 						// Antiair Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
                         if (event.getClickedBlock() != null) {
-                            player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-                            player.setCooldown(Material.COAL, 40);
-                            Location blockLoc = event.getClickedBlock().getLocation();
-                            crystalized_essentials.getInstance().antiairTotemList.add(
-                                    new AntiairTotem(
-                                            player,
-                                            //event.getClickedBlock().getLocation()
-                                            new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
-                                    )
-                            );
+							Location blockLoc = event.getClickedBlock().getLocation();
+							if (new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
+								player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+								player.setCooldown(Material.COAL, 40);
+								crystalized_essentials.getInstance().antiairTotemList.add(
+										new AntiairTotem(
+												player,
+												//event.getClickedBlock().getLocation()
+												new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+										)
+								);
+							}
                         }
 
 						// Cloud Totem
