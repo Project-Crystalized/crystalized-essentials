@@ -67,7 +67,7 @@ public final class crystalized_essentials extends JavaPlugin {
 
 	public AntiairTotem getAntiAirTotemByEntity(ArmorStand e) {
 		for (AntiairTotem a : antiairTotemList) {
-			if (a.entity.equals(e)) {
+			if (e.equals(a.entity) || e.equals(a.turret) || e.equals(a.turretBase)) {
 				return a;
 			}
 		}

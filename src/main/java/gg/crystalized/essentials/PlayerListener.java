@@ -49,8 +49,9 @@ public class PlayerListener implements Listener {
             if (item != null) {
                 if (!item.hasItemMeta()) {return;}
                 if (!item.getItemMeta().hasItemModel()) {return;}
-                if (item.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "models/antiair_totem"))) {
-                    crystalized_essentials.getInstance().getAntiAirTotemByEntity(en).hit();
+                NamespacedKey name = item.getItemMeta().getItemModel();
+                if (name.equals(new NamespacedKey("crystalized", "models/antiair_totem")) || name.equals(new NamespacedKey("crystalized", "models/antiair_totem_turret"))) {
+                    crystalized_essentials.getInstance().getAntiAirTotemByEntity(en).hit((Player) e.getDamager());
                 }
             }
         }
