@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerListener implements Listener {
@@ -32,6 +33,16 @@ public class PlayerListener implements Listener {
             e.setCancelled(true);
             pd.isUsingBreezeDagger = false;
         }
+    }
+
+    @EventHandler
+    public void onPlayerConnect(PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        crystalized_essentials.getInstance().addPlayerToList(p);
+
+        p.discoverRecipe(new NamespacedKey("crystalized", "pufferfish_sword"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "slime_sword"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "charged_crossbow"));
     }
 
     @EventHandler

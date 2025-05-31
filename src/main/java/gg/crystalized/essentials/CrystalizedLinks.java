@@ -24,7 +24,5 @@ public class CrystalizedLinks implements Listener {
         Crystalized.addLink(Component.text("GitHub"), URI.create("https://github.com/Project-Crystalized"));
 
         player.sendLinks(Crystalized);
-
-        crystalized_essentials.getInstance().addPlayerToList(player);
     }
 }
