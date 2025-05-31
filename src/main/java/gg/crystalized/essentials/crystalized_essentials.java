@@ -10,6 +10,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -88,15 +89,30 @@ public final class crystalized_essentials extends JavaPlugin {
     ShapedRecipe Recipe_PufferfishSword;
     ShapedRecipe Recipe_SlimeSword;
     ShapedRecipe Recipe_ChargedCrossbow;
+	ShapedRecipe Recipe_MarksmanBow;
+	ShapedRecipe Recipe_RicochetBow;
+	ShapedRecipe Recipe_ExplosiveBow;
+	ShapelessRecipe Recipe_DragonArrow;
+	ShapelessRecipe Recipe_ExplosiveArrow;
     ItemStack PufferfishSword = new ItemStack(Material.STONE_SWORD);
     ItemStack SlimeSword = new ItemStack(Material.STONE_SWORD);
     ItemStack ChargedCrossbow = new ItemStack(Material.CROSSBOW);
+	ItemStack MarksmanBow = new ItemStack(Material.BOW);
+	ItemStack RicochetBow = new ItemStack(Material.BOW);
+	ItemStack ExplosiveBow = new ItemStack(Material.BOW);
+	ItemStack DragonArrow = new ItemStack(Material.ARROW);
+	ItemStack ExplosiveArrow = new ItemStack(Material.ARROW);
 
     public void setupRecipes() {
         //Set up ItemStacks first
         setupItemStack(PufferfishSword, translatable("crystalized.sword.pufferfish.desc"), translatable("crystalized.sword.pufferfish.name"), new NamespacedKey("crystalized", "pufferfish_sword"));
         setupItemStack(SlimeSword, translatable("crystalized.sword.slime.desc1").append(text(" ")).append(translatable("crystalized.sword.slime.desc2")), translatable("crystalized.sword.slime.name"), new NamespacedKey("crystalized", "slime_sword"));
         setupItemStack(ChargedCrossbow, translatable("crystalized.crossbow.charged.desc"), translatable("crystalized.crossbow.charged.name"), new NamespacedKey("crystalized", "charged_crossbow"));
+		setupItemStack(MarksmanBow, translatable("crystalized.bow.marksman.desc"), translatable("crystalized.bow.marksman.name"), new NamespacedKey("crystalized", "marksman_bow"));
+		setupItemStack(RicochetBow, translatable("crystalized.bow.ricochet.desc"), translatable("crystalized.bow.ricochet.name"), new NamespacedKey("crystalized", "ricochet_bow"));
+		setupItemStack(ExplosiveBow, translatable("crystalized.bow.explosive.desc1").append(text(" ")).append(translatable("crystalized.bow.explosive.desc2")), translatable("crystalized.bow.explosive.name"), new NamespacedKey("crystalized", "explosive_bow"));
+		setupItemStack(DragonArrow, translatable("crystalized.item.dragonarrow.desc"), translatable("crystalized.item.dragonarrow.name"), new NamespacedKey("crystalized", "dragon_arrow"));
+		setupItemStack(ExplosiveArrow, translatable("crystalized.item.explosivearrow.desc"), translatable("crystalized.item.explosivearrow.name"), new NamespacedKey("crystalized", "explosive_arrow"));
 
         //Then recipes
         Recipe_PufferfishSword = new ShapedRecipe(new NamespacedKey("crystalized", "pufferfish_sword"), PufferfishSword);
@@ -110,19 +126,44 @@ public final class crystalized_essentials extends JavaPlugin {
         Recipe_SlimeSword.setIngredient('S', Material.STICK);
 
         Recipe_ChargedCrossbow = new ShapedRecipe(new NamespacedKey("crystalized", "charged_crossbow"), ChargedCrossbow);
-        Recipe_ChargedCrossbow.shape(
-                "DRT",
-                "RCS",
-                "TS ");
+        Recipe_ChargedCrossbow.shape("DRT", "RCS", "TS ");
         Recipe_ChargedCrossbow.setIngredient('D', Material.DISPENSER);
         Recipe_ChargedCrossbow.setIngredient('R', Material.REDSTONE);
         Recipe_ChargedCrossbow.setIngredient('T', Material.REDSTONE_TORCH);
         Recipe_ChargedCrossbow.setIngredient('C', Material.CROSSBOW);
         Recipe_ChargedCrossbow.setIngredient('S', Material.SOUL_TORCH);
 
+		Recipe_MarksmanBow = new ShapedRecipe(new NamespacedKey("crystalized", "marksman_bow"), MarksmanBow);
+		Recipe_MarksmanBow.shape(" IS", "I S", " IS");
+		Recipe_MarksmanBow.setIngredient('I', Material.IRON_INGOT);
+		Recipe_MarksmanBow.setIngredient('S', Material.STRING);
+
+		Recipe_RicochetBow = new ShapedRecipe(new NamespacedKey("crystalized", "ricochet_bow"), RicochetBow);
+		Recipe_RicochetBow.shape(" Sa", "S a", " Sa");
+		Recipe_RicochetBow.setIngredient('S', Material.SLIME_BALL);
+		Recipe_RicochetBow.setIngredient('a', Material.STRING);
+
+		Recipe_ExplosiveBow = new ShapedRecipe(new NamespacedKey("crystalized", "explosive_bow"), ExplosiveBow);
+		Recipe_ExplosiveBow.shape(" TS", "T S", " TS");
+		Recipe_ExplosiveBow.setIngredient('T', Material.TNT);
+		Recipe_ExplosiveBow.setIngredient('S', Material.STRING);
+
+		Recipe_DragonArrow = new ShapelessRecipe(new NamespacedKey("crystalized", "dragon_arrow"), DragonArrow);
+		Recipe_DragonArrow.addIngredient(Material.ARROW);
+		Recipe_DragonArrow.addIngredient(Material.DRAGON_BREATH);
+
+		Recipe_ExplosiveArrow = new ShapelessRecipe(new NamespacedKey("crystalized", "explosive_arrow"), ExplosiveArrow);
+		Recipe_ExplosiveArrow.addIngredient(Material.ARROW);
+		Recipe_ExplosiveArrow.addIngredient(Material.TNT);
+
         getServer().addRecipe(Recipe_PufferfishSword, true);
         getServer().addRecipe(Recipe_SlimeSword, true);
         getServer().addRecipe(Recipe_ChargedCrossbow, true);
+		getServer().addRecipe(Recipe_MarksmanBow, true);
+		getServer().addRecipe(Recipe_RicochetBow, true);
+		getServer().addRecipe(Recipe_ExplosiveBow, true);
+		getServer().addRecipe(Recipe_DragonArrow, true);
+		getServer().addRecipe(Recipe_ExplosiveArrow, true);
 
     }
 

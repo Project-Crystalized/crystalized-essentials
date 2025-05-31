@@ -43,6 +43,11 @@ public class PlayerListener implements Listener {
         p.discoverRecipe(new NamespacedKey("crystalized", "pufferfish_sword"));
         p.discoverRecipe(new NamespacedKey("crystalized", "slime_sword"));
         p.discoverRecipe(new NamespacedKey("crystalized", "charged_crossbow"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "marksman_bow"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "ricochet_bow"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "explosive_bow"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "dragon_arrow"));
+        p.discoverRecipe(new NamespacedKey("crystalized", "explosive_arrow"));
     }
 
     @EventHandler
