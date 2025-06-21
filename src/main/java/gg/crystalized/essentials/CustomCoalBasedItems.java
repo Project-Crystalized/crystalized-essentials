@@ -3,6 +3,7 @@ package gg.crystalized.essentials;
 import com.destroystokyo.paper.ParticleBuilder;
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import gg.crystalized.essentials.CustomEntity.CloudTotem;
+import gg.crystalized.essentials.CustomEntity.LaunchTotem;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
@@ -128,17 +129,7 @@ public class CustomCoalBasedItems implements Listener {
 						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
 						if (pd.isUsingWingedOrb) {return;}
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setVelocity(new Vector(
-								0,
-								1.5,
-								0)
-						);
-						pd.isUsingWingedOrb = true;
-						pd.lastChestPlateBeforeWingedOrb = player.getInventory().getChestplate();
-						player.getInventory().setChestplate(crystalized_essentials.getInstance().WingedOrbElytra);
-						player.setGliding(true);
-
-						player.setCooldown(Material.COAL, 40);
+						crystalized_essentials.getInstance().useWingedOrb(player);
 
 						// Antiair Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
@@ -179,10 +170,17 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Launch Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "launch_totem"))) {
-						player.sendMessage(text("Launch Totem isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						if (event.getClickedBlock() != null) {
+							Location blockLoc = event.getClickedBlock().getLocation();
+							if (new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
+								player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+								player.setCooldown(Material.COAL, 30);
+								new LaunchTotem(
+										player,
+										new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+								);
+							}
+						}
 
 						// Slime Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "slime_totem"))) {

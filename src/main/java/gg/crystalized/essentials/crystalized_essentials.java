@@ -1,6 +1,7 @@
 package gg.crystalized.essentials;
 
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
+import net.kyori.adventure.text.BuildableComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -13,6 +14,8 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +87,39 @@ public final class crystalized_essentials extends JavaPlugin {
 		}
 
 		return null;
+	}
+
+	public void useWingedOrb(Player player) {
+		PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
+		if (pd.isUsingWingedOrb) {return;}
+
+		new BukkitRunnable() {
+			int timer = 2;
+			public void run() {
+
+				switch (timer) {
+					case 2 -> {
+						player.setVelocity(new Vector(
+								0,
+								1.9,
+								0)
+						);
+					}
+					case 1 -> {
+						if (player.isOnGround()) {cancel(); return;}
+						pd.isUsingWingedOrb = true;
+						pd.lastChestPlateBeforeWingedOrb = player.getInventory().getChestplate();
+						player.getInventory().setChestplate(crystalized_essentials.getInstance().WingedOrbElytra);
+						player.setGliding(true);
+					}
+					case 0 -> {
+						cancel();
+					}
+				}
+
+				timer--;
+			}
+		}.runTaskTimer(this, 0, 13);
 	}
 
     ShapedRecipe Recipe_PufferfishSword;
