@@ -172,8 +172,10 @@ public class CustomBows implements Listener {
 			return ArrowData.bowType.ricochet;
 		} else if (item.getType() == Material.CROSSBOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "charged_crossbow"))) {
 			return ArrowData.bowType.charged;
-		}else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))){
+		} else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))){
 			return ArrowData.bowType.angled;
+		} else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_bow"))){
+			return ArrowData.bowType.explosive;
 		} else {
 			if (item.getType().equals(Material.CROSSBOW)) {
 				return ArrowData.bowType.normalCrossbow;

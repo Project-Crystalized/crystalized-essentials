@@ -2,6 +2,7 @@ package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -10,6 +11,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 
@@ -97,7 +99,7 @@ public class CustomArrows {
 
 			Entity hit_player = event.getHitEntity();
 			if (hit_player != null) {
-				exploArrowExplosion(arrow_loc, source);
+				exploArrowExplosion(arrow_loc, source, data.type.equals(ArrowData.bowType.explosive));
 				arrow.remove();
 				return;
 			}
@@ -112,6 +114,14 @@ public class CustomArrows {
 						return;
 					}
 					arrow_loc.getWorld().spawnParticle(RAID_OMEN, arrow_loc, 3);
+					if (data.type.equals(ArrowData.bowType.explosive)) {
+						new BukkitRunnable() {
+							public void run() {
+								arrow_loc.getWorld().playSound(arrow_loc, "entity.parrot.imitate.creeper", 2f, 1);
+								cancel();
+							}
+						}.runTaskTimer(crystalized_essentials.getInstance(), 10, 1); //This looks ugly imo
+					}
 					arrow_loc.getWorld().playSound(arrow_loc, "entity.creeper.primed", 2f, 1);
 					i++;
 				}
@@ -119,7 +129,7 @@ public class CustomArrows {
 
 			new BukkitRunnable() {
 				public void run() {
-					exploArrowExplosion(arrow_loc, source);
+					exploArrowExplosion(arrow_loc, source, data.type.equals(ArrowData.bowType.explosive));
 					arrow.remove();
 				}
 			}.runTaskLater(crystalized_essentials.getInstance(), 3 * 20);
@@ -129,13 +139,30 @@ public class CustomArrows {
 		}
 	}
 
-	private static void exploArrowExplosion(Location explo_loc, DamageSource source) {
+	private static void exploArrowExplosion(Location explo_loc, DamageSource source, Boolean explosiveBowUsed) {
 		Collection<LivingEntity> nearby = explo_loc.getNearbyLivingEntities(2);
 		Collection<LivingEntity> notSoNearby = explo_loc.getNearbyLivingEntities(4);
 
 		notSoNearby.removeAll(nearby);
 
-		explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+		if (explosiveBowUsed) {
+			new BukkitRunnable() {
+				int timer = 2;
+				public void run() {
+					switch (timer) {
+						case 2, 1 -> {
+							explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+						}
+						case 0 -> {
+							cancel();
+						}
+					}
+					timer--;
+				}
+			}.runTaskTimer(crystalized_essentials.getInstance(), 0, 15);
+		} else {
+			explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+		}
 
 		ParticleBuilder builder = new ParticleBuilder(DUST);
 		builder.color(Color.RED);
