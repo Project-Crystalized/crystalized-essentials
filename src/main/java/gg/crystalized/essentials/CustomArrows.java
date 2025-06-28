@@ -87,7 +87,16 @@ public class CustomArrows {
 				}
 			}.runTaskTimer(crystalized_essentials.getInstance(), 1, 15);
 
-		} else if (data.arrType == ArrowData.arrowType.explosive) {
+		}
+		if (data.arrType == ArrowData.arrowType.explosive || data.type.equals(ArrowData.bowType.explosive)) {
+
+			//Messy
+			int i = 0;
+			if (data.arrType == ArrowData.arrowType.explosive) {i++;}
+			if (data.type.equals(ArrowData.bowType.explosive)) {i++;}
+			boolean bothUsed = false;
+			if (i == 2) {bothUsed = true;}
+
 			arrow.setPickupStatus(DISALLOWED);
 			arrow.setDamage(2);
 
@@ -99,12 +108,13 @@ public class CustomArrows {
 
 			Entity hit_player = event.getHitEntity();
 			if (hit_player != null) {
-				exploArrowExplosion(arrow_loc, source, data.type.equals(ArrowData.bowType.explosive));
+				exploArrowExplosion(arrow_loc, source, bothUsed);
 				arrow.remove();
 				return;
 			}
 			arrow.setGlowing(true);
 
+			boolean bothused1 = bothUsed; //This is dumb
 			new BukkitRunnable() {
 				int i = 0;
 
@@ -114,7 +124,7 @@ public class CustomArrows {
 						return;
 					}
 					arrow_loc.getWorld().spawnParticle(RAID_OMEN, arrow_loc, 3);
-					if (data.type.equals(ArrowData.bowType.explosive)) {
+					if (bothused1) {
 						new BukkitRunnable() {
 							public void run() {
 								arrow_loc.getWorld().playSound(arrow_loc, "entity.parrot.imitate.creeper", 2f, 1);
@@ -129,7 +139,7 @@ public class CustomArrows {
 
 			new BukkitRunnable() {
 				public void run() {
-					exploArrowExplosion(arrow_loc, source, data.type.equals(ArrowData.bowType.explosive));
+					exploArrowExplosion(arrow_loc, source, bothused1);
 					arrow.remove();
 				}
 			}.runTaskLater(crystalized_essentials.getInstance(), 3 * 20);

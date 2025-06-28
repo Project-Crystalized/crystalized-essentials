@@ -35,7 +35,8 @@ public class CustomBows implements Listener {
 		}
 
 		ArrowData.arrowType arrType = get_arrow_type(event.getConsumable());
-		if (arrType == ArrowData.arrowType.explosive) {
+		ArrowData.bowType bowType = get_bow_type(bow_item);
+		if (arrType == ArrowData.arrowType.explosive || bowType == ArrowData.bowType.explosive) {
 			((Player) event.getEntity()).setCooldown(bow_item, 20 * 3);
 		}
 
