@@ -19,14 +19,15 @@ public class ArrowData {
 		charged,
 		angled,
 		normal,
-		normalCrossbow
+		normalCrossbow,
+		explosive,
 	}
 
 	enum arrowType {
 		dragon,
 		explosive,
 		spectral,
-		normal
+		normal,
 	}
 
 	public LivingEntity shooter;
