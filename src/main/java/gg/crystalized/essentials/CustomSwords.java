@@ -73,9 +73,7 @@ public class CustomSwords implements Listener {
 							p.getLocation().getDirection().getZ() * 1.05)
 					);
 					//p.setVelocity(p.getLocation().getDirection().multiply(1.05));
-					for (Player every : Bukkit.getOnlinePlayers()) {
-						every.playSound(p, "minecraft:item.armor.equip_elytra", 50, 1); //TODO placeholder sound. Breeze Dagger use
-					}
+					p.playSound(p, "minecraft:item.armor.equip_elytra", 50, 1); //TODO placeholder sound. Breeze Dagger use
 					pd.UseBreezeDaggerDash();
 
 				}
