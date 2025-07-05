@@ -271,37 +271,35 @@ public class CustomCoalBasedItems implements Listener {
 
 						if (timer == 5) {
 							timer = 0;
-							if (timesGrappled == 16 || timesGrappled > 16) {
-								if (finalState == grapplingOrbState.TowardsTarget) {
-									blockLocTempEntity.remove();
-								}
-								grapple(true);
-								pd.isUsingGrapplingOrb = false;
-								cancel();
-								p.playSound(p, "minecraft:item.shield.break", 50, 1);
+							if (timesGrappled == 16 || timesGrappled > 16 || p.isSneaking()) {
+								stopGrapple();
 							}
                             grapple(false);
 						}
 
 						if (finalState == grapplingOrbState.PullEntity) {
 							for (Entity entity : p.getNearbyEntities(2, 2, 2)) {
-								if (entity == en) {
-                                    grapple(true);
-                                    pd.isUsingGrapplingOrb = false;
-									cancel();
+								if (entity == en || p.isSneaking()) {
+                                    stopGrapple();
 								}
 							}
 						} else if (finalState == grapplingOrbState.TowardsTarget) {
                             for (Entity entity : p.getNearbyEntities(3, 3, 3)) {
-                                if (entity == blockLocTempEntity) { //this is dumb but it works ig
-                                    blockLocTempEntity.remove();
-                                    grapple(true);
-                                    pd.isUsingGrapplingOrb = false;
-                                    cancel();
+                                if (entity == blockLocTempEntity || p.isSneaking()) { //this is dumb but it works ig
+                                    stopGrapple();
                                 }
                             }
 						}
 						//p.sendMessage(text("" + timer + ", State:" + finalState.toString()));
+					}
+
+					void stopGrapple() {
+						if (finalState == grapplingOrbState.TowardsTarget) {
+							blockLocTempEntity.remove();
+						}
+						grapple(true);
+						pd.isUsingGrapplingOrb = false;
+						cancel();
 					}
 
                     void grapple(boolean finalGrapple) {
@@ -310,7 +308,8 @@ public class CustomCoalBasedItems implements Listener {
                         int y;
                         int z;
 
-                        p.playSound(p, "minecraft:item.spyglass.use", 100, 1);
+                        p.playSound(p, "minecraft:entity.llama.spit", 1, 0.5F);
+						p.sendActionBar(text("Crouch to cancel Grapple").color(NamedTextColor.RED)); //TODO make this translatable
                         if (finalState == grapplingOrbState.PullEntity) {
                             int ex = (int) en.getLocation().getX();
                             int ey = (int) en.getLocation().getY();
