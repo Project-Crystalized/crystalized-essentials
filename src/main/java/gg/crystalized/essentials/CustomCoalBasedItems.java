@@ -22,10 +22,13 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import static net.kyori.adventure.text.Component.text;
+import static org.bukkit.Particle.DUST;
 
 //This class name is now sort of misleading with the item model changes a long while ago lmao
 public class CustomCoalBasedItems implements Listener {
@@ -109,14 +112,12 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Poison Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
-						player.sendMessage(text("Poison orb isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						launchPoisonOrb(player);
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Winged Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
-						//player.sendMessage(Component.text("Winged orb isn't currently implemented yet")); // TODO
 						new BukkitRunnable(){
 							double count = 0.2;
 							final Location loc = player.getLocation();
@@ -255,6 +256,17 @@ public class CustomCoalBasedItems implements Listener {
 		//snowball.setCustomNameVisible(false);
 	}
 
+	public void launchPoisonOrb(Player p) {
+		Snowball snowball = p.launchProjectile(Snowball.class, null);
+		snowball.setGravity(false);
+		ItemStack item = snowball.getItem();
+		ItemMeta meta = item.getItemMeta();
+		meta.setItemModel(new NamespacedKey("crystalized", "poison_orb"));
+		meta.displayName(text("" + p.getName()));
+		item.setItemMeta(meta);
+		snowball.setItem(item);
+	}
+
 	@EventHandler
 	public void onProjectileHit(ProjectileHitEvent e) {
 		if (!(e.getEntity() instanceof Snowball)) {
@@ -384,11 +396,41 @@ public class CustomCoalBasedItems implements Listener {
 				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 
 			}
+			else if (meta.getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
+
+				Location loc;
+				if (en != null) {
+					loc = e.getHitEntity().getLocation();
+				} else {
+					loc = e.getHitBlock().getLocation();
+				}
+
+				new BukkitRunnable() {
+					int timer = 8;
+					public void run() {
+						ParticleBuilder builder = new ParticleBuilder(DUST);
+						builder.color(Color.GREEN);
+						builder.location(loc);
+						builder.count(200);
+						builder.offset(1.5, 1.5, 1.5);
+						builder.spawn();
+						for (Player e : loc.getNearbyPlayers(2.8)) {
+							e.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 4 * 20, 1, false, false, true));
+							e.playSound(e, "minecraft:entity.puffer_fish.sting", 1, 1);
+						}
+
+						timer --;
+						if (timer == 0) {
+							cancel();
+						}
+					}
+				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 10);
+			}
 		}
 	}
 
 	public void linearParticles(Location start, Location end) {
-		ParticleBuilder builder = new ParticleBuilder(Particle.DUST);
+		ParticleBuilder builder = new ParticleBuilder(DUST);
 		builder.color(Color.GRAY);
 		builder.count(5);
 		builder.offset(0, 0, 0);
@@ -407,7 +449,7 @@ public class CustomCoalBasedItems implements Listener {
 
 	public void circle(Location middle, double radius) {
 		double t = 0;
-		ParticleBuilder builder = new ParticleBuilder(Particle.DUST);
+		ParticleBuilder builder = new ParticleBuilder(DUST);
 		builder.color(Color.WHITE);
 		Location loc;
 		while (t <= 2 * Math.PI) {
