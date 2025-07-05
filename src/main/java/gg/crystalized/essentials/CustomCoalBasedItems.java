@@ -210,8 +210,8 @@ public class CustomCoalBasedItems implements Listener {
 	}
 
 	public void launchGrapplingOrb(Player p) {
-		Vector direction = p.getEyeLocation().getDirection();
-		Snowball snowball = p.launchProjectile(Snowball.class, direction);
+		//Vector direction = p.getEyeLocation().getDirection();
+		Snowball snowball = p.launchProjectile(Snowball.class, null);
         snowball.getLocation().add(snowball.getVelocity().normalize().multiply(1.5));
 		ItemStack item = snowball.getItem();
 		ItemMeta meta = item.getItemMeta();
