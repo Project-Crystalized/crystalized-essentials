@@ -258,7 +258,6 @@ public class CustomCoalBasedItems implements Listener {
 
 	public void launchPoisonOrb(Player p) {
 		Snowball snowball = p.launchProjectile(Snowball.class, null);
-		snowball.setGravity(false);
 		ItemStack item = snowball.getItem();
 		ItemMeta meta = item.getItemMeta();
 		meta.setItemModel(new NamespacedKey("crystalized", "poison_orb"));
@@ -398,6 +397,8 @@ public class CustomCoalBasedItems implements Listener {
 			}
 			else if (meta.getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
 
+				String pname = PlainTextComponentSerializer.plainText().serialize(meta.displayName());
+				Player p = Bukkit.getPlayer(pname);
 				Location loc;
 				if (en != null) {
 					loc = e.getHitEntity().getLocation();
@@ -415,8 +416,10 @@ public class CustomCoalBasedItems implements Listener {
 						builder.offset(1.5, 1.5, 1.5);
 						builder.spawn();
 						for (Player e : loc.getNearbyPlayers(2.8)) {
-							e.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 4 * 20, 1, false, false, true));
-							e.playSound(e, "minecraft:entity.puffer_fish.sting", 1, 1);
+							if (e != p) {
+								e.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 4 * 20, 1, false, false, true));
+								e.playSound(e, "minecraft:entity.puffer_fish.sting", 1, 1);
+							}
 						}
 
 						timer --;
