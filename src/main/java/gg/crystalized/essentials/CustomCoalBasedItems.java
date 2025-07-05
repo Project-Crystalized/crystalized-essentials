@@ -526,7 +526,9 @@ public class CustomCoalBasedItems implements Listener {
 					loc.getBlock().setType(Material.AMETHYST_BLOCK);
 					loc.getBlock().getState().update();
 				}
+				owner.playSound(loc, "minecraft:block.amethyst_block.place", 1, 1);
 			} else {
+				owner.playSound(loc, "minecraft:block.stone.place", 1, 1);
 				loc.getBlock().setType(Material.STONE);
 				loc.getBlock().getState().update();
 			}
