@@ -8,15 +8,19 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.Event.Result;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -65,9 +69,8 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Bridge Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "bridge_orb"))) {
-						player.sendMessage(text("Bridge orb isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						launchBridgeOrb(player);
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 
 						// Explosive Orb
@@ -207,6 +210,36 @@ public class CustomCoalBasedItems implements Listener {
 				p.getInventory().setChestplate(pd.lastChestPlateBeforeWingedOrb);
 			}
 		}
+	}
+
+	public void launchBridgeOrb(Player p) {
+		Snowball snowball = p.launchProjectile(Snowball.class, null);
+		snowball.setGravity(false);
+		snowball.setVelocity(snowball.getVelocity().multiply(0.30));
+		ItemStack item = snowball.getItem();
+		ItemMeta meta = item.getItemMeta();
+		meta.setItemModel(new NamespacedKey("crystalized", "bridge_orb"));
+		meta.displayName(text("" + p.getName()));
+		item.setItemMeta(meta);
+		snowball.setItem(item);
+
+		new BukkitRunnable() {
+			int timer = 6 * 20;
+			public void run() {
+				Location blockLoc = new Location(snowball.getWorld(), snowball.getX(), snowball.getY() - 2, snowball.getZ());
+				if (blockLoc.getBlock().isEmpty()) {
+					//blockLoc.getBlock().setType(Material.AMETHYST_BLOCK);
+					//blockLoc.getBlock().getState().update();
+					placeBridgeOrbBlock(p, blockLoc);
+				}
+
+				if (timer == 0 || timer < 0 || snowball.isDead()) {
+					snowball.remove();
+					cancel();
+				}
+				timer--;
+			}
+		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 	}
 
 	public void launchGrapplingOrb(Player p) {
@@ -385,13 +418,157 @@ public class CustomCoalBasedItems implements Listener {
 		}
 	}
 
-
-
 	public Location circleEquation(Location middle, double radius, double t){
 		double x = radius * Math.cos(t) + middle.getX();
 		double y = middle.getY();
 		double z = radius * Math.sin(t) + middle.getZ();
 		return new Location(middle.getWorld(), x, y, z);
+	}
+
+	//Could be optimised, Pain in the ass, copy pasted from cloud totem, fuck you
+	private void placeBridgeOrbBlock(Player owner, Location loc) {
+		boolean isKnockoff = false;
+		try {
+			Class<?> cls = Class.forName("gg.knockoff.game.knockoff");
+			isKnockoff = true;
+		} catch (ClassNotFoundException e) {
+			isKnockoff = false;
+		}
+		Location loc2 = new Location(loc.getWorld(), loc.getX(), loc.getY() - 1, loc.getZ());
+		ItemStack item = new ItemStack(Material.WHITE_WOOL);
+		//fuck this
+		BlockPlaceEvent shitWorkaround = new BlockPlaceEvent(
+				loc.getBlock(),
+				loc.getBlock().getState(),
+				loc2.getBlock(),
+				item,
+				owner,
+				true,
+				EquipmentSlot.HAND
+		);
+		if (shitWorkaround.isCancelled()) {
+			loc.getBlock().setType(Material.AIR);
+		} else {
+			if (isKnockoff) {
+				if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/blue"))) {
+					loc.getBlock().setType(Material.WHITE_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.EAST);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/cyan"))) {
+					loc.getBlock().setType(Material.WHITE_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.NORTH);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/green"))) {
+					loc.getBlock().setType(Material.WHITE_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.SOUTH);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/lemon"))) {
+					loc.getBlock().setType(Material.WHITE_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.WEST);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/lime"))) {
+					loc.getBlock().setType(Material.LIGHT_GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.EAST);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/magenta"))) {
+					loc.getBlock().setType(Material.LIGHT_GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.NORTH);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/orange"))) {
+					loc.getBlock().setType(Material.LIGHT_GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.SOUTH);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/peach"))) {
+					loc.getBlock().setType(Material.LIGHT_GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.WEST);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/purple"))) {
+					loc.getBlock().setType(Material.GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.EAST);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/white"))) {
+					loc.getBlock().setType(Material.GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.SOUTH);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/yellow"))) {
+					loc.getBlock().setType(Material.GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.WEST);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else if (inventoryContainsItemModelItem(owner, new NamespacedKey("crystalized", "block/nexus/red"))) {
+					loc.getBlock().setType(Material.GRAY_GLAZED_TERRACOTTA);
+					Directional dir = (Directional) loc.getBlock().getBlockData();
+					dir.setFacing(BlockFace.NORTH);
+					loc.getBlock().setBlockData(dir);
+					loc.getBlock().getState().update();
+				} else {
+					loc.getBlock().setType(Material.AMETHYST_BLOCK);
+					loc.getBlock().getState().update();
+				}
+			} else {
+				loc.getBlock().setType(Material.STONE);
+				loc.getBlock().getState().update();
+			}
+		}
+
+		new BukkitRunnable() {
+			Float breaking = 0.0F;
+			int timer = 0;
+			public void run() {
+				for (Player p : Bukkit.getOnlinePlayers()) {
+					p.sendBlockDamage(loc, breaking);
+				}
+
+				if (breaking == 1F || breaking > 1F) {
+					loc.getBlock().breakNaturally(new ItemStack(Material.AIR), true, false);
+					cancel();
+				}
+
+				timer++;
+				if (timer == 20 || timer > 20) {
+					timer = 0;
+					breaking = breaking + 0.2F;
+				}
+			}
+		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+	}
+
+	//Copy pasted from Cloud totem
+	private boolean inventoryContainsItemModelItem(Player p, NamespacedKey itemModel) {
+		PlayerInventory inv = p.getInventory();
+		for (ItemStack item : inv.getContents()) {
+			if (item != null) {
+				if (item.hasItemMeta()) {
+					if (item.getItemMeta().hasItemModel()) {
+						if (item.getItemMeta().getItemModel().equals(itemModel)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 }
 
