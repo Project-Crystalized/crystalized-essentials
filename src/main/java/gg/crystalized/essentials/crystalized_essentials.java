@@ -3,7 +3,9 @@ package gg.crystalized.essentials;
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import net.kyori.adventure.text.BuildableComponent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -18,6 +20,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -125,6 +128,21 @@ public final class crystalized_essentials extends JavaPlugin {
 			}
 		}.runTaskTimer(this, 0, 13);
 	}
+
+	//TODO unfinished code, do not touch
+	//This only works if the plugin changes players' display names
+	public void getAllies(Player p) {
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			Component displayName = player.displayName();
+			Iterator<Component> iterator = displayName.iterator(ComponentIteratorType.BREADTH_FIRST);
+			while (iterator.hasNext()) {
+				Bukkit.getServer().sendMessage(iterator.next());
+			}
+
+		}
+	}
+
+
 
     ShapedRecipe Recipe_PufferfishSword;
     ShapedRecipe Recipe_SlimeSword;
