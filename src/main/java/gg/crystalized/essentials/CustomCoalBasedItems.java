@@ -582,9 +582,10 @@ public class CustomCoalBasedItems implements Listener {
 		new BukkitRunnable() {
 			Float breaking = 0.0F;
 			int timer = 0;
+			int entityID = crystalized_essentials.getInstance().getRandomNumber(-9000, -1001);
 			public void run() {
 				for (Player p : Bukkit.getOnlinePlayers()) {
-					p.sendBlockDamage(loc, breaking);
+					p.sendBlockDamage(loc, breaking, entityID);
 				}
 
 				if (breaking == 1F || breaking > 1F) {
@@ -598,7 +599,7 @@ public class CustomCoalBasedItems implements Listener {
 					breaking = breaking + 0.2F;
 				}
 			}
-		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+		}.runTaskTimer(crystalized_essentials.getInstance(), 40, 1);
 	}
 
 	//Copy pasted from Cloud totem

@@ -59,6 +59,10 @@ public final class crystalized_essentials extends JavaPlugin {
 		return getPlugin(crystalized_essentials.class);
 	}
 
+	public int getRandomNumber(int min, int max) {
+		return (int) ((Math.random() * (max - min)) + min);
+	}
+
 	public PlayerData getPlayerData(String p) {
 		for (PlayerData pd : playerDatas) {
 			if (pd.player.equals(p)) {
