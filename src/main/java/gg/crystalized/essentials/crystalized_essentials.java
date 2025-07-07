@@ -129,17 +129,63 @@ public final class crystalized_essentials extends JavaPlugin {
 		}.runTaskTimer(this, 0, 13);
 	}
 
-	//TODO unfinished code, do not touch
-	//This only works if the plugin changes players' display names
-	public void getAllies(Player p) {
+	//TODO unfinished and untested code, do not touch.
+	// This will return null if the display name doesn't get changed
+	// This is also designed to work only in Knockoff and Crystal Blitz, where both plugins change the
+	// display name to the same format of "[symbol] [playerName]". USE AT YOUR OWN RISK ANYWHERE ELSE!!
+	public List<String> getAllies(Player p) {
+		if (PlainTextComponentSerializer.plainText().serialize(p.displayName()).equals(p.getName())) {
+			return null;
+		}
+
+		List<String> output = new ArrayList<>();
+		List<Component> outputComponent = new ArrayList<>();
 		for (Player player : Bukkit.getOnlinePlayers()) {
+			Bukkit.getServer().sendMessage(text("start"));
 			Component displayName = player.displayName();
 			Iterator<Component> iterator = displayName.iterator(ComponentIteratorType.BREADTH_FIRST);
+			List<Component> temp = new ArrayList<>();
 			while (iterator.hasNext()) {
-				Bukkit.getServer().sendMessage(iterator.next());
+				Component iteratorC = iterator.next();
+				Bukkit.getServer().sendMessage(iteratorC);
+				temp.add(iteratorC);
 			}
 
+			outputComponent.add(temp.getLast()); //make sure to not add any other weird shit to the name otherwise this will fuck up :)
+
+			Bukkit.getServer().sendMessage(text("end"));
 		}
+
+		//Do same shit as above but with player's name to compare
+		Iterator<Component> iterator = p.displayName().iterator(ComponentIteratorType.BREADTH_FIRST);
+		List<Component> temp = new ArrayList<>();
+		while (iterator.hasNext()) {
+			Component iteratorC = iterator.next();
+			Bukkit.getServer().sendMessage(iteratorC);
+			temp.add(iteratorC);
+		}
+		Component playerDisplayName = temp.getLast();
+
+		for (Component c : outputComponent) {
+			if (c.color().equals(playerDisplayName.color())) {
+				output.add(PlainTextComponentSerializer.plainText().serialize(c));
+			}
+		}
+
+		Bukkit.getServer().sendMessage(text(output.toString()));
+		return output;
+	}
+
+	//Use at your own risk anywhere outside KO and CB!!
+	public List<String> getHostiles(Player p) {
+		List<String> temp = getAllies(p);
+		List<String> output = new ArrayList<>();
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			if (!temp.contains(player.getName())) {
+				output.add(player.getName());
+			}
+		}
+		return output;
 	}
 
 

@@ -193,6 +193,10 @@ public class CustomCoalBasedItems implements Listener {
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 5);
 					}
+
+					else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "debug"))) {
+						crystalized_essentials.getInstance().getAllies(player);
+					}
 				}
 			}
 		}
