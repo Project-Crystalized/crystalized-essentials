@@ -27,6 +27,9 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.List;
+import java.util.logging.Level;
+
 import static net.kyori.adventure.text.Component.text;
 import static org.bukkit.Particle.DUST;
 
@@ -74,7 +77,7 @@ public class CustomCoalBasedItems implements Listener {
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "bridge_orb"))) {
 						launchBridgeOrb(player);
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						player.setCooldown(Material.COAL, 20);
 
 						// Explosive Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "explosive_orb"))) {
@@ -84,14 +87,14 @@ public class CustomCoalBasedItems implements Listener {
 						fireball.setYield(3);
 						player.getInventory().getItemInMainHand()
 								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						player.setCooldown(Material.COAL, 8);
 
 						// Grappling Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "grappling_orb"))) {
                         PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
                         if (pd.isUsingGrapplingOrb) {return;}
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						player.setCooldown(Material.COAL, 20);
 						launchGrapplingOrb(player);
 
 						// Health Orb
@@ -105,19 +108,24 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Knockout Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "knockout_orb"))) {
-						player.sendMessage(text("Knockout orb isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						if (Bukkit.getOnlinePlayers().size() == 1) {
+							player.sendMessage(text("[!] Knockout Orb cant be used while nobody else is online"));
+						} else {
+							launchKnockoutOrb(player);
+							player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+							player.setCooldown(Material.COAL, 20);
+						}
 
 						// Poison Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
 						launchPoisonOrb(player);
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						player.setCooldown(Material.COAL, 10);
 
 						// Winged Orb
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
+						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
+						if (pd.isUsingWingedOrb) {return;}
 						new BukkitRunnable(){
 							double count = 0.2;
 							final Location loc = player.getLocation();
@@ -129,11 +137,9 @@ public class CustomCoalBasedItems implements Listener {
 								count = count * 2;
 							}
 						}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
-
-						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
-						if (pd.isUsingWingedOrb) {return;}
 						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						crystalized_essentials.getInstance().useWingedOrb(player);
+						player.setCooldown(Material.COAL, 40);
 
 						// Antiair Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
@@ -621,6 +627,64 @@ public class CustomCoalBasedItems implements Listener {
 			}
 		}
 		return false;
+	}
+
+	private void launchKnockoutOrb(Player p) {
+		Player target = null;
+		ArmorStand Projectile;
+		List<String> playerAllies = crystalized_essentials.getInstance().getAllies(p);
+
+		for (Entity e : p.getNearbyEntities(30, 30, 30)) {
+			if (e instanceof Player) {
+				if (!(playerAllies.contains(e.getName())) && !((Player) e).getGameMode().equals(GameMode.SPECTATOR)) {
+					target = (Player) e;
+				}
+			}
+		}
+		if (target == null) {
+			p.sendMessage(text("[!] An error occurred with your Knockout Orb, target is null."));
+			crystalized_essentials plugin = crystalized_essentials.getInstance();
+			plugin.getLogger().log(Level.WARNING, "" + p.getName() + "'s Knockout Orb failed, target is null.");
+			return;
+		}
+
+		Projectile = p.getWorld().spawn(p.getLocation().add(0, 2, 0), ArmorStand.class, entity -> {
+			ItemStack rocket = new ItemStack(Material.CHARCOAL);
+			ItemMeta rocketMeta = rocket.getItemMeta();
+			rocketMeta.setItemModel(new NamespacedKey("crystalized", "models/knockout_orb"));
+			rocket.setItemMeta(rocketMeta);
+			entity.setItem(EquipmentSlot.HEAD, rocket);
+			entity.setCustomNameVisible(true); //Make this true for debug stats above model
+			entity.setInvisible(true);
+			entity.setInvulnerable(true);
+			entity.setDisabledSlots(EquipmentSlot.HEAD);
+			entity.setDisabledSlots(EquipmentSlot.HAND);
+			entity.setDisabledSlots(EquipmentSlot.OFF_HAND);
+		});
+
+		Player Target = target; //useless ass code but intellij forced me to do this
+		new BukkitRunnable() {
+			int timerUntilDeath = 10 * 20;
+			public void run() {
+				Projectile.customName(text("T:" + timerUntilDeath + " | Owner: " + p.getName() + " | Target: " + Target.getName()));
+
+				timerUntilDeath--;
+				if ((timerUntilDeath == 0 || timerUntilDeath < 0) || Projectile.getNearbyEntities(3, 3, 3).contains(Target)) {
+					Projectile.remove(); //TODO create big explosion
+				}
+
+				//TODO somehow move the projectile towards player
+			}
+		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+
+		new BukkitRunnable() {
+			public void run() {
+				Target.playSound(Projectile.getLocation(), "minecraft:block.note_block.bell", 1, 0.5F);
+				if (Projectile.isDead()) {
+					cancel();
+				}
+			}
+		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 5);
 	}
 }
 
