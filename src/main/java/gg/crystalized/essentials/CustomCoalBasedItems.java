@@ -417,7 +417,7 @@ public class CustomCoalBasedItems implements Listener {
 				}
 
 				new BukkitRunnable() {
-					int timer = 8;
+					int timer = 4;
 					public void run() {
 						ParticleBuilder builder = new ParticleBuilder(DUST);
 						builder.color(Color.GREEN);
@@ -427,7 +427,7 @@ public class CustomCoalBasedItems implements Listener {
 						builder.spawn();
 						for (Player e : loc.getNearbyPlayers(2.8)) {
 							if (e != p) {
-								e.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 4 * 20, 1, false, false, true));
+								e.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 2 * 20, 1, false, false, true));
 								e.playSound(e, "minecraft:entity.puffer_fish.sting", 1, 1);
 							}
 						}
@@ -437,7 +437,7 @@ public class CustomCoalBasedItems implements Listener {
 							cancel();
 						}
 					}
-				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 10);
+				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 20);
 			}
 		}
 	}
