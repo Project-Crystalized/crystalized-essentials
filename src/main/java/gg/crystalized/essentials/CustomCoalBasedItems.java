@@ -3,6 +3,7 @@ package gg.crystalized.essentials;
 import com.destroystokyo.paper.ParticleBuilder;
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import gg.crystalized.essentials.CustomEntity.CloudTotem;
+import gg.crystalized.essentials.CustomEntity.KnockoutOrb;
 import gg.crystalized.essentials.CustomEntity.LaunchTotem;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -36,6 +37,7 @@ import static org.bukkit.Particle.DUST;
 //This class name is now sort of misleading with the item model changes a long while ago lmao
 public class CustomCoalBasedItems implements Listener {
 
+	//TODO I should probably clean this up - Callum
 	@EventHandler
 	public void onRightClick(PlayerInteractEvent event) {
 		if (event.useItemInHand() == Result.DENY) {
@@ -111,7 +113,7 @@ public class CustomCoalBasedItems implements Listener {
 						if (Bukkit.getOnlinePlayers().size() == 1) {
 							player.sendMessage(text("[!] Knockout Orb cant be used while nobody else is online"));
 						} else {
-							launchKnockoutOrb(player);
+							new KnockoutOrb(player);
 							player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 							player.setCooldown(Material.COAL, 20);
 						}
@@ -627,64 +629,6 @@ public class CustomCoalBasedItems implements Listener {
 			}
 		}
 		return false;
-	}
-
-	private void launchKnockoutOrb(Player p) {
-		Player target = null;
-		ArmorStand Projectile;
-		List<String> playerAllies = crystalized_essentials.getInstance().getAllies(p);
-
-		for (Entity e : p.getNearbyEntities(30, 30, 30)) {
-			if (e instanceof Player) {
-				if (!(playerAllies.contains(e.getName())) && !((Player) e).getGameMode().equals(GameMode.SPECTATOR)) {
-					target = (Player) e;
-				}
-			}
-		}
-		if (target == null) {
-			p.sendMessage(text("[!] An error occurred with your Knockout Orb, target is null."));
-			crystalized_essentials plugin = crystalized_essentials.getInstance();
-			plugin.getLogger().log(Level.WARNING, "" + p.getName() + "'s Knockout Orb failed, target is null.");
-			return;
-		}
-
-		Projectile = p.getWorld().spawn(p.getLocation().add(0, 2, 0), ArmorStand.class, entity -> {
-			ItemStack rocket = new ItemStack(Material.CHARCOAL);
-			ItemMeta rocketMeta = rocket.getItemMeta();
-			rocketMeta.setItemModel(new NamespacedKey("crystalized", "models/knockout_orb"));
-			rocket.setItemMeta(rocketMeta);
-			entity.setItem(EquipmentSlot.HEAD, rocket);
-			entity.setCustomNameVisible(true); //Make this true for debug stats above model
-			entity.setInvisible(true);
-			entity.setInvulnerable(true);
-			entity.setDisabledSlots(EquipmentSlot.HEAD);
-			entity.setDisabledSlots(EquipmentSlot.HAND);
-			entity.setDisabledSlots(EquipmentSlot.OFF_HAND);
-		});
-
-		Player Target = target; //useless ass code but intellij forced me to do this
-		new BukkitRunnable() {
-			int timerUntilDeath = 10 * 20;
-			public void run() {
-				Projectile.customName(text("T:" + timerUntilDeath + " | Owner: " + p.getName() + " | Target: " + Target.getName()));
-
-				timerUntilDeath--;
-				if ((timerUntilDeath == 0 || timerUntilDeath < 0) || Projectile.getNearbyEntities(3, 3, 3).contains(Target)) {
-					Projectile.remove(); //TODO create big explosion
-				}
-
-				//TODO somehow move the projectile towards player
-			}
-		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
-
-		new BukkitRunnable() {
-			public void run() {
-				Target.playSound(Projectile.getLocation(), "minecraft:block.note_block.bell", 1, 0.5F);
-				if (Projectile.isDead()) {
-					cancel();
-				}
-			}
-		}.runTaskTimer(crystalized_essentials.getInstance(), 0, 5);
 	}
 }
 

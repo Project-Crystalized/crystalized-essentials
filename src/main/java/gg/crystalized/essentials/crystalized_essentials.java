@@ -141,19 +141,19 @@ public final class crystalized_essentials extends JavaPlugin {
 		List<String> output = new ArrayList<>();
 		List<Component> outputComponent = new ArrayList<>();
 		for (Player player : Bukkit.getOnlinePlayers()) {
-			Bukkit.getServer().sendMessage(text("start"));
+			//Bukkit.getServer().sendMessage(text("start"));
 			Component displayName = player.displayName();
 			Iterator<Component> iterator = displayName.iterator(ComponentIteratorType.BREADTH_FIRST);
 			List<Component> temp = new ArrayList<>();
 			while (iterator.hasNext()) {
 				Component iteratorC = iterator.next();
-				Bukkit.getServer().sendMessage(iteratorC);
+				//Bukkit.getServer().sendMessage(iteratorC);
 				temp.add(iteratorC);
 			}
 
 			outputComponent.add(temp.getLast()); //make sure to not add any other weird shit to the name otherwise this will fuck up :)
 
-			Bukkit.getServer().sendMessage(text("end"));
+			//Bukkit.getServer().sendMessage(text("end"));
 		}
 
 		//Do same shit as above but with player's name to compare
@@ -161,7 +161,7 @@ public final class crystalized_essentials extends JavaPlugin {
 		List<Component> temp = new ArrayList<>();
 		while (iterator.hasNext()) {
 			Component iteratorC = iterator.next();
-			Bukkit.getServer().sendMessage(iteratorC);
+			//Bukkit.getServer().sendMessage(iteratorC);
 			temp.add(iteratorC);
 		}
 		Component playerDisplayName = temp.getLast();
@@ -172,7 +172,7 @@ public final class crystalized_essentials extends JavaPlugin {
 			}
 		}
 
-		Bukkit.getServer().sendMessage(text(output.toString()));
+		//Bukkit.getServer().sendMessage(text(output.toString()));
 		return output;
 	}
 
