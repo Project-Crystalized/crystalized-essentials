@@ -11,11 +11,11 @@ import java.net.URI;
 
 public class CrystalizedLinks implements Listener {
 
-    private final ServerLinks Crystalized = crystalized_essentials.getInstance().getServer().getServerLinks().copy();
-
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
+        ServerLinks Crystalized = crystalized_essentials.getInstance().getServer().getServerLinks().copy();
 
         //TODO fix these spamming the server links menu each time you rejoin
         Crystalized.addLink(Component.text("Discord"), URI.create("https://discord.gg/4H8ADwFZyk"));
