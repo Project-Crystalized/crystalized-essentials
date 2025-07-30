@@ -51,6 +51,9 @@ public class CloudTotem {
             entity.setDisabledSlots(EquipmentSlot.HEAD, EquipmentSlot.HAND, EquipmentSlot.OFF_HAND);
             entity.setGravity(false);
         });
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.playSound(entity, "minecraft:entity.bat.takeoff", 1, 0.5f);
+        }
         new BukkitRunnable(){
             public void run(){
                 if(!isActive){
