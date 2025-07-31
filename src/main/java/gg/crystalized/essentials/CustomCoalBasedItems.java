@@ -1,10 +1,7 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import gg.crystalized.essentials.CustomEntity.AntiairTotem;
-import gg.crystalized.essentials.CustomEntity.CloudTotem;
-import gg.crystalized.essentials.CustomEntity.KnockoutOrb;
-import gg.crystalized.essentials.CustomEntity.LaunchTotem;
+import gg.crystalized.essentials.CustomEntity.*;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
@@ -27,9 +24,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
-import java.util.List;
-import java.util.logging.Level;
 
 import static net.kyori.adventure.text.Component.text;
 import static org.bukkit.Particle.DUST;
@@ -153,7 +147,6 @@ public class CustomCoalBasedItems implements Listener {
 								crystalized_essentials.getInstance().antiairTotemList.add(
 										new AntiairTotem(
 												player,
-												//event.getClickedBlock().getLocation()
 												new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
 										)
 								);
@@ -168,10 +161,19 @@ public class CustomCoalBasedItems implements Listener {
 
 						// Defense Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "defense_totem"))) {
-						player.sendMessage(text("Defence isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
+						if (event.getClickedBlock() != null) {
+							Location blockLoc = event.getClickedBlock().getLocation();
+							if (new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
+								player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+								player.setCooldown(Material.COAL, 30);
+								crystalized_essentials.getInstance().defenceTotemList.add(
+										new DefenceTotem(
+												player,
+												new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+										)
+								);
+							}
+						}
 
 						// Healing Totem
 					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "healing_totem"))) {

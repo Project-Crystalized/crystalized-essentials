@@ -66,8 +66,12 @@ public class PlayerListener implements Listener {
                 if (!item.hasItemMeta()) {return;}
                 if (!item.getItemMeta().hasItemModel()) {return;}
                 NamespacedKey name = item.getItemMeta().getItemModel();
+
+                //might cause NPE, not my problem if people place fake totem models - callum
                 if (name.equals(new NamespacedKey("crystalized", "models/antiair_totem")) || name.equals(new NamespacedKey("crystalized", "models/antiair_totem_turret"))) {
                     crystalized_essentials.getInstance().getAntiAirTotemByEntity(en).hit((Player) e.getDamager());
+                } else if (name.equals(new NamespacedKey("crystalized", "models/defence_totem"))) {
+                    crystalized_essentials.getInstance().getDefenceTotemByEntity(en).hit((Player) e.getDamager());
                 }
             }
         }

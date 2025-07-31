@@ -3,7 +3,6 @@ package gg.crystalized.essentials.CustomEntity;
 import com.destroystokyo.paper.ParticleBuilder;
 import gg.crystalized.essentials.PlayerData;
 import gg.crystalized.essentials.crystalized_essentials;
-import io.papermc.paper.math.Rotations;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.EquipmentSlot;
@@ -131,7 +130,9 @@ public class AntiairTotem {
                         }
                     }
                 }
-                healthBar.text(text("#".repeat(health)).append(text("-".repeat(7 - health))));
+                healthBar.text(
+                        text("\uE11A").append(text("\uE11B".repeat(health))).append(text("\uE11C".repeat(7 - health))).append(text("\uE11D"))
+                );
 
                 if (health == 0 || name.isDead() || entity.isDead() || health < 0) {
                     isActive = false;

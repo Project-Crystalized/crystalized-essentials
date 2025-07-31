@@ -1,7 +1,7 @@
 package gg.crystalized.essentials;
 
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
-import net.kyori.adventure.text.BuildableComponent;
+import gg.crystalized.essentials.CustomEntity.DefenceTotem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -34,6 +34,7 @@ public final class crystalized_essentials extends JavaPlugin {
 	List<PlayerData> playerDatas = new ArrayList<>();
 	ItemStack WingedOrbElytra = new ItemStack(Material.ELYTRA); //Had to put this here, ItemMeta just didn't work on CustomCoalBasedItems
 	public List<AntiairTotem> antiairTotemList = new ArrayList<>();
+	public List<DefenceTotem> defenceTotemList = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -92,7 +93,15 @@ public final class crystalized_essentials extends JavaPlugin {
 				return a;
 			}
 		}
+		return null;
+	}
 
+	public DefenceTotem getDefenceTotemByEntity(ArmorStand e) {
+		for (DefenceTotem a : defenceTotemList) {
+			if (e.equals(a.entity)) {
+				return a;
+			}
+		}
 		return null;
 	}
 
@@ -189,6 +198,7 @@ public final class crystalized_essentials extends JavaPlugin {
 	}
 
 
+	//Custom Recipe stuff
 
     ShapedRecipe Recipe_PufferfishSword;
     ShapedRecipe Recipe_SlimeSword;
