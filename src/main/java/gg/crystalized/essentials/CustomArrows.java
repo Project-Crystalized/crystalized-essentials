@@ -2,7 +2,6 @@ package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -11,7 +10,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 
