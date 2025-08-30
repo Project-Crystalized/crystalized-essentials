@@ -45,7 +45,7 @@ public class CustomBows implements Listener {
 			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
 			((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
-		}else if (type == ArrowData.bowType.angled){
+		} else if (type == ArrowData.bowType.angled) {
 			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(1.5));
 		}
 
@@ -55,11 +55,11 @@ public class CustomBows implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onDamage(EntityDamageByEntityEvent e) {
-		if(!(e.getDamager() instanceof Projectile)){
+		if (!(e.getDamager() instanceof Projectile)) {
 			return;
 		}
 
-		ArrowData data = arrows.get((Projectile)e.getDamager());
+		ArrowData data = arrows.get((Projectile) e.getDamager());
 		if (data == null) {
 			return;
 		}
@@ -71,22 +71,23 @@ public class CustomBows implements Listener {
 			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
 			((LivingEntity) e.getEntity()).damage(distance);
 
-		}else if(data.type == ArrowData.bowType.charged){
+		} else if (data.type == ArrowData.bowType.charged) {
 			e.setCancelled(true);
 			Location eloc = e.getEntity().getLocation();
 			Location arrloc = e.getDamager().getLocation();
 			if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
 				((LivingEntity) e.getEntity()).damage(10);
-			}else{
+			} else {
 				((LivingEntity) e.getEntity()).damage(6);
 			}
-			e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+			e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(),
+					Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 			e.getDamager().remove();
 
-		}else if(data.type == ArrowData.bowType.angled){
+		} else if (data.type == ArrowData.bowType.angled) {
 			e.setCancelled(true);
-			((LivingEntity)e.getEntity()).damage(e.getDamage()/1.5, e.getDamager());
-			e.getEntity().setVelocity(e.getDamager().getVelocity().multiply(1/2));
+			((LivingEntity) e.getEntity()).damage(e.getDamage() / 1.5, e.getDamager());
+			e.getEntity().setVelocity(e.getDamager().getVelocity().multiply(1 / 2));
 			e.getDamager().remove();
 		}
 	}
@@ -97,7 +98,7 @@ public class CustomBows implements Listener {
 			return;
 		}
 
-		AbstractArrow ar = (AbstractArrow)event.getEntity();
+		AbstractArrow ar = (AbstractArrow) event.getEntity();
 		ArrowData data = arrows.get(event.getEntity());
 
 		if (data == null) {
@@ -113,8 +114,8 @@ public class CustomBows implements Listener {
 			}
 			Location loc = event.getEntity().getLocation();
 			Vector velocity = event.getEntity().getVelocity();
-			loc.subtract(velocity);
-			velocity.multiply(0.5);
+			loc.subtract(velocity.clone().multiply(0.1));
+			velocity.multiply(0.9);
 
 			if (data.timesBounced >= 3) {
 				CustomArrows.onArrowHit(event);
@@ -131,16 +132,16 @@ public class CustomBows implements Listener {
 			}
 
 			data.timesBounced++;
-			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 1);
+			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 0);
+			arrow.setDamage(arrow.getDamage() + (0.2 * (float) data.timesBounced));
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
 			arrow.setShooter(event.getEntity().getShooter());
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
 			arrows.put(arrow, data);
 			return;
-		}
-		else if (data.type == ArrowData.bowType.normalCrossbow) {
-			//I have no idea what I just wrote but I hope this works
+		} else if (data.type == ArrowData.bowType.normalCrossbow) {
+			// I have no idea what I just wrote but I hope this works
 			((AbstractArrow) event.getEntity()).setDamage(((AbstractArrow) event.getEntity()).getDamage() - 1);
 		}
 		CustomArrows.onArrowHit(event);
@@ -151,9 +152,11 @@ public class CustomBows implements Listener {
 		if (arrowMeta == null) {
 			return ArrowData.arrowType.normal;
 		}
-		if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
+		if (arrowMeta.hasItemModel()
+				&& arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
 			return ArrowData.arrowType.explosive;
-		} else if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "dragon_arrow"))) {
+		} else if (arrowMeta.hasItemModel()
+				&& arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "dragon_arrow"))) {
 			return ArrowData.arrowType.dragon;
 		} else if (item.getType() == Material.SPECTRAL_ARROW) {
 			return ArrowData.arrowType.spectral;
@@ -170,15 +173,20 @@ public class CustomBows implements Listener {
 			} else {
 				return ArrowData.bowType.normal;
 			}
-		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "marksman_bow"))) {
+		} else if (item.getType() == Material.BOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "marksman_bow"))) {
 			return ArrowData.bowType.marksman;
-		} else if (item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "ricochet_bow"))) {
+		} else if (item.getType() == Material.BOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "ricochet_bow"))) {
 			return ArrowData.bowType.ricochet;
-		} else if (item.getType() == Material.CROSSBOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "charged_crossbow"))) {
+		} else if (item.getType() == Material.CROSSBOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "charged_crossbow"))) {
 			return ArrowData.bowType.charged;
-		} else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))){
+		} else if (item.getType() == Material.BOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))) {
 			return ArrowData.bowType.angled;
-		} else if(item.getType() == Material.BOW && meta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_bow"))){
+		} else if (item.getType() == Material.BOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_bow"))) {
 			return ArrowData.bowType.explosive;
 		} else {
 			if (item.getType().equals(Material.CROSSBOW)) {
