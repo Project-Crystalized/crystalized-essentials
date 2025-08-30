@@ -2,6 +2,7 @@ package gg.crystalized.essentials;
 
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import gg.crystalized.essentials.CustomEntity.DefenceTotem;
+import gg.crystalized.essentials.CustomEntity.KnockoutOrb;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -35,6 +36,7 @@ public final class crystalized_essentials extends JavaPlugin {
 	ItemStack WingedOrbElytra = new ItemStack(Material.ELYTRA); //Had to put this here, ItemMeta just didn't work on CustomCoalBasedItems
 	public List<AntiairTotem> antiairTotemList = new ArrayList<>();
 	public List<DefenceTotem> defenceTotemList = new ArrayList<>();
+	public List<KnockoutOrb> knockoutOrbList = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -104,6 +106,16 @@ public final class crystalized_essentials extends JavaPlugin {
 		}
 		return null;
 	}
+
+	public KnockoutOrb getKnockoutOrbByEntity(ArmorStand e) {
+		for (KnockoutOrb a : knockoutOrbList) {
+			if (e.equals(a.entity)) {
+				return a;
+			}
+		}
+		return null;
+	}
+
 
 	public void useWingedOrb(Player player) {
 		PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());

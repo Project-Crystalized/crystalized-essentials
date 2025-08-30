@@ -1,6 +1,7 @@
 package gg.crystalized.essentials.CustomEntity;
 
 import gg.crystalized.essentials.crystalized_essentials;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.EulerAngle;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -19,15 +21,16 @@ import static net.kyori.adventure.text.Component.text;
 
 public class KnockoutOrb {
 
-    Player owner;
-    Player target;
-    ArmorStand entity;
+    public Player owner;
+    public Player target;
+    public ArmorStand entity;
 
     public KnockoutOrb(Player o) {
         owner = o;
         List<String> playerAllies = crystalized_essentials.getInstance().getAllies(owner);
 
-        for (Entity e : owner.getNearbyEntities(30, 30, 30)) {
+
+        for (Entity e : owner.getNearbyEntities(80, 80, 80)) { //womp womp if this lags the server
             if (e instanceof Player) {
                 if (!(playerAllies.contains(e.getName())) && !((Player) e).getGameMode().equals(GameMode.SPECTATOR)) {
                     target = (Player) e;
@@ -40,6 +43,9 @@ public class KnockoutOrb {
             plugin.getLogger().log(Level.WARNING, "" + owner.getName() + "'s Knockout Orb failed, target is null.");
             return;
         }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.playSound(entity, "minecraft:entity.bat.takeoff", 1, 0.5f);
+        }
 
         entity = owner.getWorld().spawn(owner.getLocation().add(0, 2, 0), ArmorStand.class, entity -> {
             ItemStack rocket = new ItemStack(Material.CHARCOAL);
@@ -50,41 +56,57 @@ public class KnockoutOrb {
             entity.setCustomNameVisible(true); //Make this true for debug stats above model
             entity.setInvisible(true);
             entity.setInvulnerable(true);
-            entity.setGravity(false);
+            //entity.setGravity(false);
             entity.setDisabledSlots(EquipmentSlot.HEAD);
             entity.setDisabledSlots(EquipmentSlot.HAND);
             entity.setDisabledSlots(EquipmentSlot.OFF_HAND);
         });
 
-        Player Target = target; //useless ass code but intellij forced me to do this
         new BukkitRunnable() {
-            int timerUntilDeath = 10 * 20;
+            int timerUntilDeath = 13 * 20;
             public void run() {
-                entity.customName(text("T:" + timerUntilDeath + " | Owner: " + owner.getName() + " | Target: " + Target.getName()));
+                entity.customName(text("T:" + timerUntilDeath + " | Owner: " + owner.getName() + " | Target: " + target.getName()));
 
                 timerUntilDeath--;
-                if ((timerUntilDeath == 0 || timerUntilDeath < 0) || entity.getNearbyEntities(3, 3, 3).contains(Target)) {
-                    entity.getLocation().createExplosion(10, false, false);
+                if ((timerUntilDeath == 0 || timerUntilDeath < 0) || entity.getNearbyEntities(0.3, 0.3, 0.3).contains(target)) {
+                    entity.getLocation().createExplosion(3, false, false);
+                    crystalized_essentials.getInstance().knockoutOrbList.remove(crystalized_essentials.getInstance().getKnockoutOrbByEntity(entity));
                     entity.remove();
                     cancel();
                 }
-
                 if (target == null) { //For if the target disconnects and/or if the game ends when someone uses this orb
+                    crystalized_essentials.getInstance().knockoutOrbList.remove(crystalized_essentials.getInstance().getKnockoutOrbByEntity(entity));
                     entity.remove();
                     cancel();
                 }
 
-                //TODO somehow move the projectile towards player
+                //set the facing direction towards target
+                //TODO gradually set the direction to target instead of doing this instantly
+                org.bukkit.util.Vector entityLocVector = entity.getLocation().toVector();
+                org.bukkit.util.Vector targetLocVector = target.getLocation().toVector();
+                entity.teleport(entity.getLocation().setDirection(targetLocVector.subtract(entityLocVector)));
+                entity.setHeadPose(new EulerAngle(0, 0, 0)); //TODO head rotation
+
+                //move towards target
+                entity.setVelocity(entity.getLocation().getDirection().multiply(0.75));
             }
         }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 
         new BukkitRunnable() {
             public void run() {
-                Target.playSound(entity.getLocation(), "minecraft:block.note_block.bell", 1, 0.5F);
+                target.playSound(entity.getLocation(), "minecraft:block.note_block.bell", 1, 0.5F);
                 if (entity.isDead()) {
                     cancel();
                 }
             }
         }.runTaskTimer(crystalized_essentials.getInstance(), 0, 5);
+    }
+
+    public void changeTargetAndOwner(Player newTarget, Player newOwner) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.playSound(entity, "crystalized:effect.nexus_crystal_destroyed", 1, 2);
+        }
+        target = newTarget;
+        owner = newOwner;
     }
 }

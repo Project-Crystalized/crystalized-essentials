@@ -107,7 +107,7 @@ public class CustomCoalBasedItems implements Listener {
 						if (Bukkit.getOnlinePlayers().size() == 1) {
 							player.sendMessage(text("[!] Knockout Orb cant be used while nobody else is online"));
 						} else {
-							new KnockoutOrb(player);
+							crystalized_essentials.getInstance().knockoutOrbList.add(new KnockoutOrb(player));
 							player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 							player.setCooldown(Material.COAL, 20);
 						}

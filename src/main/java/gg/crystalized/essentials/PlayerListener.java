@@ -1,6 +1,8 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
+import gg.crystalized.essentials.CustomEntity.KnockoutOrb;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.ArmorStand;
@@ -12,6 +14,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+
+import static net.kyori.adventure.text.Component.text;
 
 public class PlayerListener implements Listener {
     @EventHandler
@@ -73,6 +77,17 @@ public class PlayerListener implements Listener {
                 } else if (name.equals(new NamespacedKey("crystalized", "models/defence_totem"))) {
                     crystalized_essentials.getInstance().getDefenceTotemByEntity(en).hit((Player) e.getDamager());
                 }
+
+                //This doesn't work and I have no idea why, test2 doesnt should for either the target or owner - Callum
+                /*else if (name.equals(new NamespacedKey("crystalized", "models/knockout_orb"))) {
+                    KnockoutOrb ko = crystalized_essentials.getInstance().getKnockoutOrbByEntity(en);
+                    if (ko.target.equals(e.getDamager())) {
+                        ko.changeTargetAndOwner(ko.owner, ko.target);
+                        Bukkit.getServer().sendMessage(text("test2"));
+                    } else {
+                        Bukkit.getServer().sendMessage(text("test"));
+                    }
+                }*/
             }
         }
     }
