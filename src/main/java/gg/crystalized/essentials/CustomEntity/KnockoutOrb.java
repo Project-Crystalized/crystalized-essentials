@@ -29,7 +29,6 @@ public class KnockoutOrb {
         owner = o;
         List<String> playerAllies = crystalized_essentials.getInstance().getAllies(owner);
 
-
         for (Entity e : owner.getNearbyEntities(80, 80, 80)) { //womp womp if this lags the server
             if (e instanceof Player) {
                 if (!(playerAllies.contains(e.getName())) && !((Player) e).getGameMode().equals(GameMode.SPECTATOR)) {
@@ -53,7 +52,7 @@ public class KnockoutOrb {
             rocketMeta.setItemModel(new NamespacedKey("crystalized", "models/knockout_orb"));
             rocket.setItemMeta(rocketMeta);
             entity.setItem(EquipmentSlot.HEAD, rocket);
-            entity.setCustomNameVisible(true); //Make this true for debug stats above model
+            //entity.setCustomNameVisible(true); //Make this true for debug stats above model
             entity.setInvisible(true);
             entity.setInvulnerable(true);
             //entity.setGravity(false);
@@ -68,7 +67,7 @@ public class KnockoutOrb {
                 entity.customName(text("T:" + timerUntilDeath + " | Owner: " + owner.getName() + " | Target: " + target.getName()));
 
                 timerUntilDeath--;
-                if ((timerUntilDeath == 0 || timerUntilDeath < 0) || entity.getNearbyEntities(0.3, 0.3, 0.3).contains(target)) {
+                if ((timerUntilDeath == 0 || timerUntilDeath < 0) || entity.getNearbyEntities(0.3, 0.3, 0.3).contains(target) || target.getGameMode().equals(GameMode.SPECTATOR)) {
                     entity.getLocation().createExplosion(3, false, false);
                     crystalized_essentials.getInstance().knockoutOrbList.remove(crystalized_essentials.getInstance().getKnockoutOrbByEntity(entity));
                     entity.remove();
