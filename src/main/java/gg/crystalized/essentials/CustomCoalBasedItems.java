@@ -38,8 +38,8 @@ public class CustomCoalBasedItems implements Listener {
 			return;
 		}
 		Player player = event.getPlayer();
-		if (event.getHand() != EquipmentSlot.HAND)
-			return;
+		if (event.getHand() != EquipmentSlot.HAND) return;
+		if (player.getGameMode().equals(GameMode.SPECTATOR)) return;
 		if (event.getAction().isRightClick()) {
 			if (player.hasCooldown(Material.COAL) && player.getInventory().getItemInMainHand().equals(Material.COAL)) {
 				player.sendMessage(text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
