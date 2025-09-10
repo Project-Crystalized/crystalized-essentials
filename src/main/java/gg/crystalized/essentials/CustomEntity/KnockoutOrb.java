@@ -1,10 +1,8 @@
 package gg.crystalized.essentials.CustomEntity;
 
 import gg.crystalized.essentials.crystalized_essentials;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -14,7 +12,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.EulerAngle;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import static net.kyori.adventure.text.Component.text;
@@ -79,6 +79,11 @@ public class KnockoutOrb {
                     cancel();
                 }
 
+                for (Block b : getNearbyBlocks(entity.getLocation(), 3, 4, 3)) {
+                    b.setType(Material.AIR);
+                    entity.getWorld().playSound(b.getLocation(), "minecraft:block.amethyst_block.break", 1, 1);
+                }
+
                 //set the facing direction towards target
                 //TODO gradually set the direction to target instead of doing this instantly
                 org.bukkit.util.Vector entityLocVector = entity.getLocation().toVector();
@@ -88,6 +93,26 @@ public class KnockoutOrb {
 
                 //move towards target
                 entity.setVelocity(entity.getLocation().getDirection().multiply(0.75));
+            }
+
+            Set<Block> getNearbyBlocks(Location center, int x, int y, int z) {
+                Set<Block> list = new HashSet<>();
+                Location loc = center.subtract(x/2, y/2, z/2);
+                int X = x;
+                while (X != 0) {
+                    int Y = y;
+                    while (Y != 0) {
+                        int Z = z;
+                        while (Z != 0) {
+                            list.add(loc.clone().add(X, Y, Z).getBlock());
+                            Z--;
+                        }
+                        Y--;
+                    }
+                    X--;
+                }
+
+                return list;
             }
         }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 
