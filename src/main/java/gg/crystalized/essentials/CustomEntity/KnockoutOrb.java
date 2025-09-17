@@ -80,8 +80,11 @@ public class KnockoutOrb {
                 }
 
                 for (Block b : getNearbyBlocks(entity.getLocation(), 3, 4, 3)) {
-                    b.setType(Material.AIR);
-                    entity.getWorld().playSound(b.getLocation(), "minecraft:block.amethyst_block.break", 1, 1);
+                    if (!b.isEmpty()) {
+                        b.setType(Material.AMETHYST_BLOCK);
+                        entity.getWorld().playSound(b.getLocation(), "minecraft:block.amethyst_block.break", 1, 1);
+                        b.breakNaturally(true);
+                    }
                 }
 
                 //set the facing direction towards target

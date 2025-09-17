@@ -80,9 +80,8 @@ public class CustomCoalBasedItems implements Listener {
 						Vector direction = player.getEyeLocation().getDirection();
 						Fireball fireball = player.launchProjectile(Fireball.class, direction);
 						fireball.getLocation().add(fireball.getVelocity().normalize().multiply(3));
-						fireball.setYield(3);
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+						fireball.setYield(1);
+						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 						player.setCooldown(Material.COAL, 8);
 
 						// Grappling Orb
@@ -323,13 +322,12 @@ public class CustomCoalBasedItems implements Listener {
 					int timesGrappled = 0;
 					int timer = 0;
 
-					@Override
 					public void run() {
 						timer++;
 
 						if (timer == 5) {
 							timer = 0;
-							if (timesGrappled == 16 || timesGrappled > 16 || p.isSneaking()) {
+							if (timesGrappled == 16 || timesGrappled > 16 || p.isSneaking() || p.getGameMode().equals(GameMode.SPECTATOR)) {
 								stopGrapple();
 							}
                             grapple(false);
