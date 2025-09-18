@@ -61,7 +61,6 @@ public class KnockoutOrb {
             entity.setDisabledSlots(EquipmentSlot.HAND);
             entity.setDisabledSlots(EquipmentSlot.OFF_HAND);
         });
-        System.out.println("The THING WAS SPAWNED");
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(entity.getLocation(), "minecraft:entity.bat.takeoff", 1f, 0.5f); // was using 'entity' before it existed
