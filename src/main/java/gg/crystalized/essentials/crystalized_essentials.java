@@ -3,6 +3,7 @@ package gg.crystalized.essentials;
 import gg.crystalized.essentials.CustomEntity.AntiairTotem;
 import gg.crystalized.essentials.CustomEntity.DefenceTotem;
 import gg.crystalized.essentials.CustomEntity.KnockoutOrb;
+import gg.crystalized.essentials.CustomEntity.KnockoutOrbDeflectListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -47,6 +48,7 @@ public final class crystalized_essentials extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new CrystalizedLinks(), this);
 		this.getServer().getPluginManager().registerEvents(new CustomBows(), this);
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+        this.getServer().getPluginManager().registerEvents(new KnockoutOrbDeflectListener(), this);
 		playerDatas.clear();
 
 		ItemMeta WingedOrbElytra_im = WingedOrbElytra.getItemMeta();
