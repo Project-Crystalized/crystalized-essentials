@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.EulerAngle;
 
@@ -24,10 +25,15 @@ public class KnockoutOrb {
     public Player owner;
     public Player target;
     public ArmorStand entity;
+    public int deflectIFrames = 0; // ticks of "no explode on contact" after a deflect
+    public int deflectTurnBoostTicks = 0; // faster turning for a few ticks after deflect
+    public double headYawOffsetDeg = 0;   // temporary head yaw offset for the rottation around animation
+    public int deflectMeleeLockTicks = 0; // ignore melee deflects for a few ticks after a deflect, so can't be punched again
 
     public KnockoutOrb(Player o) {
         owner = o;
         List<String> playerAllies = crystalized_essentials.getInstance().getAllies(owner);
+        if (playerAllies == null) playerAllies = java.util.Collections.emptyList();
 
         for (Entity e : owner.getNearbyEntities(80, 80, 80)) { //womp womp if this lags the server
             if (e instanceof Player) {
@@ -52,7 +58,8 @@ public class KnockoutOrb {
             entity.setItem(EquipmentSlot.HEAD, rocket);
             //entity.setCustomNameVisible(true); //Make this true for debug stats above model
             entity.setInvisible(true);
-            entity.setInvulnerable(true);
+            //Needs to be false to be able to deflect
+            entity.setInvulnerable(false);
 
             // Tried making it false didn't work, the thing didn't fly - MT
             entity.setGravity(true);
@@ -60,7 +67,17 @@ public class KnockoutOrb {
             entity.setDisabledSlots(EquipmentSlot.HEAD);
             entity.setDisabledSlots(EquipmentSlot.HAND);
             entity.setDisabledSlots(EquipmentSlot.OFF_HAND);
+
+
+            // Taged it as a knockut orb (so the listener can identify it) ---
+            NamespacedKey ORB_TAG = new NamespacedKey(crystalized_essentials.getInstance(), "knockout_orb");
+            entity.getPersistentDataContainer().set(ORB_TAG, PersistentDataType.BYTE, (byte) 1);
+            // -------------------------------------------------------------------
         });
+        //makes sure it gets the instance
+        crystalized_essentials.getInstance().knockoutOrbList.add(this);
+        //System.out.println("The THING WAS SPAWNED NOOOOO");
+        //The old bebug
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(entity.getLocation(), "minecraft:entity.bat.takeoff", 1f, 0.5f); // was using 'entity' before it existed
@@ -77,22 +94,42 @@ public class KnockoutOrb {
             final double MODEL_PITCH_OFFSET_DEG = -90.0; // set to 0 or +90 depending on model
             // Knock Off Orb homming rockect loggic
 
+
             public void run() {
+                //Added an imidiate check if it is null or not valid it immidetely gets cannceled and returned
+                if (entity == null || !entity.isValid()) { cancel(); return; }
                 entity.customName(text("T:" + timerUntilDeath + " | Owner: " + owner.getName() + " | Target: " + target.getName()));
 
+                //Gives time to deflect Iframes
+                if (deflectIFrames > 0) deflectIFrames--; // tick down i-frames
+
+
                 timerUntilDeath--;
-                if ((timerUntilDeath <= 0)
-                        || entity.getNearbyEntities(0.3, 0.3, 0.3).contains(target)
-                        || target.getGameMode().equals(GameMode.SPECTATOR)) {
+
+
+                // turn-boost + head swivel easing ----
+                //Head swivel means the turn arround annimation for deflect
+                if (deflectTurnBoostTicks > 0) deflectTurnBoostTicks--;
+                if (Math.abs(headYawOffsetDeg) > 0.5) headYawOffsetDeg *= 0.8; else headYawOffsetDeg = 0;
+                if (deflectMeleeLockTicks > 0) deflectMeleeLockTicks--;
+                // ---------------------------------------------------
+               // only considers contact if target exists
+                // Tweak the number to taste
+                final double CONTACT = 0.20; // "contact radius" (half the size of the proximity box)
+                boolean touchingTarget = target != null && entity.getNearbyEntities(CONTACT, CONTACT, CONTACT).contains(target);
+
+
+                //Simplified If statement which combines two of the checkers together so less if statements
+                if (target == null || !target.isOnline()
+                        || target.getGameMode() == GameMode.SPECTATOR
+                        || timerUntilDeath <= 0
+                        || (touchingTarget && deflectIFrames <= 0)) {
+
                     entity.getLocation().createExplosion(3, false, false);
-                    crystalized_essentials.getInstance().knockoutOrbList.remove(crystalized_essentials.getInstance().getKnockoutOrbByEntity(entity));
+                    crystalized_essentials.getInstance().knockoutOrbList.remove(KnockoutOrb.this); // <-- remove by reference
                     entity.remove();
                     cancel();
-                }
-                if (target == null) { //For if the target disconnects and/or if the game ends when someone uses this orb
-                    crystalized_essentials.getInstance().knockoutOrbList.remove(crystalized_essentials.getInstance().getKnockoutOrbByEntity(entity));
-                    entity.remove();
-                    cancel();
+                    return;
                 }
 
                 for (Block b : getNearbyBlocks(entity.getLocation(), 3, 4, 3)) {
@@ -141,7 +178,9 @@ public class KnockoutOrb {
                 float deltaYaw = normalizeYaw(desiredYaw - curYaw);
                 float deltaPitch = desiredPitch - curPitch;
 
-                float max = (float) MAX_TURN_DEG;
+                //float max = (float) MAX_TURN_DEG;
+                //Changes to be better for deflections turn around
+                float max = (float) MAX_TURN_DEG + (deflectTurnBoostTicks > 0 ? 10f : 0f);
                 if (deltaYaw >  max) deltaYaw =  max;
                 if (deltaYaw < -max) deltaYaw = -max;
                 if (deltaPitch >  max) deltaPitch =  max;
@@ -160,12 +199,16 @@ public class KnockoutOrb {
                 org.bukkit.util.Vector forward = forwardLoc.getDirection().normalize();
                 entity.setVelocity(forward.multiply(SPEED));
 
+                // smooth head swivel with a little bit of bank
+                double yawOffset = MODEL_YAW_OFFSET_DEG + headYawOffsetDeg;
+                double rollDeg   = Math.max(-20, Math.min(20, -headYawOffsetDeg * 0.25));
+
                 // Makes the HEAD/ORB align with body facing
                 //    If the model is built relative to the head, use a fixed pose offset. (Personaly not sure)
                 entity.setHeadPose(new EulerAngle(
                         Math.toRadians(MODEL_PITCH_OFFSET_DEG),
-                        Math.toRadians(MODEL_YAW_OFFSET_DEG),
-                        0
+                        Math.toRadians(yawOffset),
+                        Math.toRadians(rollDeg)
                 ));
 
                 // =====================================================================
@@ -222,5 +265,15 @@ public class KnockoutOrb {
         }
         target = newTarget;
         owner = newOwner;
+    }
+
+
+    // Extra helper (so listener can set both + retarget cleanly)
+    public void deflectTo(Player newTarget, Player newOwner) {
+        changeTargetAndOwner(newTarget, newOwner);
+        deflectIFrames = 10; // 0.4s grace so punch wins the frame
+        deflectTurnBoostTicks = 10;   // 0.5s of snappier turning
+        headYawOffsetDeg = 180.0;     // start the head turned “backwards”, will ease to 0
+        deflectMeleeLockTicks = 10; // 0.5s lock so the new owner can't instantly re-punch
     }
 }
