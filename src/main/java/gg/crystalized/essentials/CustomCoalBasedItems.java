@@ -264,7 +264,7 @@ public class CustomCoalBasedItems implements Listener {
         Snowball sb = p.launchProjectile(Snowball.class, null);
 
         // fast & straight "hook"
-        sb.setGravity(true);
+        sb.setGravity(false);
         sb.setVelocity(p.getEyeLocation().getDirection().normalize().multiply(1.8));
 
         // tag: robust identification on hit
@@ -288,15 +288,31 @@ public class CustomCoalBasedItems implements Listener {
         sb.setItem(item);
         //sb.setCustomNameVisible(false);
 
-        // rope trail behind the projectile (similiar to how it was on TubNet)
+        // rope trail behind the projectile (similiar to how it was on TubNet) and gravity
         new BukkitRunnable() {
-            //As it has no gravity incase player misses it has a life
+            final int DROP_DELAY_TICKS = 10; // 0.5s; lower is shorter straight range
+            int t = 0;
+            //it has a life incase player missing
             int life = 100; // up to 5s of flight before despawn if it never hits
+            boolean gravityFlipped = false;  // ensures it set gravity only once
             @Override public void run() {
+
                 if (sb.isDead() || !sb.isValid()) { cancel(); return; }
-                Location tail = sb.getLocation().clone()
-                        .subtract(sb.getVelocity().clone().normalize().multiply(0.30));
-                sb.getWorld().spawnParticle(Particle.CRIT, tail, 2, 0.02, 0.02, 0.02, 0.0);
+                // after delay, enables gravity (once)
+                if (!gravityFlipped && t >= DROP_DELAY_TICKS) {
+                    sb.setGravity(true);
+                    gravityFlipped = true;
+
+                    // (optional) in the future potentialy change drop to be a little steeper:
+                    // sb.setVelocity(sb.getVelocity().add(new Vector(0, -0.03, 0)));
+                }
+                // rope trails behind the projectile, a check so it doesn't mess up
+                Vector v = sb.getVelocity();
+                if (v.lengthSquared() > 1e-6) {
+                    Location tail = sb.getLocation().clone()
+                            .subtract(v.clone().normalize().multiply(0.30));
+                    sb.getWorld().spawnParticle(Particle.CRIT, tail, 2, 0.02, 0.02, 0.02, 0.0);
+                }
                 if (--life <= 0) { sb.remove(); cancel(); }
             }
         }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
