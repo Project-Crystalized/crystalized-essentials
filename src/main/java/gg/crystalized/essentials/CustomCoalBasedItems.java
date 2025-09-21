@@ -264,7 +264,7 @@ public class CustomCoalBasedItems implements Listener {
         Snowball sb = p.launchProjectile(Snowball.class, null);
 
         // fast & straight "hook"
-        sb.setGravity(false);
+        sb.setGravity(true);
         sb.setVelocity(p.getEyeLocation().getDirection().normalize().multiply(1.8));
 
         // tag: robust identification on hit
