@@ -8,10 +8,13 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -257,16 +260,54 @@ public class CustomCoalBasedItems implements Listener {
 	}
 
 	public void launchGrapplingOrb(Player p) {
-		//Vector direction = p.getEyeLocation().getDirection();
-		Snowball snowball = p.launchProjectile(Snowball.class, null);
-        snowball.getLocation().add(snowball.getVelocity().normalize().multiply(1.5));
-		ItemStack item = snowball.getItem();
-		ItemMeta meta = item.getItemMeta();
-		meta.setItemModel(new NamespacedKey("crystalized", "grappling_orb"));
-		meta.displayName(text("" + p.getName())); //ProjectileHitEvent doesn't have a method for getting the player name
-		item.setItemMeta(meta);
-		snowball.setItem(item);
-		//snowball.setCustomNameVisible(false);
+        //Vector direction = p.getEyeLocation().getDirection();
+        Snowball sb = p.launchProjectile(Snowball.class, null);
+
+        // fast & straight "hook"
+        sb.setGravity(false);
+        sb.setVelocity(p.getEyeLocation().getDirection().normalize().multiply(1.8));
+
+        // tag: robust identification on hit
+        sb.getPersistentDataContainer().set(
+                new NamespacedKey("crystalized", "grapple_owner"),
+                org.bukkit.persistence.PersistentDataType.STRING,
+                p.getUniqueId().toString()
+        );
+        sb.getPersistentDataContainer().set(
+                new NamespacedKey("crystalized", "is_grapple"),
+                org.bukkit.persistence.PersistentDataType.BYTE,
+                (byte)1
+        );
+
+        // The model logic
+        ItemStack item = sb.getItem();
+        ItemMeta meta = item.getItemMeta();
+        meta.setItemModel(new NamespacedKey("crystalized", "grappling_orb"));
+        meta.displayName(text(p.getName()));
+        item.setItemMeta(meta);
+        sb.setItem(item);
+        //sb.setCustomNameVisible(false);
+
+        // rope trail behind the projectile (similiar to how it was on TubNet)
+        new BukkitRunnable() {
+            //As it has no gravity incase player misses it has a life
+            int life = 100; // up to 5s of flight before despawn if it never hits
+            @Override public void run() {
+                if (sb.isDead() || !sb.isValid()) { cancel(); return; }
+                Location tail = sb.getLocation().clone()
+                        .subtract(sb.getVelocity().clone().normalize().multiply(0.30));
+                sb.getWorld().spawnParticle(Particle.CRIT, tail, 2, 0.02, 0.02, 0.02, 0.0);
+                if (--life <= 0) { sb.remove(); cancel(); }
+            }
+        }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+
+
+
+        /* */
+
+
+
+
 	}
 
 	public void launchPoisonOrb(Player p) {
@@ -290,8 +331,345 @@ public class CustomCoalBasedItems implements Listener {
 		ItemMeta meta = item.getItemMeta();
 
 		if (meta.hasItemModel()) {
-			if (meta.getItemModel().equals(new NamespacedKey("crystalized", "grappling_orb"))) {
-				enum grapplingOrbState{
+            //The Grapling code massive changes
+            //Wasn't working sometimes so added extra checks
+            if (meta.hasItemModel() && meta.getItemModel().equals(new NamespacedKey("crystalized", "grappling_orb"))) {
+                // proves it's this grapple via PDC flag (PDC stands for Persistent Data Container )
+                Snowball proj = (Snowball) e.getEntity();
+
+                //boolen Check if this snowball is one of the Grappling Orbs
+                // by looking for the PDC flag "crystalized:is_grapple" (stored as BYTE).
+                boolean isGrapple = Boolean.TRUE.equals(
+                        proj.getPersistentDataContainer().has(
+                                new NamespacedKey("crystalized", "is_grapple"),
+                                org.bukkit.persistence.PersistentDataType.BYTE
+                        )
+                );
+                if (!isGrapple) {
+                    // fallback: still allow old snowballs that only used item model
+                    // if in the future we want PDC only, just put here : e.getEntity().remove(); return;
+                }
+
+                // Resolve owner(the player who shot the grapling hook) from PDC (robust)
+                String ownerUUID = proj.getPersistentDataContainer().get(
+                        new NamespacedKey("crystalized", "grapple_owner"),
+                        org.bukkit.persistence.PersistentDataType.STRING
+                );
+                Player p = null;
+                //Error handeling
+                if (ownerUUID != null) {
+                    try { p = Bukkit.getPlayer(java.util.UUID.fromString(ownerUUID)); } catch (IllegalArgumentException ignored) {}
+                }
+                // Fallback: display name (keeps older orbs working)
+                //Incase the logic doesn't work properly
+                if (p == null) {
+                    String pname = PlainTextComponentSerializer.plainText().serialize(meta.displayName());
+                    p = Bukkit.getPlayer(pname);
+                }
+                //Removes if player died, not online or in spectator as well as null
+
+                if (p == null || !p.isOnline() || p.isDead() || p.getGameMode() == GameMode.SPECTATOR) {
+                    e.getEntity().remove();
+                    return;
+                }
+
+                // Keeps the "using grapple" flag on for a few ticks after impact to avoid double-triggers
+                // and re-firing in the same tick/frame. Cleared later via the delayed task.
+
+                final int LOCK_TICKS = 10;
+
+
+                // Grab player state and mark that this player is currently in a grapple.
+                // Prevents launching another grapple until this interaction finishes (or lock expires).
+                PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
+                if (pd != null) pd.isUsingGrapplingOrb = true;
+
+
+                // What did the graple orb hit? Caches both so it is possible to branch:
+                Entity hit = e.getHitEntity();
+                Block  blk = e.getHitBlock();
+                // CASE A: 'hit' is a Player (victim pull)  |  CASE B: 'blk' is a Block (self pull).
+
+                // --- CASE A: player hook: short pull, then auto-fling: Shift = instant fling -----
+
+                //----- CASE A ------------
+                if (hit instanceof Player && !((Player) hit).getUniqueId().equals(p.getUniqueId())) {
+
+                    // player who fired the grapple
+                    final Player grappler = p;
+                    // victim the player pulled toward grappler
+                    final Player victim   = (Player) hit;
+
+                    /* --- Timing (ticks = 1/20s) ---
+                     Gives the rope a brief pull window, then automatically "fling" the victim
+                        past the grappler so they don't body-stop. Shift by the grappler triggers the
+                        same fling instantly.
+                     */
+                    final int    AUTO_FLING_AT   = 8;     // starts auto-fling after 0.4s of pulling
+                    final int    MAX_PULL_TICKS  = 20;    // hard safety stop (1s) if conditions get weird
+
+                    /* ---Pull shaping (horizontal speed along rope)---
+                     targetSpeed = clamp(BASE_V + DIST_GAIN * distance, <= V_MAX)
+                        The only reason to add ACCEL_CAP per tick to avoid watchdog/fastClip stalls.
+                        Units are "blocks per tick" (B/tick). 1.0 roughly 20 blocks/sec horizontally.
+                     */
+                    final double BASE_V          = 1.05; // base rope speed even at close range
+                    final double DIST_GAIN       = 0.10;  // extra speed per block of separation
+                    final double V_MAX           = 2.40; // absolute target speed cap (keep on the lower side be safe)
+                    final double ACCEL_CAP       = 0.55; // per-tick acceleration clamp (prevents huge jumps)
+
+                    /* --- Vertical assist while pulling ---
+                        Small upward help each tick; a bit more when the victim is falling so they
+                        arc(like a projectlie motion arc) nicely instead of face-planting (hitting blocks with face) mid-pull.
+                     */
+
+                    final double UP_TICK         = 0.10; // baseline upward bias per tick
+                    final double FALL_GAIN       = 0.45; // extra up when current Y-vel is downward
+
+                    /* ---Fling impulse (used for both Shift-fling and auto-fling)---
+                         When player decides to fling,  the velocity is replaced with a forward+up impulse:
+                         forward = max(current_along_rope, FLING_MIN_FWD) + FLING_EXTRA_FWD
+                         then clamp with CAP_HORIZ/CAP_UP for watchdog safety.
+                         Increase FLING_UP for a higher arc; increase FLING_*FWD for more carry-through.
+                     */
+                    final double FLING_MIN_FWD   = 1.35; // minimum forward component on fling
+                    final double FLING_EXTRA_FWD = 0.35; // extra shove to guarantee pass-through the owner
+                    final double FLING_UP        = 0.18; // pop upward at the moment of fling
+                    final double CAP_HORIZ       = 2.40; // horizontal cap on resulting velocity
+                    final double CAP_UP          = 0.60; // upward cap on resulting velocity
+
+
+                    /* ---Auto-fling proximity trigger---
+                        If the victim gets this close to the grappler before AUTO_FLING_AT, it flings early.
+                     */
+                    final double CLOSE_TRIG = 1.00;
+
+                    // Attempt to avoid “face stop”, when the victim collides into the owner of the graple
+                    final int NOCOLLIDE_T = 12; // ticks of no-collision (0.6s) during/after fling
+
+                    //sound
+                    grappler.playSound(victim.getLocation(), Sound.ENTITY_FISHING_BOBBER_RETRIEVE, 1f, 1.10f);
+
+                    new BukkitRunnable() {
+                        int ticks = 0;
+
+                        @Override public void run() {
+                            //Checks
+                            if (!grappler.isOnline() || grappler.isDead() || grappler.getGameMode()==GameMode.SPECTATOR
+                                    || !victim.isValid() || victim.isDead() || victim.getGameMode()==GameMode.SPECTATOR) {
+                                finish(); return;
+                            }
+
+                            //Getting locations, vectors, and distance
+                            Location vPt = victim.getLocation().add(0, 0.9, 0);
+                            Location pPt = grappler.getLocation().add(0, 0.9, 0);
+                            Vector toP   = pPt.toVector().subtract(vPt.toVector());
+                            double dist  = Math.max(1e-4, toP.length());
+                            Vector dir   = toP.multiply(1.0 / dist); // victim -> grappler
+
+                            // Shift = instant fling
+                            if (grappler.isSneaking()) {
+                                //Thoes helper methods are at the end of this java file
+                                beginNoCollision(grappler, victim, NOCOLLIDE_T);
+                                flingVictim(victim, dir, FLING_MIN_FWD, FLING_EXTRA_FWD, FLING_UP, CAP_HORIZ, CAP_UP, 8);
+                                finish(); return;
+                            }
+
+                            // auto-fling after a short pull or when very close
+                            if (ticks >= AUTO_FLING_AT || dist < CLOSE_TRIG) {
+                                beginNoCollision(grappler, victim, NOCOLLIDE_T);
+                                flingVictim(victim, dir, FLING_MIN_FWD, FLING_EXTRA_FWD, FLING_UP, CAP_HORIZ, CAP_UP, 8);
+                                finish(); return;
+                            }
+
+                            // --- Pulling phase (springy but capped/limitied) ---
+                                // It accelerates the victim *along the rope direction* toward the grappler.
+                                // targetSpeed grows with distance but is bounded/limitied, and per-tick acceleration
+                                // is clamped/limitied so it don't spike velocity (keeps watchdog/fastClip happy).
+
+                            double target = Math.min(BASE_V + dist * DIST_GAIN, V_MAX); // desired along-rope speed (B/tick)
+                            Vector vv     = victim.getVelocity();  // current velocity
+                            double along  = vv.dot(dir); // component of vv along the rope (victim -> grappler
+                            double add    = Math.min(Math.max(0, target - along), ACCEL_CAP); // how much speed to add this tick (clamped)
+
+                            if (add > 0) {
+                                // Applys forward impulse plus a little vertical help so pulls feel smoother.
+                                // If the victim is falling, gives extra upward assist to avoid face planting (where they will just hit the block with their face).
+                                Vector impulse = dir.multiply(add);  // forward (along-rope) impulse
+                                double up = UP_TICK;    // baseline up bias
+                                if (vv.getY() < 0) up += Math.min(0.40, -vv.getY() * FALL_GAIN); // fall-save boost (clamped)
+                                impulse.setY(impulse.getY() + up);
+
+                                // Sets new velocity but cap horizontal and upward components for safety.
+                                // capVelocity(v, CAP_HORIZ, CAP_UP) limits horizontal speed and max upward speed.
+                                victim.setVelocity(capVelocity(vv.add(impulse), CAP_HORIZ, CAP_UP));
+                            }
+
+                            // Prevents weird pottential fall-damage during/after rope motion.
+                            victim.setFallDistance(0f);
+                            grappler.setFallDistance(0f);
+
+
+                            // Hard safety: if somehow it keeps pulling too long, auto-convert to a fling
+                            // so the victim passes through cleanly instead of sticking.
+
+                            if (++ticks >= MAX_PULL_TICKS) { // safety
+                                beginNoCollision(grappler, victim, NOCOLLIDE_T);
+                                flingVictim(victim, dir, FLING_MIN_FWD, FLING_EXTRA_FWD, FLING_UP, CAP_HORIZ, CAP_UP, 8);
+                                finish();
+                            }
+                        }
+
+                        void finish() {
+                            cancel();
+                            PlayerData pd = crystalized_essentials.getInstance().getPlayerData(grappler.getName());
+                            if (pd != null) Bukkit.getScheduler().runTaskLater(crystalized_essentials.getInstance(),
+                                    () -> pd.isUsingGrapplingOrb = false, 10);
+                        }
+                    }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+
+                    e.getEntity().remove();
+                    return;
+                }
+
+                // --- CASE B: graple to block -- climb-aware up-assist; Shift cancel keeps momentum with thrust; auto-cling/stick ---
+                if (blk != null) {
+                    final Player grappler = p;
+
+                    // Pull feel (owners speed along rope = BASE_V + distance * DIST_GAIN, clamped by V_MAX)
+                    final int    MAX_TICKS     = 100;  // rope life for block pulls
+                    final double BASE_V        = 0.95; // base target m/tick even at zero distance
+                    final double DIST_GAIN     = 0.055; // extra target speed per block of distance to hook
+                    final double V_MAX         = 2.30; // hard cap of target speed to keep motion tame
+                    final double ACCEL_CAP     = 0.45; // per-tick acceleration cap (watchdog-safe)
+
+                    // up help
+                    final double UP_TICK       = 0.12; // small up every tick to reduce being stuck in blocks
+                    final double UP_SNAP       = 0.22; // extra up for first SNAP_TICKS ticks to feel snapier
+                    final int    SNAP_TICKS    = 6; // how long UP_SNAP applies
+                    final double FALL_GAIN     = 0.85; // when falling (vy<0): add min(0.8, -vy * FALL_GAIN)
+
+                    // Climb-aware lift (extra help when hook is above player). Should save players
+                    final double CLIMB_GAIN    = 0.035;  // extra up per block hook is above player eye
+                    final double CLIMB_UP_CAP  = 0.34;   // per-tick cap for that climb assist
+
+                    // panic when really falling
+                    final double PANIC_Y       = -0.90; // if vy < PANIC_Y, treat as "plumenting"/void falling
+                    final double PANIC_UP      = 0.35; // emergency up boost in that case
+
+                    // cling (default), Shift to drop early
+                    final double CLING_DIST    = 0.55; // start clinging when within this distance of hook
+                    final int    CLING_TICKS   = 36; // cling duration if Shift isn’t pressed
+                    final double CLING_PULL    = 0.12; // small pull toward hook while clinging
+                    final double CLING_UP      = 0.05;  // small up while clinging (feels “magnetic/sticky”)
+
+                    // Velocity caps
+                    final double CAP_HORIZ     = 2.10; // clamp horizontal speed (server-friendly)
+                    final double CAP_UP        = 0.85;   // a bit higher to help big climbs // clamp upward boost (avoid stalls)
+
+                    // Shift-cancel-thrust (exit nudge when you Shift mid-air)
+                    final double CANCEL_MIN_FWD   = 1.20; // ensure at least this forward after cancel
+                    final double CANCEL_EXTRA_FWD = 0.25;  // small extra forward on top
+                    final double CANCEL_UP        = 0.20;  // a touch more up on cancel
+                    final double CANCEL_CAP_H     = 2.50; // caps used only for the cancel impulse
+                    final double CANCEL_CAP_UP    = 0.85;
+
+                    final Location hook = blk.getLocation().add(0.5, 0.5, 0.5);
+                    grappler.playSound(hook, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, 1f, 1.0f);
+
+                    new BukkitRunnable() {
+                        int ticks = 0;
+                        boolean clinging = false;
+                        int clingLeft = 0;
+
+                        @Override public void run() {
+                            //checks to stop imidetely if any of this happens
+                            if (!grappler.isOnline() || grappler.isDead() || grappler.getGameMode()==GameMode.SPECTATOR) {
+                                finish(); return;
+                            }
+
+                            // Vector from player eye to hook (the ropes direction)
+                            Location eye = grappler.getEyeLocation();
+                            Vector   toHook = hook.toVector().subtract(eye.toVector());
+                            double   dist   = Math.max(1e-4, toHook.length());
+                            Vector   dir    = toHook.multiply(1.0 / dist); //unit vector: player to hook
+
+                            // MID-AIR cancel (keep momentum + adds a little thrust)
+                            if (!clinging && grappler.isSneaking()) {
+                                applyCancelThrust(grappler, dir,
+                                        CANCEL_MIN_FWD, CANCEL_EXTRA_FWD, CANCEL_UP,
+                                        CANCEL_CAP_H, CANCEL_CAP_UP);
+                                finish(); return;
+                            }
+
+                            // enters cling when close
+                            if (!clinging && dist <= CLING_DIST) {
+                                clinging = true;
+                                clingLeft = CLING_TICKS;
+                            }
+
+                            if (clinging) {
+                                // while clinging: Shift or player has to wait to release (no thrust here)
+                                // manual release
+                                if (grappler.isSneaking()) { finish(); return; }
+                                Vector v = grappler.getVelocity();
+                                Vector hold = dir.multiply(CLING_PULL);// gentle pull toward hook
+                                hold.setY(hold.getY() + CLING_UP); // small upward bias while clinging
+                                grappler.setVelocity(v.multiply(0.88).add(hold)); // damp + hold
+                                grappler.setFallDistance(0f);
+                                if (--clingLeft <= 0) { finish(); } //auto relese after time
+                                return;
+                            }
+
+                            // --- pull phase (with climb-aware up assist) ---
+                            // Calculates target speed along rope and add a capped impulse toward the hook
+                            double target = Math.min(BASE_V + dist * DIST_GAIN, V_MAX); // springy target
+                            Vector vv     = grappler.getVelocity();
+                            double along  = vv.dot(dir); // current speed along rope
+                            double add    = Math.min(Math.max(0, target - along), ACCEL_CAP);  // capped accel
+
+                            if (add > 0) {
+                                Vector impulse = dir.multiply(add); // forward impulse
+
+                                // base up + snap + fall save
+                                double up = UP_TICK + (ticks < SNAP_TICKS ? UP_SNAP : 0);
+                                if (vv.getY() < 0) up += Math.min(0.8, -vv.getY() * FALL_GAIN); // falling help
+
+                                // extra climb help if hook is above you
+                                double yDiff = hook.getY() - eye.getY();        // blocks above player eye
+                                if (yDiff > 0) up += Math.min(CLIMB_UP_CAP, yDiff * CLIMB_GAIN);
+
+                                // panic save if really plummeting/falling
+                                if (vv.getY() < PANIC_Y) up += PANIC_UP;
+
+                                //ads vertical assit and applies the clamp/limiter
+                                impulse.setY(impulse.getY() + up);
+                                grappler.setVelocity(capVelocity(vv.add(impulse), CAP_HORIZ, CAP_UP));
+                            }
+
+                            // slight settle near end to avoid big bounce back
+                            if (dist < 1.2) grappler.setVelocity(grappler.getVelocity().multiply(0.985));
+
+                            grappler.setFallDistance(0f);
+                            if (++ticks >= MAX_TICKS) { finish(); }
+                        }
+
+                        void finish() {
+                            cancel();
+                            PlayerData pd = crystalized_essentials.getInstance().getPlayerData(grappler.getName());
+                            if (pd != null) Bukkit.getScheduler().runTaskLater(crystalized_essentials.getInstance(),
+                                    () -> pd.isUsingGrapplingOrb = false, 10);
+                        }
+                    }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+
+                    e.getEntity().remove();
+                    return;
+                }
+
+                //Old graple by Callum below
+                /*Old graple Code By Callum
+
+                enum grapplingOrbState{
 					placeholderValue, //fuck you
 					TowardsTarget,
 					PullEntity,
@@ -407,6 +785,9 @@ public class CustomCoalBasedItems implements Listener {
 				}.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
 
 			}
+			*/
+
+            }
 			else if (meta.getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
 
 				String pname = PlainTextComponentSerializer.plainText().serialize(meta.displayName());
@@ -630,5 +1011,107 @@ public class CustomCoalBasedItems implements Listener {
 		}
 		return false;
 	}
+
+
+    /*-----HERE BEGINS THE METHODS ADDED TO HELP WITH THE NEW GRAPLING LOGIC-----*/
+
+    // Temporarily disables collision between two players (safe, auto-restore)
+    private void beginNoCollision(Player a, Player b, int ticks) {
+        try {
+            // Paper/Spigot have per-entity collisions
+            a.setCollidable(false);
+            b.setCollidable(false);
+        } catch (Throwable ignored) { /*
+        TODO NOTE FOR THE FUTURE: if the server builds lacks this, comment out and use teams instead for best results */ }
+
+        Bukkit.getScheduler().runTaskLater(crystalized_essentials.getInstance(), () -> {
+            try { a.setCollidable(true); } catch (Throwable ignored) {}
+            try { b.setCollidable(true); } catch (Throwable ignored) {}
+        }, ticks);
+    }
+    // flings the victim forward+up, with a short particle trail to show the force
+    private void flingVictim(Player victim,
+                             Vector dir,              // vector: victim to grappler/the player owner
+                             double minForward,
+                             double extraForward,
+                             double upPop,
+                             double capHoriz,
+                             double capUp,
+                             int    trailTicks) {
+        Vector vv = victim.getVelocity();  // keep current momentum for continuity
+        double forward = Math.max(vv.dot(dir), minForward) + extraForward;   // desired forward speed along rope: at least minForward
+            // + shove so they pass through the grapler
+        Vector out = dir.multiply(forward);  // builds the launch vector in the rope direction
+        out.setY(Math.max(vv.getY(), 0) + upPop); // adds upward pop: never removes existing upward speed
+
+        victim.setVelocity(capVelocity(out, capHoriz, capUp)); // applys with the safety caps (horizontal/up) to avoid watchdog/stalls
+        victim.setFallDistance(0f); // prevents fall damage from this forced launch
+
+        // quick trail
+        final World w = victim.getWorld();
+        new BukkitRunnable() {
+            int left = trailTicks;
+            @Override public void run() {
+                if (!victim.isValid()) { cancel(); return; }
+                w.spawnParticle(Particle.CRIT, victim.getLocation().add(0, 1.0, 0), 6, 0.15, 0.15, 0.15, 0.0);
+                if (--left <= 0) cancel();
+            }
+        }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+    }
+
+    //This method is used to cap velocity
+    // clamps horiz / upward so it don't trip watchdog
+    private Vector capVelocity(Vector v, double maxHoriz, double maxUp) {
+        double y = Math.min(v.getY(), maxUp);
+        Vector h = v.clone(); h.setY(0);
+        double hl = h.length();
+        if (hl > maxHoriz && hl > 0) h.multiply(maxHoriz / hl);
+        return new Vector(h.getX(), y, h.getZ());
+    }
+
+    //This is used to do the fling trail
+    private void startFlingTrail(Player victim, int ticks) {
+        new BukkitRunnable() {
+            int t = ticks;
+            @Override public void run() {
+                if (!victim.isValid() || victim.isDead() || t-- <= 0) { cancel(); return; }
+                Location p = victim.getLocation().add(0, 1.0, 0);
+                victim.getWorld().spawnParticle(Particle.SWEEP_ATTACK, p, 1, 0.0, 0.0, 0.0, 0.0);
+                victim.getWorld().spawnParticle(Particle.CRIT, p, 2, 0.12, 0.12, 0.12, 0.0);
+            }
+        }.runTaskTimer(crystalized_essentials.getInstance(), 0, 1);
+    }
+
+
+
+    // one-shot impulse used ONLY for mid-air cancel
+    private void applyCancelThrust(Player grappler,
+                                   Vector dir,           // vector from player to hook
+                                   double minFwd,
+                                   double extraFwd,
+                                   double baseUp,
+                                   double capHoriz,
+                                   double capUp) {
+        Vector v = grappler.getVelocity();         // current momentum whic is preserved
+        double along = v.dot(dir); // current forward speed along dir
+        double need  = Math.max(0.0, minFwd - along); // how much is missing to reach minFwd (0 if already fast enough)
+
+        Vector impulse = dir.multiply(need + extraFwd); // forward impulse = "catch up to min" + extra shove
+
+        double up = baseUp; // upward pop baseline
+
+        // if falling, adds a bit more so cancel doesn't feels like a dead drop
+        if (v.getY() < 0) up += Math.min(0.35, -v.getY() * 0.6);
+        impulse.setY(impulse.getY() + up);  // combines up pop with forward impulse
+
+        Vector out = capVelocity(v.add(impulse), capHoriz, capUp); // adds impulse to existing velocity, clamp (horizontal / upward) for stability
+        grappler.setVelocity(out);
+        //Sets fall demage to zero
+        grappler.setFallDistance(0f);
+    }
+    /*-----HERE ENDS THE METHODS ADDED TO HELP WITH THE NEW GRAPLING LOGIC-----*/
+
+
+
 }
 
