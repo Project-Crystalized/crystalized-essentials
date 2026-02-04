@@ -45,8 +45,6 @@ public class CustomBows implements Listener {
 			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
 			((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
 			chargedParticleTrail((Projectile) event.getProjectile());
-		} else if (type == ArrowData.bowType.angled) {
-			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(1.5));
 		}
 
 		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0);
@@ -65,30 +63,35 @@ public class CustomBows implements Listener {
 		}
 
 		// deal extra damge for marksman
-		if (data.type == ArrowData.bowType.marksman) {
-			Location shooterLoc = data.shooter.getLocation();
-			Location hitLoc = e.getEntity().getLocation();
-			double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
-			((LivingEntity) e.getEntity()).damage(distance);
-
-		} else if (data.type == ArrowData.bowType.charged) {
-			e.setCancelled(true);
-			Location eloc = e.getEntity().getLocation();
-			Location arrloc = e.getDamager().getLocation();
-			if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
-				((LivingEntity) e.getEntity()).damage(10);
-			} else {
-				((LivingEntity) e.getEntity()).damage(6);
+		switch (data.type) {
+			case marksman -> {
+				Location shooterLoc = data.shooter.getLocation();
+				Location hitLoc = e.getEntity().getLocation();
+				double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
+				((LivingEntity) e.getEntity()).damage(distance);
 			}
-			e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(),
-					Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
-			e.getDamager().remove();
+			case charged -> {
+				e.setCancelled(true);
+				Location eloc = e.getEntity().getLocation();
+				Location arrloc = e.getDamager().getLocation();
+				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
+					((LivingEntity) e.getEntity()).damage(10);
+				} else {
+					((LivingEntity) e.getEntity()).damage(6);
+				}
+				e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(),
+						Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+				e.getDamager().remove();
+			}
+			case grapplingBow -> {
+				LivingEntity p = data.shooter;
+				Entity en = e.getEntity();
 
-		} else if (data.type == ArrowData.bowType.angled) {
-			e.setCancelled(true);
-			((LivingEntity) e.getEntity()).damage(e.getDamage() / 1.5, e.getDamager());
-			e.getEntity().setVelocity(e.getDamager().getVelocity().multiply(1 / 2));
-			e.getDamager().remove();
+				double x = p.getX() - en.getX();
+				double y = (p.getY() - en.getY()) + 0.5;
+				double z = p.getZ() - en.getZ();
+				e.getEntity().setVelocity(new Vector(x, y, z).normalize().multiply(1.9));
+			}
 		}
 	}
 
@@ -183,12 +186,16 @@ public class CustomBows implements Listener {
 				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "charged_crossbow"))) {
 			return ArrowData.bowType.charged;
 		} else if (item.getType() == Material.BOW
-				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "angled_bow"))) {
-			return ArrowData.bowType.angled;
-		} else if (item.getType() == Material.BOW
 				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_bow"))) {
 			return ArrowData.bowType.explosive;
-		} else {
+		} else if (item.getType() == Material.BOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "grappling_bow"))) {
+			return ArrowData.bowType.grapplingBow;
+		} else if (item.getType() == Material.CROSSBOW
+				&& meta.getItemModel().equals(new NamespacedKey("crystalized", "precise_crossbow"))) {
+			return ArrowData.bowType.preciseCrossbow;
+		}
+		else {
 			if (item.getType().equals(Material.CROSSBOW)) {
 				return ArrowData.bowType.normalCrossbow;
 			} else {

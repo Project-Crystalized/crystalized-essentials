@@ -17,10 +17,11 @@ public class ArrowData {
 		marksman,
 		ricochet,
 		charged,
-		angled,
 		normal,
 		normalCrossbow,
 		explosive,
+		grapplingBow,
+		preciseCrossbow
 	}
 
 	enum arrowType {
