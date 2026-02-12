@@ -34,180 +34,159 @@ import static org.bukkit.Particle.DUST;
 //This class name is now sort of misleading with the item model changes a long while ago lmao
 public class CustomCoalBasedItems implements Listener {
 
-	//TODO I should probably clean this up - Callum
 	@EventHandler
-	public void onRightClick(PlayerInteractEvent event) {
-		if (event.useItemInHand() == Result.DENY) {
+	public void onRightClick(PlayerInteractEvent e) {
+		if (e.useItemInHand() == Result.DENY) {
 			return;
 		}
-		Player player = event.getPlayer();
-		if (event.getHand() != EquipmentSlot.HAND) return;
-		if (player.getGameMode().equals(GameMode.SPECTATOR)) return;
-		if (event.getAction().isRightClick()) {
-			if (player.hasCooldown(Material.COAL) && player.getInventory().getItemInMainHand().equals(Material.COAL)) {
-				player.sendMessage(text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
-						.append(text(" " + player.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
+		Player p = e.getPlayer();
+		ItemStack item = p.getInventory().getItemInMainHand();
+		if (e.getHand() != EquipmentSlot.HAND || p.getGameMode().equals(GameMode.SPECTATOR)) return;
+		if (e.getAction().isRightClick()) {
+			if (p.hasCooldown(Material.COAL) && item.getType().equals(Material.COAL)) {
+				p.sendMessage(text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
+						.append(text(" " + p.getCooldown(Material.COAL) / 20.0).color(NamedTextColor.WHITE))
 						.append(text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
 			} else {
-				ItemStack ItemR = player.getInventory().getItemInMainHand();
-				if (!ItemR.hasItemMeta()) {return;}
-				if (ItemR.getItemMeta().hasItemModel()) {
-					// Boost Orb
-					if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "boost_orb"))) {
-						new BukkitRunnable(){
-							double count = 0.2;
-							final Location loc = player.getLocation();
-							public void run(){
-								if(count > 0.8){
-									cancel();
+				if (!item.hasItemMeta()) {return;}
+				if (item.getItemMeta().hasItemModel()) {
+					//
+					switch (item.getItemMeta().getItemModel().getKey()) {
+						case "boost_orb" -> {
+							new BukkitRunnable(){
+								double count = 0.2;
+								final Location loc = p.getLocation();
+								public void run(){
+									if(count > 0.8){
+										cancel();
+									}
+									circle(loc, count);
+									count = count * 2;
 								}
-								circle(loc, count);
-								count = count * 2;
-							}
-						}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
+							}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
 
-						player.playSound(player, "minecraft:item.armor.equip_elytra", 50, 1);
-						player.setVelocity(new Vector(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()));
-						player.setVelocity(player.getLocation().getDirection().multiply(2));
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 40);
-
-						// Bridge Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "bridge_orb"))) {
-						launchBridgeOrb(player);
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 20);
-
-						// Explosive Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "explosive_orb"))) {
-						Vector direction = player.getEyeLocation().getDirection();
-						Fireball fireball = player.launchProjectile(Fireball.class, direction);
-						fireball.getLocation().add(fireball.getVelocity().normalize().multiply(3));
-						fireball.setYield(1);
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 8);
-
-						// Grappling Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "grappling_orb"))) {
-                        PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
-                        if (pd.isUsingGrapplingOrb) {return;}
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 20);
-						launchGrapplingOrb(player);
-
-						// Health Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "health_orb"))) {
-						player.sendMessage(text("Health orb isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
-						// It's not well known what Health Orbs did since they weren't in TubNet for
-						// very long
-
-						// Knockout Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "knockout_orb"))) {
-						if (Bukkit.getOnlinePlayers().size() == 1) {
-							player.sendMessage(text("[!] Knockout Orb cant be used while nobody else is online"));
-						} else {
-							crystalized_essentials.getInstance().knockoutOrbList.add(new KnockoutOrb(player));
-							player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-							player.setCooldown(Material.COAL, 20);
+							p.playSound(p, "minecraft:item.armor.equip_elytra", 50, 1);
+							p.setVelocity(new Vector(p.getVelocity().getX(), p.getVelocity().getY(), p.getVelocity().getZ()));
+							p.setVelocity(p.getLocation().getDirection().multiply(2));
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 40);
 						}
-
-						// Poison Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "poison_orb"))) {
-						launchPoisonOrb(player);
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 10);
-
-						// Winged Orb
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "winged_orb"))) {
-						PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
-						if (pd.isUsingWingedOrb) {return;}
-						new BukkitRunnable(){
-							double count = 0.2;
-							final Location loc = player.getLocation();
-							public void run(){
-								if(count > 0.8){
-									cancel();
+						case "bridge_orb" -> {
+							launchBridgeOrb(p);
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 20);
+						}
+						case "explosive_orb" -> {
+							Vector direction = p.getEyeLocation().getDirection();
+							Fireball fireball = p.launchProjectile(Fireball.class, direction);
+							fireball.getLocation().add(fireball.getVelocity().normalize().multiply(3));
+							fireball.setYield(1);
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 8);
+						}
+						case "grappling_orb" -> {
+							PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
+							if (pd.isUsingGrapplingOrb) {return;}
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 20);
+							launchGrapplingOrb(p);
+						}
+						case "health_orb" -> {
+							p.sendMessage(text("Health orb isn't currently implemented yet")); // TODO
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 5);
+						}
+						case "knockout_orb" -> {
+							if (Bukkit.getOnlinePlayers().size() == 1) {
+								p.sendMessage(text("[!] Knockout Orb cant be used while nobody else is online"));
+							} else {
+								crystalized_essentials.getInstance().knockoutOrbList.add(new KnockoutOrb(p));
+								item.setAmount(item.getAmount() - 1);
+								p.setCooldown(Material.COAL, 20);
+							}
+						}
+						case "poison_orb" -> {
+							launchPoisonOrb(p);
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 10);
+						}
+						case "winged_orb" -> {
+							PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
+							if (pd.isUsingWingedOrb) {return;}
+							new BukkitRunnable(){
+								double count = 0.2;
+								final Location loc = p.getLocation();
+								public void run(){
+									if(count > 0.8){
+										cancel();
+									}
+									circle(loc, count);
+									count = count * 2;
 								}
-								circle(loc, count);
-								count = count * 2;
-							}
-						}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						crystalized_essentials.getInstance().useWingedOrb(player);
-						player.setCooldown(Material.COAL, 40);
-
-						// Antiair Totem
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "antiair_totem"))) {
-                        if (event.getClickedBlock() != null) {
-							Location blockLoc = event.getClickedBlock().getLocation();
-							if (new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
-								player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-								player.setCooldown(Material.COAL, 40);
-								crystalized_essentials.getInstance().antiairTotemList.add(
-										new AntiairTotem(
-												player,
-												new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
-										)
-								);
-							}
-                        }
-
-						// Cloud Totem
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "cloud_totem"))) {
-						player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 80);
-						new CloudTotem(player);
-
-						// Defense Totem
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "defense_totem"))) {
-						if (event.getClickedBlock() != null) {
-							Location blockLoc = event.getClickedBlock().getLocation();
-							if (new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
-								player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-								player.setCooldown(Material.COAL, 30);
-								crystalized_essentials.getInstance().defenceTotemList.add(
-										new DefenceTotem(
-												player,
-												new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
-										)
-								);
-							}
+							}.runTaskTimer(crystalized_essentials.getInstance(), 0, 3);
+							crystalized_essentials.getInstance().useWingedOrb(p);
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 40);
 						}
 
-						// Healing Totem
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "healing_totem"))) {
-						player.sendMessage(text("Healing Totem isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
-
-						// Launch Totem
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "launch_totem"))) {
-						if (event.getClickedBlock() != null) {
-							Location blockLoc = event.getClickedBlock().getLocation();
-							if (new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
-								player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-								player.setCooldown(Material.COAL, 30);
-								new LaunchTotem(
-										player,
-										new Location(player.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
-								);
+						case "antiair_totem" -> {
+							if (e.getClickedBlock() != null) {
+								Location blockLoc = e.getClickedBlock().getLocation();
+								if (new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
+									item.setAmount(item.getAmount() - 1);
+									p.setCooldown(Material.COAL, 40);
+									crystalized_essentials.getInstance().antiairTotemList.add(
+											new AntiairTotem(
+													p,
+													new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+											)
+									);
+								}
 							}
 						}
-
-						// Slime Totem
-					} else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "slime_totem"))) {
-						player.sendMessage(text("Slime Totem isn't currently implemented yet")); // TODO
-						player.getInventory().getItemInMainHand()
-								.setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
-						player.setCooldown(Material.COAL, 5);
-					}
-
-					else if (ItemR.getItemMeta().getItemModel().equals(new NamespacedKey("crystalized", "debug"))) {
-						crystalized_essentials.getInstance().getAllies(player);
+						case "cloud_totem" -> {
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 80);
+							new CloudTotem(p);
+						}
+						case "defense_totem" -> {
+							if (e.getClickedBlock() != null) {
+								Location blockLoc = e.getClickedBlock().getLocation();
+								if (new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
+									item.setAmount(item.getAmount() - 1);
+									p.setCooldown(Material.COAL, 30);
+									crystalized_essentials.getInstance().defenceTotemList.add(
+											new DefenceTotem(
+													p,
+													new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+											)
+									);
+								}
+							}
+						}
+						case "healing_totem" -> {
+							p.sendMessage(text("Healing Totem isn't currently implemented yet")); // TODO
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 5);
+						}
+						case "launch_totem" -> {
+							if (e.getClickedBlock() != null) {
+								Location blockLoc = e.getClickedBlock().getLocation();
+								if (new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
+									item.setAmount(item.getAmount() - 1);
+									p.setCooldown(Material.COAL, 30);
+									new LaunchTotem(
+											p,
+											new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+									);
+								}
+							}
+						}
+						case "slime_totem" -> {
+							p.sendMessage(text("Slime Totem isn't currently implemented yet")); // TODO
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 5);
+						}
 					}
 				}
 			}
