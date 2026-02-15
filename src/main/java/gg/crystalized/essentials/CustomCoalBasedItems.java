@@ -128,6 +128,15 @@ public class CustomCoalBasedItems implements Listener {
 							item.setAmount(item.getAmount() - 1);
 							p.setCooldown(Material.COAL, 40);
 						}
+						case "feather_orb" -> {
+							PlayerData pd = crystalized_essentials.getInstance().getPlayerData(p.getName());
+							if (pd.isUsingWingedOrb || p.hasPotionEffect(PotionEffectType.SLOW_FALLING)) {return;}
+
+							p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 5 * 20, 5));
+							p.setVelocity(new Vector(0, 1.5, 0));
+							item.setAmount(item.getAmount() - 1);
+							p.setCooldown(Material.COAL, 5 * 20);
+						}
 
 						case "antiair_totem" -> {
 							if (e.getClickedBlock() != null) {

@@ -41,10 +41,15 @@ public class CustomBows implements Listener {
 		}
 
 		ArrowData.bowType type = get_bow_type(bow_item);
-		if (type == ArrowData.bowType.charged) {
-			event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
-			((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
-			chargedParticleTrail((Projectile) event.getProjectile());
+		switch (type) {
+			case charged -> {
+				event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
+				((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
+				chargedParticleTrail((Projectile) event.getProjectile());
+			}
+			case preciseCrossbow -> {
+				event.getProjectile().setGravity(false);
+			}
 		}
 
 		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0);
