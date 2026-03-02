@@ -1,6 +1,10 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
+import com.destroystokyo.paper.event.player.PlayerReadyArrowEvent;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
+import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
@@ -12,13 +16,16 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.Collection;
 import java.util.HashMap;
 
 import static org.bukkit.Material.AIR;
+import static org.bukkit.Material.CROSSBOW;
 
 public class CustomBows implements Listener {
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
@@ -29,6 +36,9 @@ public class CustomBows implements Listener {
 			return;
 		}
 		ItemStack bow_item = event.getBow();
+		if (bow_item != null && bow_item.getType().equals(CROSSBOW)) {
+			bow_item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(0).build());
+		}
 
 		if (bow_item == null) {
 			return;
@@ -155,22 +165,49 @@ public class CustomBows implements Listener {
 		CustomArrows.onArrowHit(event);
 	}
 
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onCrossbowLoad(EntityLoadCrossbowEvent e) {
+		Entity entity = e.getEntity();
+		ItemStack item = e.getCrossbow();
+
+		//This needs to be delayed, otherwise the getChargedProjectiles list will be empty
+		new BukkitRunnable() {
+			public void run() {
+				CrossbowMeta itemMeta = (CrossbowMeta) item.getItemMeta();
+				ItemStack arrow = itemMeta.getChargedProjectiles().getFirst();
+
+				ArrowData.arrowType arrType = get_arrow_type(arrow);
+				if (!e.isCancelled() && item.getType().equals(CROSSBOW)) {
+					item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(arrType.cmd).build());
+				}
+				cancel();
+			}
+		}.runTaskTimer(crystalized_essentials.getInstance(), 1, 1);
+	}
+
 	public ArrowData.arrowType get_arrow_type(ItemStack item) {
 		ItemMeta arrowMeta = item.getItemMeta();
 		if (arrowMeta == null) {
 			return ArrowData.arrowType.normal;
 		}
-		if (arrowMeta.hasItemModel()
-				&& arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
-			return ArrowData.arrowType.explosive;
-		} else if (arrowMeta.hasItemModel()
-				&& arrowMeta.getItemModel().equals(new NamespacedKey("crystalized", "dragon_arrow"))) {
-			return ArrowData.arrowType.dragon;
-		} else if (item.getType() == Material.SPECTRAL_ARROW) {
-			return ArrowData.arrowType.spectral;
+		if (arrowMeta.hasItemModel() && arrowMeta.getItemModel().getNamespace().equals("crystalized")) {
+			switch (arrowMeta.getItemModel().getKey()) {
+				case "wind_arrow" -> {
+					return ArrowData.arrowType.wind;
+				}
+				case "explosive_arrow" -> {
+					return ArrowData.arrowType.explosive;
+				}
+				case "dragon_arrow" -> {
+					return ArrowData.arrowType.dragon;
+				}
+			}
 		} else {
-			return ArrowData.arrowType.normal;
+			if (item.getType() == Material.SPECTRAL_ARROW) {
+				return ArrowData.arrowType.spectral;
+			}
 		}
+		return ArrowData.arrowType.normal;
 	}
 
 	public ArrowData.bowType get_bow_type(ItemStack item) {

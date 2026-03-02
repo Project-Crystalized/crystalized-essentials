@@ -36,7 +36,9 @@ public class CustomArrows {
 		if (data.arrType == ArrowData.arrowType.spectral) {
 			SpectralArrow spec = (SpectralArrow) event.getEntity();
 			spec.setGlowingTicks(40);
-			spec.setDamage(spec.getDamage() - 2);
+			if (spec.getDamage() < 0) {
+				spec.setDamage(spec.getDamage() - 2);
+			}
 			/*
 			ParticleBuilder builder = new ParticleBuilder(DUST);
 			builder.color(Color.YELLOW);

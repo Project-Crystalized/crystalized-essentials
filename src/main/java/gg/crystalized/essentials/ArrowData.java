@@ -25,10 +25,17 @@ public class ArrowData {
 	}
 
 	enum arrowType {
-		dragon,
-		explosive,
-		spectral,
-		normal,
+		wind(4),
+		dragon(3),
+		explosive(2),
+		spectral(1),
+		normal(0),
+		;
+
+		int cmd; //For crossbows, custom model data to show when the crossbow is loaded, giving it the textures of the arrow
+		arrowType(int cmd) {
+			this.cmd = cmd;
+		}
 	}
 
 	public LivingEntity shooter;
