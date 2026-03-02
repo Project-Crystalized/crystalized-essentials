@@ -249,9 +249,11 @@ public class CustomBows implements Listener {
 	@EventHandler
 	public void onArrowPickup(PlayerPickupArrowEvent event) {
 		ItemMeta meta = event.getArrow().getItemStack().getItemMeta();
-		if (meta != null && meta.hasItemModel()) {
-			if (meta.getItemModel().equals(new NamespacedKey("crystalized", "explosive_arrow"))) {
-				event.setCancelled(true);
+		if (meta != null && meta.hasItemModel() && meta.getItemModel().getNamespace().equals("crystalized")) {
+			switch (meta.getItemModel().getKey()) {
+				case "explosive_arrow", "wind_arrow" -> {
+					event.setCancelled(true);
+				}
 			}
 		}
 	}

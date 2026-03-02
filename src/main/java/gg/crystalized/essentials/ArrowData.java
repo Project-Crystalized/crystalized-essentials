@@ -80,6 +80,8 @@ public class ArrowData {
 							builder2.color(PURPLE);
 						} else if (arrow_data.arrType == ArrowData.arrowType.explosive) {
 							builder2.color(RED);
+						} else if (arrow_data.arrType == arrowType.wind) {
+							builder2.color(WHITE);
 						}
 					}
 

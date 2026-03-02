@@ -2,6 +2,7 @@ package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -10,6 +11,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.Collection;
 
@@ -54,7 +56,7 @@ public class CustomArrows {
 		}
 
 
-		if (data.arrType == ArrowData.arrowType.dragon) {
+		if (data.arrType.equals(ArrowData.arrowType.dragon)) {
 			arrow.setDamage(1);
 
 			ItemStack item = arrow.getItemStack();
@@ -89,7 +91,23 @@ public class CustomArrows {
 			}.runTaskTimer(crystalized_essentials.getInstance(), 1, 15);
 
 		}
-		if (data.arrType == ArrowData.arrowType.explosive || data.type.equals(ArrowData.bowType.explosive)) {
+		else if (data.arrType.equals(ArrowData.arrowType.wind)) {
+
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				p.playSound(arrow, "entity.creeper.primed", 2, 1);
+			}
+
+			new BukkitRunnable() {
+				public void run() {
+
+					//TODO spawn a wind charge and explode it for the arrow's effect
+
+					arrow.remove();
+					cancel();
+				}
+			}.runTaskTimer(crystalized_essentials.getInstance(), 10, 1);
+		}
+		else if (data.arrType.equals(ArrowData.arrowType.explosive) || data.type.equals(ArrowData.bowType.explosive)) {
 
 			//Messy
 			int i = 0;
@@ -144,7 +162,8 @@ public class CustomArrows {
 					arrow.remove();
 				}
 			}.runTaskLater(crystalized_essentials.getInstance(), 3 * 20);
-		} else {
+		}
+		else {
 			AbstractArrow arr = (AbstractArrow) event.getEntity();
 			arr.setDamage(1.5);
 		}
