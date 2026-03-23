@@ -17,13 +17,19 @@ public class DefenceTotem {
 
     boolean isActive = false;
     Player owner;
+    int maxhealth = 10;
     int health = 10;
     public ArmorStand entity;
     TextDisplay name;
     TextDisplay ownerTag;
     TextDisplay healthBar;
 
-    public DefenceTotem(Player p, Location spawnLoc) {
+    //the float changes properties of the totem
+    public DefenceTotem(Player p, Location spawnLoc, float customModelData) {
+        if (customModelData == 1) {
+            maxhealth = 14;
+            health = 14;
+        }
         isActive = true;
         owner = p;
         Location loc =  new Location(owner.getWorld(), spawnLoc.getBlockX() + 0.5, spawnLoc.getBlockY(), spawnLoc.getBlockZ() + 0.5, owner.getLocation().getYaw() + 180, 0);
@@ -62,7 +68,7 @@ public class DefenceTotem {
                 }
 
                 healthBar.text(
-                        text("\uE11A").append(text("\uE11B".repeat(health))).append(text("\uE11C".repeat(10 - health))).append(text("\uE11D"))
+                        text("\uE11A").append(text("\uE11B".repeat(health))).append(text("\uE11C".repeat(maxhealth - health))).append(text("\uE11D"))
                 );
 
                 if (health == 0 || name.isDead() || entity.isDead() || health < 0) {

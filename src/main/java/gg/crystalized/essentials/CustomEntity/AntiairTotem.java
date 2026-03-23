@@ -21,6 +21,7 @@ public class AntiairTotem {
 
     boolean isActive = false;
     Player owner;
+    int maxhealth = 7;
     int health = 7;
     public ArmorStand entity;
     public ArmorStand turretBase;
@@ -30,7 +31,12 @@ public class AntiairTotem {
     TextDisplay healthBar;
     List<Player> allies = new ArrayList<>();
 
-    public AntiairTotem(Player p, Location spawnLoc) {
+    //the float changes properties of the totem
+    public AntiairTotem(Player p, Location spawnLoc, float customModelData) {
+        if (customModelData == 1) {
+            maxhealth = 12;
+            health = 12;
+        }
         isActive = true;
         owner = p;
         Location loc =  new Location(owner.getWorld(), spawnLoc.getBlockX() + 0.5, spawnLoc.getBlockY(), spawnLoc.getBlockZ() + 0.5, owner.getLocation().getYaw() + 180, 0);
@@ -131,7 +137,7 @@ public class AntiairTotem {
                     }
                 }
                 healthBar.text(
-                        text("\uE11A").append(text("\uE11B".repeat(health))).append(text("\uE11C".repeat(7 - health))).append(text("\uE11D"))
+                        text("\uE11A").append(text("\uE11B".repeat(health))).append(text("\uE11C".repeat(maxhealth - health))).append(text("\uE11D"))
                 );
 
                 if (health == 0 || name.isDead() || entity.isDead() || health < 0) {

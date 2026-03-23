@@ -32,7 +32,11 @@ public class CloudTotem {
     Set<Block> blocks = new HashSet<>();
     int timer = 15;
 
-    public CloudTotem(Player p) {
+    //the float changes properties of the totem
+    public CloudTotem(Player p, float customModelData) {
+        if (customModelData == 1) {
+            timer = 20;
+        }
         owner = p;
         Location loc;
         if (p.isOnGround()) {

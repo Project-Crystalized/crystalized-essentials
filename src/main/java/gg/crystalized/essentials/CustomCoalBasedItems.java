@@ -2,6 +2,7 @@ package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
 import gg.crystalized.essentials.CustomEntity.*;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
@@ -49,9 +50,16 @@ public class CustomCoalBasedItems implements Listener {
 						.append(text(" ꜱᴇᴄᴏɴᴅꜱ ʙᴇꜰᴏʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ɪᴛᴇᴍ ᴀɢᴀɪɴ!").color(NamedTextColor.RED)));
 			} else {
 				if (!item.hasItemMeta()) {return;}
-				if (item.getItemMeta().hasItemModel()) {
+				ItemMeta meta = item.getItemMeta();
+				float cmd;
+				if (item.hasData(DataComponentTypes.CUSTOM_MODEL_DATA)) {
+					cmd = item.getData(DataComponentTypes.CUSTOM_MODEL_DATA).floats().getFirst();
+				} else {
+					cmd = 0;
+				}
+				if (meta.hasItemModel()) {
 					//
-					switch (item.getItemMeta().getItemModel().getKey()) {
+					switch (meta.getItemModel().getKey()) {
 						case "boost_orb" -> {
 							new BukkitRunnable(){
 								double count = 0.2;
@@ -144,11 +152,9 @@ public class CustomCoalBasedItems implements Listener {
 								if (new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()).getBlock().isEmpty()) {
 									item.setAmount(item.getAmount() - 1);
 									p.setCooldown(Material.COAL, 40);
+
 									crystalized_essentials.getInstance().antiairTotemList.add(
-											new AntiairTotem(
-													p,
-													new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
-											)
+											new AntiairTotem(p, new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()), cmd)
 									);
 								}
 							}
@@ -156,7 +162,7 @@ public class CustomCoalBasedItems implements Listener {
 						case "cloud_totem" -> {
 							item.setAmount(item.getAmount() - 1);
 							p.setCooldown(Material.COAL, 80);
-							new CloudTotem(p);
+							new CloudTotem(p, cmd);
 						}
 						case "defense_totem" -> {
 							if (e.getClickedBlock() != null) {
@@ -166,8 +172,7 @@ public class CustomCoalBasedItems implements Listener {
 									p.setCooldown(Material.COAL, 30);
 									crystalized_essentials.getInstance().defenceTotemList.add(
 											new DefenceTotem(
-													p,
-													new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+													p, new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()), cmd
 											)
 									);
 								}
@@ -185,8 +190,7 @@ public class CustomCoalBasedItems implements Listener {
 									item.setAmount(item.getAmount() - 1);
 									p.setCooldown(Material.COAL, 30);
 									new LaunchTotem(
-											p,
-											new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ())
+											p, new Location(p.getWorld(), blockLoc.getX(), blockLoc.getY() + 1, blockLoc.getZ()), cmd
 									);
 								}
 							}

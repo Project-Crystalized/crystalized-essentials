@@ -21,7 +21,11 @@ public class LaunchTotem {
     TextDisplay ownerTag;
     int ticksUntilDestroy = (4 * 20) + 2;
 
-    public LaunchTotem(Player p, Location spawnLoc) {
+    //the float changes properties of the totem
+    public LaunchTotem(Player p, Location spawnLoc, float customModelData) {
+        if (customModelData == 1) {
+            ticksUntilDestroy = (6 * 20) + 2;
+        }
         owner = p;
         Location loc =  new Location(owner.getWorld(), spawnLoc.getBlockX() + 0.5, spawnLoc.getBlockY() , spawnLoc.getBlockZ() + 0.5, owner.getLocation().getYaw() + 180, 0);
         entity = owner.getWorld().spawn(loc, ArmorStand.class, entity -> {
