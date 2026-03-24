@@ -88,10 +88,14 @@ public class AntiairTotem {
         owner.playSound(owner, "minecraft:block.anvil.place", 0, 0.75F);
 
         //TODO this is probably broken, how do we do this? This is meant to function in Crystal Blitz specifically. Was thinking Scoreboard Teams but that isn't reliable
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        /*for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getScoreboard().equals(owner.getScoreboard())) {
                 allies.add(player);
             }
+        }*/
+        List<String> temp = crystalized_essentials.getInstance().getAllies(owner);
+        for (String s : temp) {
+            allies.add(Bukkit.getPlayer(s));
         }
 
         new BukkitRunnable() {
