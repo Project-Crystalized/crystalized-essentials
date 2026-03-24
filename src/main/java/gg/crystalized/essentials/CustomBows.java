@@ -56,8 +56,6 @@ public class CustomBows implements Listener {
 				event.getProjectile().setVelocity(event.getProjectile().getVelocity().multiply(4));
 				((Player) event.getEntity()).setCooldown(bow_item, 20 * 5);
 				chargedParticleTrail((Projectile) event.getProjectile());
-			}
-			case preciseCrossbow -> {
 				event.getProjectile().setGravity(false);
 			}
 		}
@@ -97,6 +95,14 @@ public class CustomBows implements Listener {
 				e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(),
 						Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 				e.getDamager().remove();
+			}
+			case preciseCrossbow -> {
+				Location eloc = e.getEntity().getLocation();
+				Location arrloc = e.getDamager().getLocation();
+				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
+					((LivingEntity) e.getEntity()).damage(e.getDamage() * 2);
+                    e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
+				}
 			}
 			case grapplingBow -> {
 				LivingEntity p = data.shooter;

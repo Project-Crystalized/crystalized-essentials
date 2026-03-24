@@ -99,13 +99,12 @@ public class CustomArrows {
 
 			new BukkitRunnable() {
 				public void run() {
-
-					//TODO spawn a wind charge and explode it for the arrow's effect
-
+					WindCharge wC = arrow_loc.getWorld().spawn(arrow_loc, WindCharge.class, entity -> {});
+					wC.explode();
 					arrow.remove();
 					cancel();
 				}
-			}.runTaskTimer(crystalized_essentials.getInstance(), 10, 1);
+			}.runTaskTimer(crystalized_essentials.getInstance(), 20, 1);
 		}
 		else if (data.arrType.equals(ArrowData.arrowType.explosive) || data.type.equals(ArrowData.bowType.explosive)) {
 
