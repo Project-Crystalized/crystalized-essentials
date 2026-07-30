@@ -327,6 +327,11 @@ public class CustomBows implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onCrossbowLoad(EntityLoadCrossbowEvent e) {
+
+		//I added this check as if you try to load cross bow between games in LS the whole console is going to be full of exceptions - Mish
+		if (e.isCancelled()) {
+			return;
+		}
 		Entity entity = e.getEntity();
 		ItemStack item = e.getCrossbow();
 
