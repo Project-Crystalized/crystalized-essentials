@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
@@ -42,6 +43,9 @@ public class CustomBows implements Listener {
 	private static final double BOW_MIN_DAMAGE = 1.0;
 	private static final double BOW_MAX_DAMAGE = 7.0;
 	private static final double CROSSBOW_DAMAGE = 8.0;
+	//Change the extra damage that the player gets here from the direct hit exploision
+	//I had to change it as otherwise player wasn't getting any explosion damage - Mish
+	private static final double EXPLOSION_DAMAGE_BONUCE = 3.5;
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 
 	//This method is used to calculate arrow's base damage, takes in the weapon and it's charge force
@@ -141,7 +145,29 @@ public class CustomBows implements Listener {
 		}
 		//Calculates the default damage first - Mish.
 		//Can be over written or added on by bow types below
+
 		e.setDamage(data.damage);
+
+		//Don't know why but the player feels like he doesn't care about explosions anymore
+		//Getting no damage from it, I tried everything but this seems like the best robust fix
+		//So I made this kinda fix that makes the direct explosive damage consistant
+		//Added extra UUID protection, incase on servers people with diffrent ping might experince a lot more damage
+		//Or for any other reason the damage just starts applying.
+			//In custom arrows
+		boolean isExplosiveArrow = data.arrType == ArrowData.arrowType.explosive;
+		boolean isExplosiveBow = data.type == ArrowData.bowType.explosive;
+
+		if (isExplosiveArrow || isExplosiveBow) {
+
+			double explosiveDamageBonus = EXPLOSION_DAMAGE_BONUCE;
+			//Not sure if this bow is in the game but the explosion will be slightly stronger
+			if (isExplosiveArrow && isExplosiveBow) {
+				explosiveDamageBonus = explosiveDamageBonus + 1.5;
+			}
+
+			e.setDamage(e.getDamage() + explosiveDamageBonus);
+		}
+
 
 
 
@@ -206,6 +232,23 @@ public class CustomBows implements Listener {
 			System.out.println(e.getDamage());
 		}
 	}
+	//This makes sure that the explosion damage is zero for the player that got directly hit
+	//As the direct hit damage is set manualy
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onDirectExplosionDamage(EntityDamageByEntityEvent event) {
+		//If it is not due to the explosion than nothing happens
+		if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+			return;
+		}
+		//If it is not contained in the map than nothing happens
+		if (!CustomArrows.isDirectExplosiveHit(event.getEntity().getUniqueId())) {
+			return;
+		}
+		//Sets the explosion damage to zero to prevent potential double damage from explosion
+		//It works without it on my end as damage from the explosion is not registering on direct hit
+		//But here it makes sure that for everyone the direct explosion hit would be consistant, accross servers and pings.
+		event.setDamage(0.0);
+	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onArrowHit(ProjectileHitEvent event) {
@@ -225,6 +268,8 @@ public class CustomBows implements Listener {
 				return;
 			}
 			if (event.getHitEntity() != null && event.getHitEntity() instanceof Player) {
+				//Makes sure that arrow custom effect still happens when rechochet bow hits - Mish
+				CustomArrows.onArrowHit(event);
 				return;
 			}
 			Location loc = event.getEntity().getLocation();
@@ -247,19 +292,33 @@ public class CustomBows implements Listener {
 			}
 
 			data.timesBounced++;
-			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 0);
+			//Copying the item stack so that the arrows could stack in player inventory after pick up
+			ItemStack theOriginalArrowItem = ar.getItemStack().clone();
+			//FIXED: Fix the bug with spectular arrow causing an exception with rechashet bow
+			//Using the abstract arrow
+			AbstractArrow newArrow;
+			if (event.getEntity() instanceof SpectralArrow) {
+				//If it a spectral arrow than the abstract arrow is set to spectral arrow, everythin else is idnetical as before
+				//Old arrow
+					//Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 0);
+				newArrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 0, SpectralArrow.class);
+			} else {
+				newArrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 0, Arrow.class);
+			}
+			//Sets the new arrow item stack to the original arrow item stack, so that it can stack in player inventory
+			newArrow.setItemStack(theOriginalArrowItem);
 			//Replaced with the new data.damage calculator so, 0.2 is not lost
 				//arrow.setDamage(arrow.getDamage() + (0.2 * (float) data.timesBounced));
 			data.damage += 0.2  * (float) data.timesBounced;
-			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
-			arrow.setShooter(event.getEntity().getShooter());
+			newArrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
+			newArrow.setShooter(event.getEntity().getShooter());
 			arrows.remove(event.getEntity());
 			event.getEntity().remove();
-			arrows.put(arrow, data);
+			arrows.put(newArrow, data);
 			return;
 		} else if (data.type == ArrowData.bowType.normalCrossbow) {
-			// I have no idea what I just wrote but I hope this works
 			//Commented out to ensure that new calculator calculates damage - Mish
+				// I have no idea what I just wrote but I hope this works - Someone else
 				//((AbstractArrow) event.getEntity()).setDamage(((AbstractArrow) event.getEntity()).getDamage() - 1);
 			//It is set to 8 by Default so no need to add anything here - Mish
 		}
