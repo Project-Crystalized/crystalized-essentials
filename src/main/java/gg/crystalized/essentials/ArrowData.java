@@ -13,6 +13,8 @@ import com.destroystokyo.paper.ParticleBuilder;
 
 public class ArrowData {
 
+	//I checked light strike and some bow types like multi shot are not here yet - Mish
+		//So they will just take the default crosbow damage of 8
 	enum bowType {
 		marksman,
 		ricochet,
@@ -43,12 +45,16 @@ public class ArrowData {
 	public bowType type;
 	public arrowType arrType;
 	public int timesBounced;
+	//The damage value which will be tracked for consistant damage - Mish
+	public double damage;
 
-	public ArrowData(LivingEntity shooter, bowType type, arrowType arrType, int timesBounced) {
+	public ArrowData(LivingEntity shooter, bowType type, arrowType arrType, int timesBounced, double damage) {
 		this.shooter = shooter;
 		this.type = type;
 		this.timesBounced = timesBounced;
 		this.arrType = arrType;
+		//Added damage to the constructor - Mish
+		this.damage = damage;
 	}
 
 	public static void particle_trails() {

@@ -58,3 +58,5 @@ nb-configuration.xml
 ## OS X
 ##############################
 .DS_Store
+# The paper test server in IDEA
+run/
