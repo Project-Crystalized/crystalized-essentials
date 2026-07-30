@@ -38,9 +38,10 @@ public class CustomArrows {
 		if (data.arrType == ArrowData.arrowType.spectral) {
 			SpectralArrow spec = (SpectralArrow) event.getEntity();
 			spec.setGlowingTicks(40);
+			/* Commented to make sure all arrows do the same damage on hit with the new formuala - Mish
 			if (spec.getDamage() < 0) {
 				spec.setDamage(spec.getDamage() - 2);
-			}
+			}*/
 			/*
 			ParticleBuilder builder = new ParticleBuilder(DUST);
 			builder.color(Color.YELLOW);
@@ -57,7 +58,8 @@ public class CustomArrows {
 
 
 		if (data.arrType.equals(ArrowData.arrowType.dragon)) {
-			arrow.setDamage(1);
+			//Commented to make sure all arrows do the same damage on hit with the new formuala - Mish
+			//arrow.setDamage(1);
 
 			ItemStack item = arrow.getItemStack();
 			item.setItemMeta(null);
@@ -116,7 +118,8 @@ public class CustomArrows {
 			if (i == 2) {bothUsed = true;}
 
 			arrow.setPickupStatus(DISALLOWED);
-			arrow.setDamage(2);
+			//Commented to make sure all arrows do the same damage on hit with the new formuala - Mish
+			//arrow.setDamage(2);
 
 			DamageSource.Builder builder = DamageSource.builder(EXPLOSION);
 			builder.withCausingEntity(data.shooter);
@@ -164,7 +167,8 @@ public class CustomArrows {
 		}
 		else {
 			AbstractArrow arr = (AbstractArrow) event.getEntity();
-			arr.setDamage(1.5);
+			//Commented to make sure all arrows do the same damage on hit with the new formuala - Mish
+			//arr.setDamage(1.5);
 		}
 	}
 

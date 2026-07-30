@@ -7,6 +7,7 @@ import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,8 +29,69 @@ import static org.bukkit.Material.AIR;
 import static org.bukkit.Material.CROSSBOW;
 
 public class CustomBows implements Listener {
+	//If anyone except me want to experiment with damage eddit damage here - Mish
+	/*
+	* Bow min damage is 1 is the least damage it can do when having zero charge
+	* Bow max damge is when it is fully charged, now is 7hp 3.5 hearts
+	* Crossbow has no charge time so is set to 8 (4 hearts)
+	*
+	* Extra info:
+		* This is raw damage, things like arrmor and resistance will reduce it
+		* So it functions as it should
+	* */
+	private static final double BOW_MIN_DAMAGE = 1.0;
+	private static final double BOW_MAX_DAMAGE = 7.0;
+	private static final double CROSSBOW_DAMAGE = 8.0;
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 
+	//This method is used to calculate arrow's base damage, takes in the weapon and it's charge force
+	private double calculateArrowDamage(ItemStack weapon, float weaponChargedForce){
+		switch (weapon.getType()) {
+			case BOW -> {
+				//Clamps bow charge between 0 and 1 cleanly
+				/*Simple explanations of clamp incase you never saw it - by Mish
+					*It takes in the weapon charge value and clamps it between 0.0 and 1.0
+					* Meaning that if for some reason it is higher than 1.0 it will return 1.0
+					* Or if for some reason is is less than 0.0 it wil return 0.0
+					* If it is between those values it leaves the value the same
+				* This is just more of a safety check as charge should be between 0 and 1
+					* */
+				double charge = Math.clamp(weaponChargedForce, 0.0f, 1.0f);
+				//This is a basic lerp formula:  min + (max - min) * t
+				//It calculates the value between minimum and maximum.
+				//In this case it will output the bows damage between the charges
+					//Example of zero bow charge: 1 + (7 - 1) * 0 = 1.0
+					//Example of half bow charge: 1 + (7 - 1) * 0.5 = 4.0
+					//Example of full bow charge: 1 + (7 - 1) * 1 = 7.0
+					//You can learn more here about lerp and this formula
+						//https://gamedev.net/tutorials/programming/general-and-gameplay-programming/linear-interpolation-explained-r5892
+				double baseDamage = BOW_MIN_DAMAGE + (BOW_MAX_DAMAGE - BOW_MIN_DAMAGE) * charge;
+
+				//This is incase any bows in the future have power enchatment, so that it still works
+				int powerLevel = weapon.getEnchantmentLevel(Enchantment.POWER);
+				//The default multiplier is 1
+				double powerMultiplier = 1.0;
+				//TODO: If power is added and is too overpowered try another formula (Like 1 extra damge per power)
+				if (powerLevel > 0) {
+					//Vanila formula: Power increase arrow damage by 25% × (level + 1)
+					//https://minecraft.fandom.com/wiki/Power
+					powerMultiplier = powerMultiplier + ( 0.25 * (powerLevel + 1));
+				}
+				//The base damage is multiplied to power multiplier (If no power is just 1)
+				return baseDamage * powerMultiplier;
+			}
+
+			//Crossbow has no charge force like the bow, so damage will allways be the same
+			case CROSSBOW -> {
+				return CROSSBOW_DAMAGE;
+			}
+			//If not bow or cross bow sets damage to zero
+			default -> {
+				return 0.0;
+			}
+		}
+
+	}
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onBowShot(EntityShootBowEvent event) {
 		if (event.isCancelled()) {
@@ -60,7 +122,10 @@ public class CustomBows implements Listener {
 			}
 		}
 
-		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0);
+		//TODO: add damage - DONE
+		//Added damge here
+		double damage = calculateArrowDamage(bow_item, event.getForce());
+		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0, damage);
 		arrows.put((Projectile) event.getProjectile(), ard);
 	}
 
@@ -74,16 +139,27 @@ public class CustomBows implements Listener {
 		if (data == null) {
 			return;
 		}
+		//Calculates the default damage first - Mish.
+		//Can be over written or added on by bow types below
+		e.setDamage(data.damage);
+
+
 
 		// deal extra damge for marksman
+		//Marksman adjusted by Mish
 		switch (data.type) {
 			case marksman -> {
 				Location shooterLoc = data.shooter.getLocation();
 				Location hitLoc = e.getEntity().getLocation();
-				double distance = Math.floor(shooterLoc.distance(hitLoc) / 10);
-				((LivingEntity) e.getEntity()).damage(distance);
+				double distance = Math.floor(shooterLoc.distance(hitLoc) / 10.0);
+				//Was setting extra damage on top of default damage
+					//((LivingEntity) e.getEntity()).damage(distance);
+				//Now it sets the new default bow damage + distance
+				e.setDamage(e.getDamage() + distance);
 			}
 			case charged -> {
+				//Charged cross bow cancels the event, so it ignores both new and default minecraft damage
+				//So it sets it's own damage
 				e.setCancelled(true);
 				Location eloc = e.getEntity().getLocation();
 				Location arrloc = e.getDamager().getLocation();
@@ -100,7 +176,16 @@ public class CustomBows implements Listener {
 				Location eloc = e.getEntity().getLocation();
 				Location arrloc = e.getDamager().getLocation();
 				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
-					((LivingEntity) e.getEntity()).damage(e.getDamage() * 2);
+					/*Why is this so op, it adds extra damage on top, so that is like 8 default
+					* + 16 extra damage. So total is 24 damage. I am nerfing to be 16
+					* Cause no way it is was intentional - Mish
+					* */
+					//OLD:
+						//((LivingEntity) e.getEntity()).damage(e.getDamage() * 2);
+
+					/*Now this gets the cross bow default damage and multiplies it by 2.
+					* */
+					e.setDamage(e.getDamage() * 2);
                     e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
 				}
 			}
@@ -113,6 +198,11 @@ public class CustomBows implements Listener {
 				double z = p.getZ() - en.getZ();
 				e.getEntity().setVelocity(new Vector(x, y, z).normalize().multiply(1.9));
 			}
+		}
+
+		if(!e.isCancelled()){
+			//Check for marksman distance
+			System.out.println(e.getDamage());
 		}
 	}
 
@@ -157,7 +247,9 @@ public class CustomBows implements Listener {
 
 			data.timesBounced++;
 			Arrow arrow = event.getEntity().getWorld().spawnArrow(loc, velocity, (float) velocity.length(), 0);
-			arrow.setDamage(arrow.getDamage() + (0.2 * (float) data.timesBounced));
+			//Replaced with the new data.damage calculator so, 0.2 is not lost
+				//arrow.setDamage(arrow.getDamage() + (0.2 * (float) data.timesBounced));
+			data.damage += 0.2  * (float) data.timesBounced;
 			arrow.setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
 			arrow.setShooter(event.getEntity().getShooter());
 			arrows.remove(event.getEntity());
@@ -166,7 +258,9 @@ public class CustomBows implements Listener {
 			return;
 		} else if (data.type == ArrowData.bowType.normalCrossbow) {
 			// I have no idea what I just wrote but I hope this works
-			((AbstractArrow) event.getEntity()).setDamage(((AbstractArrow) event.getEntity()).getDamage() - 1);
+			//Commented out to ensure that new calculator calculates damage - Mish
+				//((AbstractArrow) event.getEntity()).setDamage(((AbstractArrow) event.getEntity()).getDamage() - 1);
+			//It is set to 8 by Default so no need to add anything here - Mish
 		}
 		CustomArrows.onArrowHit(event);
 	}
