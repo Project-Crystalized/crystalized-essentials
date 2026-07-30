@@ -200,6 +200,7 @@ public class CustomBows implements Listener {
 			}
 		}
 
+		//Will remain visible for now, for testing with people later. - Mish
 		if(!e.isCancelled()){
 			//Check for marksman distance
 			System.out.println(e.getDamage());
