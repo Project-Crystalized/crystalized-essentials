@@ -46,6 +46,12 @@ public class CustomBows implements Listener {
 	//Change the extra damage that the player gets here from the direct hit exploision
 	//I had to change it as otherwise player wasn't getting any explosion damage - Mish
 	private static final double EXPLOSION_DAMAGE_BONUCE = 3.5;
+	//This is extra bonuce that applies to explosion when both explosibe bow and explosive arrow are used
+	//So on top of 3.5 damage
+	private static final double EXPLOSION_BOW_AND_ARROW_EXTRA_BONUCE = 1.5;
+	//This is a value that is minused from the player's eye level location to detect headhsot
+	//If headshots are too easy to hit it can be adjusted to 0.20
+	private static final double ROUGH_HEAD_START_LOCATION = 0.25;
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 
 	//This method is used to calculate arrow's base damage, takes in the weapon and it's charge force
@@ -104,10 +110,10 @@ public class CustomBows implements Listener {
 		double heightOfHit = arrow.getLocation().getY() - shotEntity.getLocation().getY();
 		//This esnures damage is more consistant as it takes in the players eye height and makes it starts roughly
 		//At the head, and if height of the hit is bigger or equal to it then headshot counts
-		boolean headshot = (heightOfHit >= (shotEntity.getEyeHeight() - 0.25));
+		boolean headshot = (heightOfHit >= (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		//The check of locations that is printed to the console
 		System.out.println("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
-				", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - 0.25));
+				", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		return headshot;
 	}
 	@EventHandler(priority = EventPriority.HIGH)
@@ -281,7 +287,7 @@ public class CustomBows implements Listener {
 			double explosiveDamageBonus = EXPLOSION_DAMAGE_BONUCE;
 			//Not sure if this bow is in the game but the explosion will be slightly stronger
 			if (isExplosiveArrow && isExplosiveBow) {
-				explosiveDamageBonus = explosiveDamageBonus + 1.5;
+				explosiveDamageBonus = explosiveDamageBonus + EXPLOSION_BOW_AND_ARROW_EXTRA_BONUCE;
 			}
 
 			e.setDamage(e.getDamage() + explosiveDamageBonus);
