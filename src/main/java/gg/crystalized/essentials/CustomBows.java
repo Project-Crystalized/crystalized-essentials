@@ -96,6 +96,20 @@ public class CustomBows implements Listener {
 		}
 
 	}
+	//This method calculates if the headhsot took place, and returns true if it did, and false if not
+	//Used by weapons capable of dealing headshots
+	private boolean isHeadshot(LivingEntity shotEntity, Entity arrow){
+		//This calculates the height of the arrow hit.
+		//Arrows location - players/entities location feet.
+		double heightOfHit = arrow.getLocation().getY() - shotEntity.getLocation().getY();
+		//This esnures damage is more consistant as it takes in the players eye height and makes it starts roughly
+		//At the head, and if height of the hit is bigger or equal to it then headshot counts
+		boolean headshot = (heightOfHit >= (shotEntity.getEyeHeight() - 0.25));
+		//The check of locations that is printed to the console
+		System.out.println("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
+				", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - 0.25));
+		return headshot;
+	}
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onBowShot(EntityShootBowEvent event) {
 		if (event.isCancelled()) {
@@ -148,25 +162,6 @@ public class CustomBows implements Listener {
 
 		e.setDamage(data.damage);
 
-		//Don't know why but the player feels like he doesn't care about explosions anymore
-		//Getting no damage from it, I tried everything but this seems like the best robust fix
-		//So I made this kinda fix that makes the direct explosive damage consistant
-		//Added extra UUID protection, incase on servers people with diffrent ping might experince a lot more damage
-		//Or for any other reason the damage just starts applying.
-			//In custom arrows
-		boolean isExplosiveArrow = data.arrType == ArrowData.arrowType.explosive;
-		boolean isExplosiveBow = data.type == ArrowData.bowType.explosive;
-
-		if (isExplosiveArrow || isExplosiveBow) {
-
-			double explosiveDamageBonus = EXPLOSION_DAMAGE_BONUCE;
-			//Not sure if this bow is in the game but the explosion will be slightly stronger
-			if (isExplosiveArrow && isExplosiveBow) {
-				explosiveDamageBonus = explosiveDamageBonus + 1.5;
-			}
-
-			e.setDamage(e.getDamage() + explosiveDamageBonus);
-		}
 
 
 
@@ -184,36 +179,82 @@ public class CustomBows implements Listener {
 				e.setDamage(e.getDamage() + distance);
 			}
 			case charged -> {
-				//Charged cross bow cancels the event, so it ignores both new and default minecraft damage
-				//So it sets it's own damage
+				/*
+				* I decided to make it so the event is not canceled and damage is just added on top for the headshot
+				* With the body shot being default 8
+				* And with the headhsot being 10*/
+
+				LivingEntity shotEntity = (LivingEntity) e.getEntity();
+				Entity arrow = e.getDamager();
+				//Calls a method that caluclates the headshot based on height taking in the target entity and the arrow
+				//Outputs true or false
+				boolean headshot = isHeadshot(shotEntity, arrow);
+				if (headshot) {
+					//When true adds +2 to the damage
+					e.setDamage(e.getDamage() + 2);
+					System.out.println("headshot:" + e.getDamage() + " damage");
+				} else {
+					//The default damage of 8 for clarity it will be the same, feel free to reduce by - 2 to mimic the original 6 damage
+					//e.setDamage(e.getDamage() - 2); uncoment to be 6 damage - Mish
+					System.out.println("Not headshot:" + e.getDamage() + " normal damage");
+				}
+				arrow.getLocation().getWorld().playSound(e.getDamager().getLocation(),
+						Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+				arrow.remove();
+				/*The old implementation
+				* I tested it - Mish
+				* I think the headshot value is a little bit high, and I barely landed any when shooting in the head
+				* Also no need to cancel the event, just add extra damage on top with the base being same as other crossbows
+				* I left the old implementaion below
+				*/
+				/*
 				e.setCancelled(true);
 				Location eloc = e.getEntity().getLocation();
 				Location arrloc = e.getDamager().getLocation();
 				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
 					((LivingEntity) e.getEntity()).damage(10);
+					//That is so that the player turn red when damaged
+					((LivingEntity) e.getEntity()).playHurtAnimation(0.0F);
+					System.out.println("Dealt 10 Damage");
 				} else {
 					((LivingEntity) e.getEntity()).damage(6);
+					((LivingEntity) e.getEntity()).playHurtAnimation(0.0F);
+					System.out.println("Dealt 6 Damage");
 				}
 				e.getDamager().getLocation().getWorld().playSound(e.getDamager().getLocation(),
 						Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
 				e.getDamager().remove();
+				*/
 			}
 			case preciseCrossbow -> {
-				Location eloc = e.getEntity().getLocation();
-				Location arrloc = e.getDamager().getLocation();
-				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
-					/*Why is this so op, it adds extra damage on top, so that is like 8 default
-					* + 16 extra damage. So total is 24 damage. I am nerfing to be 16
-					* Cause no way it is was intentional - Mish
-					* */
-					//OLD:
-						//((LivingEntity) e.getEntity()).damage(e.getDamage() * 2);
-
-					/*Now this gets the cross bow default damage and multiplies it by 2.
-					* */
-					e.setDamage(e.getDamage() * 2);
-                    e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
+				//Changed this to match the headshot logic developed. - Mish
+				LivingEntity shotEntity = (LivingEntity) e.getEntity();
+				Entity arrow = e.getDamager();
+				boolean headshot = isHeadshot(shotEntity, arrow);
+				if (headshot) {
+					//Nerfed from 16 damage to 12 damage, as it is was pretty strong
+					e.setDamage(e.getDamage() * 1.5);
+                  	e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
 				}
+
+
+				//Orignal implementation.
+//				Location eloc = e.getEntity().getLocation();
+//				Location arrloc = e.getDamager().getLocation();
+//				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
+//					/*Why is this so op, it adds extra damage on top, so that is like 8 default
+//					* + 16 extra damage. So total is 24 damage. I am nerfing to be 16
+//					* Cause no way it is was intentional - Mish
+//					* */
+//					//OLD:
+//						//((LivingEntity) e.getEntity()).damage(e.getDamage() * 2);
+//
+//					/*Now this gets the cross bow default damage and multiplies it by 2.
+//					* */
+//					e.setDamage(e.getDamage() * 2);
+//                    e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
+//				}
+
 			}
 			case grapplingBow -> {
 				LivingEntity p = data.shooter;
@@ -224,6 +265,26 @@ public class CustomBows implements Listener {
 				double z = p.getZ() - en.getZ();
 				e.getEntity().setVelocity(new Vector(x, y, z).normalize().multiply(1.9));
 			}
+		}
+		//Had to move it here so that the bonuce from the explosion won't multiple in headshot
+		//Don't know why but the player feels like he doesn't care about explosions anymore
+		//Getting no damage from it, I tried everything but this seems like the best robust fix
+		//So I made this kinda fix that makes the direct explosive damage consistant
+		//Added extra UUID protection, incase on servers people with diffrent ping might experince a lot more damage
+		//Or for any other reason the damage just starts applying.
+		//In custom arrows
+		boolean isExplosiveArrow = data.arrType == ArrowData.arrowType.explosive;
+		boolean isExplosiveBow = data.type == ArrowData.bowType.explosive;
+
+		if (isExplosiveArrow || isExplosiveBow) {
+
+			double explosiveDamageBonus = EXPLOSION_DAMAGE_BONUCE;
+			//Not sure if this bow is in the game but the explosion will be slightly stronger
+			if (isExplosiveArrow && isExplosiveBow) {
+				explosiveDamageBonus = explosiveDamageBonus + 1.5;
+			}
+
+			e.setDamage(e.getDamage() + explosiveDamageBonus);
 		}
 
 		//Will remain visible for now, for testing with people later. - Mish
