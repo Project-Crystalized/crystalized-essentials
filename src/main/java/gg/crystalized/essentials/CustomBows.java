@@ -122,13 +122,20 @@ public class CustomBows implements Listener {
 	}
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onBowShot(EntityShootBowEvent event) {
+		/* Was here before, moved to allow crosbow clearence, to prevent full crosbow while it is empty visual bug
 		if (event.isCancelled()) {
 			return;
-		}
+		}*/
+		//As the refund logic happens, the crosbow needs to be cleared anyway to prevent visual bug
+		//TODO: check if it is is ok in crystal blitz
 		ItemStack bow_item = event.getBow();
 		if (bow_item != null && bow_item.getType().equals(CROSSBOW)) {
 			bow_item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(0).build());
 		}
+		if (event.isCancelled()) {
+			return;
+		}
+
 
 		if (bow_item == null) {
 			return;
