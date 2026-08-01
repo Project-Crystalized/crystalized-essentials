@@ -112,8 +112,12 @@ public class CustomBows implements Listener {
 		//At the head, and if height of the hit is bigger or equal to it then headshot counts
 		boolean headshot = (heightOfHit >= (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		//The check of locations that is printed to the console
-		System.out.println("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
-				", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
+		//Changed to logger as the server console was complaining, and it got annoying
+		crystalized_essentials.getInstance()
+				.getLogger().info("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
+						", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
+		//System.out.println("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
+		//		", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		return headshot;
 	}
 	@EventHandler(priority = EventPriority.HIGH)
@@ -203,11 +207,13 @@ public class CustomBows implements Listener {
 				if (headshot) {
 					//When true adds +2 to the damage
 					e.setDamage(e.getDamage() + 2);
-					System.out.println("headshot:" + e.getDamage() + " damage");
+					crystalized_essentials.getInstance().getLogger()
+							.info("headshot:" + e.getDamage() + " damage");
 				} else {
 					//The default damage of 8 for clarity it will be the same, feel free to reduce by - 2 to mimic the original 6 damage
 					//e.setDamage(e.getDamage() - 2); uncoment to be 6 damage - Mish
-					System.out.println("Not headshot:" + e.getDamage() + " normal damage");
+					crystalized_essentials.getInstance().getLogger()
+							.info("Not headshot:" + e.getDamage() + " normal damage");
 				}
 				arrow.getLocation().getWorld().playSound(e.getDamager().getLocation(),
 						Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
@@ -301,7 +307,7 @@ public class CustomBows implements Listener {
 		//Will remain visible for now, for testing with people later. - Mish
 		if(!e.isCancelled()){
 			//Check for marksman distance
-			System.out.println(e.getDamage());
+			crystalized_essentials.getInstance().getLogger().info("Shot total damage:" + e.getDamage());
 		}
 	}
 	//This makes sure that the explosion damage is zero for the player that got directly hit
