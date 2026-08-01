@@ -144,6 +144,11 @@ public class CustomBows implements Listener {
 				chargedParticleTrail((Projectile) event.getProjectile());
 				event.getProjectile().setGravity(false);
 			}
+			case preciseCrossbow -> {
+				//This is to make precise crossbow not be effected by gravity, matching it's description
+				//Arrows will go in a straight line and not curve.
+				event.getProjectile().setGravity(false);
+			}
 		}
 
 		//TODO: add damage - DONE
