@@ -13,6 +13,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -150,6 +151,26 @@ public class CustomSwords implements Listener {
 			player.sendActionBar(Component.empty());
 		}
 	}
+	//This is a clean up for all tasks, was meant to be called in LS code on round start
+	//Decided not to proced with that for now as it seemed complex connecting plugins, and might have meesed up peoples set ups
+	//DONE: Another health fix, based on teleporting event
+	/*
+	public void stopAllPufferBleeding() {
+		//goes through all of them and if have values/task exist it cancels it
+		for (BukkitTask task : currentBleedingPuffer.values()) {
+			task.cancel();
+		}
+		//Makes sure the maps are clear, made empty
+		currentBleedingPuffer.clear();
+		remainingPufferBleedingDamages.clear();
+
+		//Makes sure that all the player's action bars are clear
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			player.sendActionBar(Component.empty());
+		}
+		crystalized_essentials.getInstance().getLogger().info("All puffer sword bleeding cleared");
+
+	}*/
 	//This is not an actual event it just takes in an event to simplify coding.
 	//Doesn't have event handler
 	//It is used to apply damage buff for slime sword and puffer sword
@@ -162,7 +183,18 @@ public class CustomSwords implements Listener {
 			//if critcal, multiples the bonus by critical as well creating the same number
 			//Ex 5 * 1.5 = 7.5  + (0.75 * 1.5) = 8.625 otherwise matching the 5.75 * 1.5 = 8.625
 			e.setDamage(e.getDamage() + (PUFFER_AND_SLIME_EXTRA_DAMAGE * 1.5));
+
 		}
+	}
+	//A small and nice fix that ensures that the puffer effect stops after the teleportation to the new destonation with the plugin.
+	@EventHandler
+	public void onPlayerTeleport(PlayerTeleportEvent event){
+		//Will only happen if teleported with the plugin
+		if(event.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN){
+			return;
+		}
+		//Clears puffer effect
+		stopPufferBleeding(event.getPlayer().getUniqueId());
 	}
 	//Makes sure that the tasks clears on death. It is safe
 	@EventHandler
