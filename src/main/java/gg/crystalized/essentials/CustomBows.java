@@ -224,7 +224,7 @@ public class CustomBows implements Listener {
 				}
 				arrow.getLocation().getWorld().playSound(e.getDamager().getLocation(),
 						Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
-				//Fix for the kill not being detected. 
+				//Fix for the kill not being detected.
 				//arrow.remove();
 				/*The old implementation
 				* I tested it - Mish
