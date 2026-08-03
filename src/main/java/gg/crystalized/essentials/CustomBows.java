@@ -54,41 +54,15 @@ public class CustomBows implements Listener {
 	private static final double ROUGH_HEAD_START_LOCATION = 0.25;
 	public static HashMap<Projectile, ArrowData> arrows = new HashMap<>();
 
+
 	//This method is used to calculate arrow's base damage, takes in the weapon and it's charge force
 	private double calculateArrowDamage(ItemStack weapon, float weaponChargedForce){
 		switch (weapon.getType()) {
 			case BOW -> {
-				//Clamps bow charge between 0 and 1 cleanly
-				/*Simple explanations of clamp incase you never saw it - by Mish
-					*It takes in the weapon charge value and clamps it between 0.0 and 1.0
-					* Meaning that if for some reason it is higher than 1.0 it will return 1.0
-					* Or if for some reason is is less than 0.0 it wil return 0.0
-					* If it is between those values it leaves the value the same
-				* This is just more of a safety check as charge should be between 0 and 1
-					* */
-				double charge = Math.clamp(weaponChargedForce, 0.0f, 1.0f);
-				//This is a basic lerp formula:  min + (max - min) * t
-				//It calculates the value between minimum and maximum.
-				//In this case it will output the bows damage between the charges
-					//Example of zero bow charge: 1 + (7 - 1) * 0 = 1.0
-					//Example of half bow charge: 1 + (7 - 1) * 0.5 = 4.0
-					//Example of full bow charge: 1 + (7 - 1) * 1 = 7.0
-					//You can learn more here about lerp and this formula
-						//https://gamedev.net/tutorials/programming/general-and-gameplay-programming/linear-interpolation-explained-r5892
-				double baseDamage = BOW_MIN_DAMAGE + (BOW_MAX_DAMAGE - BOW_MIN_DAMAGE) * charge;
-
-				//This is incase any bows in the future have power enchatment, so that it still works
-				int powerLevel = weapon.getEnchantmentLevel(Enchantment.POWER);
-				//The default multiplier is 1
-				double powerMultiplier = 1.0;
-				//TODO: If power is added and is too overpowered try another formula (Like 1 extra damge per power)
-				if (powerLevel > 0) {
-					//Vanila formula: Power increase arrow damage by 25% × (level + 1)
-					//https://minecraft.fandom.com/wiki/Power
-					powerMultiplier = powerMultiplier + ( 0.25 * (powerLevel + 1));
-				}
-				//The base damage is multiplied to power multiplier (If no power is just 1)
-				return baseDamage * powerMultiplier;
+				//TODO: If we add any other bow like weapons with weapon charge force. Check item model here and put correct damage in
+				//Calls the method which calulates the damage of the bow based on charge.
+				//Now can be applied to custom bows which might have a higher max or lower max damage in the future
+                return chargeBasedBowDamageCalculator(weapon, weaponChargedForce, BOW_MIN_DAMAGE, BOW_MAX_DAMAGE);
 			}
 
 			//Crossbow has no charge force like the bow, so damage will allways be the same
@@ -101,6 +75,42 @@ public class CustomBows implements Listener {
 			}
 		}
 
+	}
+	///This method exist so in the future we can make bows that either deal less damage: like MCCI small bow, or higher damage something like heavy bow
+	//It takes in the maxDamage which will be dealt on full charge and lowest damage on smallest charge
+	//Called in calculate arrow damage
+	private double chargeBasedBowDamageCalculator(ItemStack weapon, float weaponChargedForce, double minDamage, double maxDamage ){
+		//Clamps bow charge between 0 and 1 cleanly
+		/*Simple explanations of clamp incase you never saw it - by Mish
+		 *It takes in the weapon charge value and clamps it between 0.0 and 1.0
+		 * Meaning that if for some reason it is higher than 1.0 it will return 1.0
+		 * Or if for some reason is is less than 0.0 it wil return 0.0
+		 * If it is between those values it leaves the value the same
+		 * This is just more of a safety check as charge should be between 0 and 1
+		 * */
+		double charge = Math.clamp(weaponChargedForce, 0.0f, 1.0f);
+		//This is a basic lerp formula:  min + (max - min) * t
+		//It calculates the value between minimum and maximum.
+		//In this case it will output the bows damage between the charges
+		//Example of zero bow charge: 1 + (7 - 1) * 0 = 1.0
+		//Example of half bow charge: 1 + (7 - 1) * 0.5 = 4.0
+		//Example of full bow charge: 1 + (7 - 1) * 1 = 7.0
+		//You can learn more here about lerp and this formula
+		//https://gamedev.net/tutorials/programming/general-and-gameplay-programming/linear-interpolation-explained-r5892
+		double baseDamage = minDamage + (maxDamage - minDamage) * charge;
+
+		//This is incase any bows in the future have power enchatment, so that it still works
+		int powerLevel = weapon.getEnchantmentLevel(Enchantment.POWER);
+		//The default multiplier is 1
+		double powerMultiplier = 1.0;
+		//TODO: If power is added and is too overpowered try another formula (Like 1 extra damge per power)
+		if (powerLevel > 0) {
+			//Vanila formula: Power increase arrow damage by 25% × (level + 1)
+			//https://minecraft.fandom.com/wiki/Power
+			powerMultiplier = powerMultiplier + ( 0.25 * (powerLevel + 1));
+		}
+		//The base damage is multiplied to power multiplier (If no power is just 1)
+		return baseDamage * powerMultiplier;
 	}
 	//This method calculates if the headhsot took place, and returns true if it did, and false if not
 	//Used by weapons capable of dealing headshots
