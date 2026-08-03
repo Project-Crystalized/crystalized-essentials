@@ -3,12 +3,15 @@ package gg.crystalized.essentials;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -34,7 +37,7 @@ public class CustomSwords implements Listener {
 	///Important: If you want to play around with values they are here no need to modify the methods - Mish
 
 	//This is the amount of how many times the player will be repetedly damage with a puffer sword.
-	private static final int PUFFER_DAMAGES_REPETION_NUMBER = 5;
+	private static final int PUFFER_DAMAGES_REPETION_NUMBER = 3;
 	//The delay after the hit that the puffer sword effect starts
 	private static final long DELAY_BEFORE_STARTING_PUFFER_DAMAGE = 5L;
 	//This is a delay before the puffer health reducticion happens again, trying to match poision roughly
@@ -223,10 +226,22 @@ public class CustomSwords implements Listener {
 		if(e.isCancelled()){
 			return;
 		}
+		//Fixe for when the arrow hits and the sword is in the main hand dealing the effects damage.
+		//It worked on the older versions as well, but no one used the swords, so no one knew.
+		if(e.getDamager() instanceof AbstractArrow){
+			return;
+		}
+		//Ensures that it will only happen when punched, the sweeping is allowed for now, because I am not sure how much diffrence it makes then.
+		if(e.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK  && e.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK){
+			return;
+		}
 		if (!(e.getDamager() instanceof Player) || !(e.getEntity() instanceof Player)) {
 			return;
 		}
 		ItemStack held_item = ((Player) e.getDamager()).getInventory().getItemInMainHand();
+
+
+
 		if (held_item.getType().toString().toLowerCase().contains("sword") && held_item.getItemMeta().hasItemModel()) {
 
 			NamespacedKey item_model = held_item.getItemMeta().getItemModel();
