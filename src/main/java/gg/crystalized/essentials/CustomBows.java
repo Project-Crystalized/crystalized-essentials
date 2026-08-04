@@ -5,6 +5,8 @@ import com.destroystokyo.paper.event.player.PlayerReadyArrowEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
@@ -130,6 +132,42 @@ public class CustomBows implements Listener {
 		//		", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		return headshot;
 	}
+	//This is the headshot feedback which will be given to the shooter and the victim of headshot.
+
+	private void headShotFeedback(ArrowData data, LivingEntity shotEntity){
+		//Checks if shooter is the player and assigns the variable shooter
+		if (data.shooter instanceof Player shooter) {
+			//Plays the sound of the bell when sussesfully landed a headshot
+			shooter.playSound(shooter.getLocation(), Sound.BLOCK_BELL_USE, 0.5F, 1.6F);
+			//sends a mesage
+			//TODO: Might want to remove that
+			shooter.sendMessage(Component.text("You landed a head shot", NamedTextColor.GREEN));
+		}
+		if (shotEntity instanceof Player shotPlayer) {
+			//For the shot player plays the anvil sound efffect, and send a message as well
+			shotPlayer.playSound(shotPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.15F, 2.0F);
+			shotPlayer.sendMessage(Component.text("You got shot in the head", NamedTextColor.RED));
+		}
+		//Creates the critical particles at eye level of the shot entity
+		shotEntity.getWorld().spawnParticle(Particle.CRIT, shotEntity.getEyeLocation(),
+				12,
+				0.15,
+				0.15,
+				0.15,
+				0.05
+		);
+		//Creates red blood like particles at eye level of the shot eneity
+		//TODO: Maybe change to gold, to identify sussesfull hit
+		shotEntity.getWorld().spawnParticle(Particle.DUST, shotEntity.getEyeLocation(),
+				8,
+				0.1,
+				0.1,
+				0.1,
+				new Particle.DustOptions(Color.RED, 1.0F)
+		);
+
+
+	}
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onBowShot(EntityShootBowEvent event) {
 		/* Was here before, moved to allow crosbow clearence, to prevent full crosbow while it is empty visual bug
@@ -226,6 +264,9 @@ public class CustomBows implements Listener {
 					e.setDamage(e.getDamage() + 2);
 					crystalized_essentials.getInstance().getLogger()
 							.info("headshot:" + e.getDamage() + " damage");
+					//This is the headshot feedback for the shooter and the entity which is shot
+					headShotFeedback(data, shotEntity);
+
 				} else {
 					//The default damage of 8 for clarity it will be the same, feel free to reduce by - 2 to mimic the original 6 damage
 					//e.setDamage(e.getDamage() - 2); uncoment to be 6 damage - Mish
@@ -270,6 +311,8 @@ public class CustomBows implements Listener {
 					//Nerfed from 16 damage to 12 damage, as it is was pretty strong
 					e.setDamage(e.getDamage() * 1.5);
                   	e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
+					//This is the headshot feedback for the shooter and the entity which is shot
+					headShotFeedback(data, shotEntity);
 				}
 
 
@@ -324,8 +367,8 @@ public class CustomBows implements Listener {
 
 		//Will remain visible for now, for testing with people later. - Mish
 		if(!e.isCancelled()){
-			//Check for marksman distance
-			crystalized_essentials.getInstance().getLogger().info("Shot total damage:" + e.getDamage());
+			//Added a check to see the final damage as well
+			crystalized_essentials.getInstance().getLogger().info("Shot total damage:" + e.getDamage() + " Shot final damage" + e.getFinalDamage());
 		}
 	}
 	//This makes sure that the explosion damage is zero for the player that got directly hit

@@ -45,7 +45,9 @@ public class CustomSwords implements Listener {
 	//1hp/half a heart per one cycle of puffer blood poision effect
 	private static final double DAMAGE_BY_PUFFER_BLEEDING_EFFECT = 1.0;
 	//This is extra damage for both puffer and slime by default, now they deal 5.75 on initial hit close to iron
-	private static final double PUFFER_AND_SLIME_EXTRA_DAMAGE = 0.75;
+	private static final double PUFFER_EXTRA_DAMAGE = 0.75;
+	//Seperated Slime and puffer so it is easier to nerf in the future
+	private static final double SLIME_EXTRA_DAMAGE = 0.75;
 	//This stores the player's UUID and the task that will be damaging them
 	private final Map<UUID, BukkitTask> currentBleedingPuffer = new HashMap<>();
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
@@ -176,17 +178,17 @@ public class CustomSwords implements Listener {
 	}*/
 	//This is not an actual event it just takes in an event to simplify coding.
 	//Doesn't have event handler
-	//It is used to apply damage buff for slime sword and puffer sword
-	public void extraDamageForSlimeAndPuffer(EntityDamageByEntityEvent e){
+	//It is used to apply extra damage for any swords that need it like puffer, slime and underdog
+	//Accounts for critical damage
+	public void extraDamageForSwords(EntityDamageByEntityEvent e, double extraDamage){
 		//If not critical just adds the damage
 		if (!e.isCritical()) {
-			e.setDamage(e.getDamage() + PUFFER_AND_SLIME_EXTRA_DAMAGE);
+			e.setDamage(e.getDamage() + extraDamage);
 		}
 		else {
 			//if critcal, multiples the bonus by critical as well creating the same number
 			//Ex 5 * 1.5 = 7.5  + (0.75 * 1.5) = 8.625 otherwise matching the 5.75 * 1.5 = 8.625
-			e.setDamage(e.getDamage() + (PUFFER_AND_SLIME_EXTRA_DAMAGE * 1.5));
-
+			e.setDamage(e.getDamage() + (extraDamage * 1.5));
 		}
 	}
 	//A small and nice fix that ensures that the puffer effect stops after the teleportation to the new destonation with the plugin.
@@ -241,6 +243,13 @@ public class CustomSwords implements Listener {
 		ItemStack held_item = ((Player) e.getDamager()).getInventory().getItemInMainHand();
 
 
+		//TODO: remove if any presistant data swords are added
+		//This is just added to compare damage with the iron sword
+		if (held_item.getType().toString().toLowerCase().contains("sword") && !held_item.getItemMeta().hasItemModel()){
+			crystalized_essentials.getInstance()
+					.getLogger().info("Regular Sword Initial Damage: " + e.getDamage() + " Regular Final Damage " + e.getFinalDamage());
+			return;
+		}
 
 		if (held_item.getType().toString().toLowerCase().contains("sword") && held_item.getItemMeta().hasItemModel()) {
 
@@ -249,7 +258,7 @@ public class CustomSwords implements Listener {
 			if (item_model.equals(new NamespacedKey("crystalized", "slime_sword"))) {
 				//The damage buff from 5 to 5.75 to be closer to iron sword\
 				//With accurate crits
-				extraDamageForSlimeAndPuffer(e);
+				extraDamageForSwords(e, SLIME_EXTRA_DAMAGE);
 				//The same slowness as before
 				((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
 				//Buff to the slime sword, gives the attacking player speed and jump boost for 2 seconds, each hit
@@ -260,7 +269,7 @@ public class CustomSwords implements Listener {
 						.getLogger().info("Slime Initial Damage: " + e.getDamage() + "Slime Final Damage " + e.getFinalDamage());
 			} else if (item_model.equals(new NamespacedKey("crystalized", "pufferfish_sword"))) {
 				//The damage buff from 5 to 5.75 to be closer to iron sword
-				extraDamageForSlimeAndPuffer(e);
+				extraDamageForSwords(e, PUFFER_EXTRA_DAMAGE);
 				//Aplies the new puffer fish damage, to remove just comment out
 				applyNewPufferSwordBleeding((LivingEntity) e.getEntity());
 				crystalized_essentials.getInstance()
@@ -291,16 +300,9 @@ public class CustomSwords implements Listener {
 					Bukkit.getLogger().severe("4");
 					damageBonuce = 2.0;
 				}
-				//If critcal multiples the bonuce, so it will be correct
-				//Ex for underdog sword (+1 damage) (5*1.5) + (1*1.5) = 9
-				//Ex for the real iron sword (6*1.5) = 9, so they match
-				//Old code example (5*1.5) + 1 = 8.5 they don't match
-				if (e.isCritical()) {
-					//When critical multiples the bonunce by critical
-					damageBonuce = damageBonuce * 1.5;
-				}
-				//Applies the damage
-				e.setDamage(e.getDamage() + damageBonuce);
+				//Changed to work with the extra damage for swords critical method
+				//Removed the old code and replaced with this method to reduce repated code
+				extraDamageForSwords(e, damageBonuce);
 				//Logs the damage so feel free to test on practise
 				crystalized_essentials.getInstance().getLogger().info("Underdog did this raw damage: + " + e.getDamage() +
 						" Final Damage:" + e.getFinalDamage());
