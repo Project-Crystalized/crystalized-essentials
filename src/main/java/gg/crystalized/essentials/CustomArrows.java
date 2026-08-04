@@ -75,10 +75,26 @@ public class CustomArrows {
 			arrow.setItemStack(item);
 
 			Particle.DustOptions options = new Particle.DustOptions(PURPLE, 1);
-			AreaEffectCloud cloud = (AreaEffectCloud) event.getEntity().getWorld().spawnEntity(arrow_loc, AREA_EFFECT_CLOUD, false);
-			cloud.setColor(PURPLE);
-			cloud.setParticle(DUST, options);
+			// Configures the cloud before it becomes visible in the world, preventing the weird white particle appering briefly
+			AreaEffectCloud cloud = arrow_loc.getWorld().spawn(arrow_loc, AreaEffectCloud.class,
+					spawnedCloud -> {
+						// The cloud exists only for the damage, so radius is set to zero
+						//As particles are being spawned manualy now
+						spawnedCloud.setRadius(0.0F);
+						//The duration is 170 but should be removed before in the task at 150
+						spawnedCloud.setDuration(170);
+						//Makes sure the particcles are dust and using the options. Incase any brief particles to not look out of place
+						spawnedCloud.setParticle(DUST, options);
+					}
+			);
+			//Old lagy cloud
+			//AreaEffectCloud cloud = (AreaEffectCloud) event.getEntity().getWorld().spawnEntity(arrow_loc, AREA_EFFECT_CLOUD, false);
+			//cloud.setRadius(0.0F);
+			//cloud.setDuration(150);
+			//cloud.setColor(PURPLE);
+			//cloud.setParticle(DUST, options);
 
+			//Damage source as it was
 			DamageSource.Builder builder = DamageSource.builder(DRAGON_BREATH);
 			builder.withCausingEntity(data.shooter);
 			builder.withDirectEntity(cloud);
@@ -92,7 +108,47 @@ public class CustomArrows {
 					if (i >= 10) {
 						cloud.remove();
 						cancel();
+						//Ensures that it stop, so no extra damage
+						return;
 					}
+					// Draws two inner and one outer ring for a circle, so it is easier to see
+					//changed to be 3 rings as it made it much easier to see
+					//Still much better for perfomance then before
+					double[] ringRadius = {1.0, 1.5, 2.0};
+					//This so the 20 particles are placed in each of the circle ring.
+					int particlePoints = 20;
+
+					//This for loop is for creation of three circles, two inner one outter circle with total of 60 particles
+					//Significant decrease compared to the cloud.
+					//The particles are synced with damage now creating a nice effect of when it is dealing damage particles are stronger
+					for (double radius : ringRadius) {
+						//This for loop is for calculating each particle point and placing it in a circle
+						for (int particlePoint = 0; particlePoint < particlePoints; particlePoint++) {
+
+							//Calculates the angle in radiant.
+							//2*PI radiants is a complete circle
+							//Multipliying by the current particle point to sellect it's angle
+							//Dividing by particle points to space out evenly the particles around the circle
+							double angle = (Math.PI * 2.0 * particlePoint) / particlePoints;
+							//Converts the angle into x and z positions, so that they could be used to offset the posion of particle
+							double x = Math.cos(angle) * radius;
+							double z = Math.sin(angle) * radius;
+
+							//Adds the offset of the x and z to the particles location
+							//Adds a small y offset to keep it slightly above the ground
+							Location particleLocation = loc.clone().add(x, 0.15, z);
+							//spawns the one calculated particle at is' correct location
+							loc.getWorld().spawnParticle(Particle.DUST, particleLocation,
+									1,
+									0.0,
+									0.0,
+									0.0,
+									0.0,
+									options
+							);
+						}
+					}
+					//Damage wasn't touched
 					Collection<LivingEntity> collect = loc.getNearbyLivingEntities(2, 1);
 					for (LivingEntity liv : collect) {
 						liv.damage(1, source);
