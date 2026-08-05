@@ -47,7 +47,8 @@ public class CustomBows implements Listener {
 	private static final double CROSSBOW_DAMAGE = 8.0;
 	//Change the extra damage that the player gets here from the direct hit exploision
 	//I had to change it as otherwise player wasn't getting any explosion damage - Mish
-	private static final double EXPLOSION_DAMAGE_BONUCE = 3.5;
+	//Nerfed from 3.5 to 3.0
+	private static final double EXPLOSION_DAMAGE_BONUCE = 3.0;
 	//This is extra bonuce that applies to explosion when both explosibe bow and explosive arrow are used
 	//So on top of 3.5 damage
 	private static final double EXPLOSION_BOW_AND_ARROW_EXTRA_BONUCE = 1.5;
@@ -206,11 +207,10 @@ public class CustomBows implements Listener {
 			case preciseCrossbow -> {
 				//This is to make precise crossbow not be effected by gravity, matching it's description
 				//Arrows will go in a straight line and not curve.
-				event.getProjectile().setGravity(false);
+				//Acording to mite it was supposed to be curved, so it is commented out
+				//event.getProjectile().setGravity(false);
 			}
 		}
-
-		//TODO: add damage - DONE
 		//Added damge here
 		double damage = calculateArrowDamage(bow_item, event.getForce());
 		ArrowData ard = new ArrowData(event.getEntity(), type, arrType, 0, damage);

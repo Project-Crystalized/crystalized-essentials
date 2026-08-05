@@ -45,7 +45,8 @@ public class CustomSwords implements Listener {
 	//1hp/half a heart per one cycle of puffer blood poision effect
 	private static final double DAMAGE_BY_PUFFER_BLEEDING_EFFECT = 1.0;
 	//This is extra damage for both puffer and slime by default, now they deal 5.75 on initial hit close to iron
-	private static final double PUFFER_EXTRA_DAMAGE = 0.75;
+	//Puffer nerfed from 0.75 to 0.15
+	private static final double PUFFER_EXTRA_DAMAGE = 0.15;
 	//Seperated Slime and puffer so it is easier to nerf in the future
 	private static final double SLIME_EXTRA_DAMAGE = 0.75;
 	//This stores the player's UUID and the task that will be damaging them
