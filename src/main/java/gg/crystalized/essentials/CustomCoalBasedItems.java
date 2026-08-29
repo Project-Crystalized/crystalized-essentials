@@ -567,7 +567,7 @@ public class CustomCoalBasedItems implements Listener {
 
                     // cling (default), Shift to drop early
                     final double CLING_DIST    = 0.55; // start clinging when within this distance of hook
-                    final int    CLING_TICKS   = 36; // cling duration if Shift isn’t pressed
+                    final int    CLING_TICKS   = 15; // cling duration if Shift isn’t pressed
                     final double CLING_PULL    = 0.12; // small pull toward hook while clinging
                     final double CLING_UP      = 0.05;  // small up while clinging (feels “magnetic/sticky”)
 
