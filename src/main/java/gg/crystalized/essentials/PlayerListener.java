@@ -1,8 +1,6 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
-import gg.crystalized.essentials.CustomEntity.KnockoutOrb;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.ArmorStand;
@@ -14,8 +12,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-
-import static net.kyori.adventure.text.Component.text;
 
 public class PlayerListener implements Listener {
     @EventHandler

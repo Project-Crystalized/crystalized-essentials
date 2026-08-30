@@ -1,7 +1,6 @@
 package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import com.destroystokyo.paper.event.player.PlayerReadyArrowEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
@@ -115,8 +114,7 @@ public class CustomBows implements Listener {
 		//The base damage is multiplied to power multiplier (If no power is just 1)
 		return baseDamage * powerMultiplier;
 	}
-	//This method calculates if the headhsot took place, and returns true if it did, and false if not
-	//Used by weapons capable of dealing headshots
+
 	private boolean isHeadshot(LivingEntity shotEntity, Entity arrow){
 		//This calculates the height of the arrow hit.
 		//Arrows location - players/entities location feet.
@@ -126,30 +124,26 @@ public class CustomBows implements Listener {
 		boolean headshot = (heightOfHit >= (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		//The check of locations that is printed to the console
 		//Changed to logger as the server console was complaining, and it got annoying
-		crystalized_essentials.getInstance()
-				.getLogger().info("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
-						", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
+		//Commented out as it's per-hit debug spam
+		//crystalized_essentials.getInstance()
+		//		.getLogger().info("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
+		//				", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		//System.out.println("Arrow's y location " + arrow.getLocation().getY() + ", Feet of player y: " + shotEntity.getLocation().getY() +
 		//		", Height of the hit: " + heightOfHit + ", Head shot start location: " + (shotEntity.getEyeHeight() - ROUGH_HEAD_START_LOCATION));
 		return headshot;
 	}
-	//This is the headshot feedback which will be given to the shooter and the victim of headshot.
 
+	//This is the headshot feedback which will be given to the shooter and the victim of headshot.
 	private void headShotFeedback(ArrowData data, LivingEntity shotEntity){
 		//Checks if shooter is the player and assigns the variable shooter
 		if (data.shooter instanceof Player shooter) {
-			//Plays the sound of the bell when sussesfully landed a headshot
 			shooter.playSound(shooter.getLocation(), Sound.BLOCK_BELL_USE, 0.5F, 1.6F);
-			//sends a mesage
-			//TODO: Might want to remove that
 			shooter.sendMessage(Component.text("You landed a head shot", NamedTextColor.GREEN));
 		}
 		if (shotEntity instanceof Player shotPlayer) {
-			//For the shot player plays the anvil sound efffect, and send a message as well
 			shotPlayer.playSound(shotPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.15F, 2.0F);
 			shotPlayer.sendMessage(Component.text("You got shot in the head", NamedTextColor.RED));
 		}
-		//Creates the critical particles at eye level of the shot entity
 		shotEntity.getWorld().spawnParticle(Particle.CRIT, shotEntity.getEyeLocation(),
 				12,
 				0.15,
@@ -232,10 +226,6 @@ public class CustomBows implements Listener {
 
 		e.setDamage(data.damage);
 
-
-
-
-
 		// deal extra damge for marksman
 		//Marksman adjusted by Mish
 		switch (data.type) {
@@ -315,24 +305,6 @@ public class CustomBows implements Listener {
 					headShotFeedback(data, shotEntity);
 				}
 
-
-				//Orignal implementation.
-//				Location eloc = e.getEntity().getLocation();
-//				Location arrloc = e.getDamager().getLocation();
-//				if (arrloc.getY() - eloc.getY() >= 1.7 && arrloc.getY() - eloc.getY() <= 2) {
-//					/*Why is this so op, it adds extra damage on top, so that is like 8 default
-//					* + 16 extra damage. So total is 24 damage. I am nerfing to be 16
-//					* Cause no way it is was intentional - Mish
-//					* */
-//					//OLD:
-//						//((LivingEntity) e.getEntity()).damage(e.getDamage() * 2);
-//
-//					/*Now this gets the cross bow default damage and multiplies it by 2.
-//					* */
-//					e.setDamage(e.getDamage() * 2);
-//                    e.getEntity().setVelocity(e.getEntity().getVelocity().multiply(1.2));
-//				}
-
 			}
 			case grapplingBow -> {
 				LivingEntity p = data.shooter;
@@ -364,13 +336,8 @@ public class CustomBows implements Listener {
 
 			e.setDamage(e.getDamage() + explosiveDamageBonus);
 		}
-
-		//Will remain visible for now, for testing with people later. - Mish
-		if(!e.isCancelled()){
-			//Added a check to see the final damage as well
-			crystalized_essentials.getInstance().getLogger().info("Shot total damage:" + e.getDamage() + " Shot final damage" + e.getFinalDamage());
-		}
 	}
+
 	//This makes sure that the explosion damage is zero for the player that got directly hit
 	//As the direct hit damage is set manualy
 	@EventHandler(priority = EventPriority.HIGH)
@@ -471,7 +438,6 @@ public class CustomBows implements Listener {
 		if (e.isCancelled()) {
 			return;
 		}
-		Entity entity = e.getEntity();
 		ItemStack item = e.getCrossbow();
 
 		//This needs to be delayed, otherwise the getChargedProjectiles list will be empty

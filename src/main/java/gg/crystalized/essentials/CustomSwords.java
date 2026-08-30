@@ -11,7 +11,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -247,8 +246,6 @@ public class CustomSwords implements Listener {
 		//TODO: remove if any presistant data swords are added
 		//This is just added to compare damage with the iron sword
 		if (held_item.getType().toString().toLowerCase().contains("sword") && !held_item.getItemMeta().hasItemModel()){
-			crystalized_essentials.getInstance()
-					.getLogger().info("Regular Sword Initial Damage: " + e.getDamage() + " Regular Final Damage " + e.getFinalDamage());
 			return;
 		}
 
@@ -266,17 +263,11 @@ public class CustomSwords implements Listener {
 				//To remove just comment it out
 				((Player) e.getDamager()).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2 * 20, 0));
 				((Player) e.getDamager()).addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 2 * 20, 0));
-				crystalized_essentials.getInstance()
-						.getLogger().info("Slime Initial Damage: " + e.getDamage() + "Slime Final Damage " + e.getFinalDamage());
 			} else if (item_model.equals(new NamespacedKey("crystalized", "pufferfish_sword"))) {
 				//The damage buff from 5 to 5.75 to be closer to iron sword
 				extraDamageForSwords(e, PUFFER_EXTRA_DAMAGE);
 				//Aplies the new puffer fish damage, to remove just comment out
 				applyNewPufferSwordBleeding((LivingEntity) e.getEntity());
-				crystalized_essentials.getInstance()
-						.getLogger().info("Puffer Initial Damage: " + e.getDamage() + " :Puffer Final Damage " + e.getFinalDamage());
-				//Old poision logic, if you want it back un comment it and comment applyNewPufferSwordBleeding.
-				//((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.POISON, 3 * 20, 0));
 			}
 
 			///Major underdog bug discovered, so minecraft adds extra damage on top of the crit.
@@ -287,50 +278,19 @@ public class CustomSwords implements Listener {
 				int item_custom_model= held_item.getItemMeta().getCustomModelData();
 				//The bonuce variable
 				double damageBonuce = 0;
-				//changes depened on the model as before
 				if (item_custom_model == 1) {
-					Bukkit.getLogger().severe("1");
 					damageBonuce = 0.5;
 				} else if (item_custom_model == 2) {
-					Bukkit.getLogger().severe("2");
 					damageBonuce = 1;
 				} else if (item_custom_model == 3) {
-					Bukkit.getLogger().severe("3");
 					damageBonuce = 1.5;
 				} else if (item_custom_model == 4) {
-					Bukkit.getLogger().severe("4");
 					damageBonuce = 2.0;
 				}
 				//Changed to work with the extra damage for swords critical method
 				//Removed the old code and replaced with this method to reduce repated code
 				extraDamageForSwords(e, damageBonuce);
-				//Logs the damage so feel free to test on practise
-				crystalized_essentials.getInstance().getLogger().info("Underdog did this raw damage: + " + e.getDamage() +
-						" Final Damage:" + e.getFinalDamage());
-
 			}
-
-
-			//Original under dog implementation.
-			/*
-			if (item_model.equals(new NamespacedKey("crystalized", "underdog_sword"))) {
-				int item_custom_model= held_item.getItemMeta().getCustomModelData();
-				if (item_custom_model == 1) {
-					Bukkit.getLogger().severe("1");
-					e.setDamage(e.getDamage() + 0.5);
-				} else if (item_custom_model == 2) {
-					Bukkit.getLogger().severe("2");
-					e.setDamage(e.getDamage() + 1);
-				} else if (item_custom_model == 3) {
-					Bukkit.getLogger().severe("3");
-					e.setDamage(e.getDamage() + 1.5);
-				} else if (item_custom_model == 4) {
-					Bukkit.getLogger().severe("4");
-					e.setDamage(e.getDamage() + 2);
-				}
-			}
-
-			 */
 		}
 	}
 

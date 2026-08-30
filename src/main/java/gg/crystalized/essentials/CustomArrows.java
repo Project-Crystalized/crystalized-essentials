@@ -11,7 +11,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -20,7 +19,6 @@ import static org.bukkit.Particle.DUST;
 import static org.bukkit.Particle.RAID_OMEN;
 import static org.bukkit.damage.DamageType.*;
 import static org.bukkit.entity.AbstractArrow.PickupStatus.DISALLOWED;
-import static org.bukkit.entity.EntityType.AREA_EFFECT_CLOUD;
 
 public class CustomArrows {
 
@@ -277,11 +275,6 @@ public class CustomArrows {
 					arrow.remove();
 				}
 			}.runTaskLater(crystalized_essentials.getInstance(), 3 * 20);
-		}
-		else {
-			AbstractArrow arr = (AbstractArrow) event.getEntity();
-			//Commented to make sure all arrows do the same damage on hit with the new formuala - Mish
-			//arr.setDamage(1.5);
 		}
 	}
 
