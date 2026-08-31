@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -161,7 +162,6 @@ public final class crystalized_essentials extends JavaPlugin {
 			return null;
 		}
 
-		List<String> output = new ArrayList<>();
 		List<Component> outputComponent = new ArrayList<>();
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			//Bukkit.getServer().sendMessage(text("start"));
@@ -189,14 +189,16 @@ public final class crystalized_essentials extends JavaPlugin {
 		}
 		Component playerDisplayName = temp.getLast();
 
+		List<String> ally_list = new ArrayList<>();
+		TextColor playerColor = playerDisplayName.color();
 		for (Component c : outputComponent) {
-			if (c.color().equals(playerDisplayName.color())) {
-				output.add(PlainTextComponentSerializer.plainText().serialize(c));
+			if (c.color() != null && c.color().equals(playerColor)) {
+				ally_list.add(PlainTextComponentSerializer.plainText().serialize(c));
 			}
 		}
 
 		//Bukkit.getServer().sendMessage(text(output.toString()));
-		return output;
+		return ally_list;
 	}
 
 	//Use at your own risk anywhere outside KO and CB!!
