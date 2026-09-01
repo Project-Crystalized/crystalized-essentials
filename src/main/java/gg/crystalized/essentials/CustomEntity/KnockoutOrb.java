@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.EulerAngle;
+import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,16 +33,8 @@ public class KnockoutOrb {
 
     public KnockoutOrb(Player o) {
         owner = o;
-        List<String> playerAllies = crystalized_essentials.getInstance().getAllies(owner);
-        if (playerAllies == null) playerAllies = java.util.Collections.emptyList();
 
-        for (Entity e : owner.getNearbyEntities(80, 80, 80)) { //womp womp if this lags the server
-            if (e instanceof Player) {
-                if (!(playerAllies.contains(e.getName())) && !((Player) e).getGameMode().equals(GameMode.SPECTATOR)) {
-                    target = (Player) e;
-                }
-            }
-        }
+        target = pickTarget();
         if (target == null) {
             owner.sendMessage(text("[!] An error occurred with your Knockout Orb, target is null."));
             crystalized_essentials plugin = crystalized_essentials.getInstance();
@@ -277,5 +270,39 @@ public class KnockoutOrb {
         deflectTurnBoostTicks = 10;   // 0.5s of snappier turning
         headYawOffsetDeg = 180.0;     // start the head turned “backwards”, will ease to 0
         deflectMeleeLockTicks = 10; // 0.5s lock so the new owner can't instantly re-punch
+    }
+
+    //Targets whoever the owner is looking closest-towards, falling back to the nearest player
+    public Player pickTarget() {
+        List<String> playerAllies = crystalized_essentials.getInstance().getAllies(owner);
+        if (playerAllies == null) playerAllies = java.util.Collections.emptyList();
+
+        Vector eye = owner.getEyeLocation().toVector();
+        Vector look = owner.getEyeLocation().getDirection();
+        double bestAngle = Math.toRadians(60);
+        Player best = null;
+        Player closest = null;
+        double closestDist = Double.MAX_VALUE;
+        for (Entity e : owner.getNearbyEntities(80, 80, 80)) { //womp womp if this lags the server
+            if (e instanceof Player p) {
+                if (!playerAllies.contains(p.getName()) && !p.getGameMode().equals(GameMode.SPECTATOR)) {
+                    double angle = look.angle(p.getEyeLocation().toVector().subtract(eye));
+                    if (angle < bestAngle) {
+                        bestAngle = angle;
+                        best = p;
+                    }
+                    double dist = p.getLocation().distanceSquared(owner.getLocation());
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closest = p;
+                    }
+                }
+            }
+        }
+        if (best != null) {
+            return best;
+        } else {
+        		return closest;
+				}
     }
 }
