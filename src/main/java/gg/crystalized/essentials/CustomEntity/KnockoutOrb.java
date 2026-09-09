@@ -124,8 +124,10 @@ public class KnockoutOrb {
                         || target.getGameMode() == GameMode.SPECTATOR
                         || timerUntilDeath <= 0
                         || (touchingTarget && deflectIFrames <= 0)) {
+                    //Slightly improved knockback
+                    //TODO: Figure out how to make knockback better for knockout orb in knockoff
 
-                    entity.getLocation().createExplosion(3, false, false);
+                    entity.getLocation().createExplosion(7, false, false);
                     crystalized_essentials.getInstance().knockoutOrbList.remove(KnockoutOrb.this); // <-- remove by reference
                     entity.remove();
                     cancel();
