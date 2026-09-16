@@ -129,7 +129,8 @@ public class KnockoutOrbDeflectListener implements Listener {
     //Explodes and removes
     private void explodeAndRemove(ArmorStand as, KnockoutOrb orb) {
         Location l = as.getLocation();
-        l.createExplosion(7f, false, false);
+        //Creates the explosion with the Knockout Orb ArmorStand as the source
+        as.getWorld().createExplosion(l, 7.0f, false, false, as);
         crystalized_essentials.getInstance().knockoutOrbList.remove(orb);
         as.remove();
     }
