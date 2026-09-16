@@ -120,7 +120,7 @@ public class KnockoutOrb {
                     //Slightly improved knockback
                     //TODO: Figure out how to make knockback better for knockout orb in knockoff
                     //Now using the entity to make explosion so in knockoff we can check the sourcing entity to do more custom knockback for it
-                    entity.getWorld().createExplosion(entity.getLocation(), 7.0f, false, false, entity);
+                    entity.getWorld().createExplosion(entity.getLocation(), 4.0f, false, false, entity);
                     crystalized_essentials.getInstance().knockoutOrbList.remove(KnockoutOrb.this); // <-- remove by reference
                     entity.remove();
                     cancel();
