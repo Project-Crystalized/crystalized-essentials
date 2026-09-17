@@ -23,6 +23,9 @@ public class PlayerData {
     public int BreezeDaggerDefaultDashes = 2; //Dash limit
     public int BreezeDaggerDefaultCooldown = 100; //5 seconds
     public boolean BreezeDaggerDisableRecharge = false; //If true disables recharging
+    //Is currently poisoned by the Puffer Sword ?
+    //Used so vanilla poison can display green hearts without dealing its normal damage.
+    public boolean pufferPoisoned = false;
 
     public PlayerData(Player p) {
         player = p.getName();

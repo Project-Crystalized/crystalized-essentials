@@ -52,6 +52,8 @@ public class CustomSwords implements Listener {
 	private final Map<UUID, BukkitTask> currentBleedingPuffer = new HashMap<>();
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
 	private final Map<UUID, Integer> remainingPufferBleedingDamages = new HashMap<>();
+	//it lasts around 50 ticks right now, this is to sync it with the fake poision
+	private static final int PUFFER_POISON_DURATION = 50;
 
 	//This is added specificly to prevent custom negative effects, it is applied in LS so to make the plugin see presistant data containers
 	//were used
@@ -68,6 +70,18 @@ public class CustomSwords implements Listener {
 		}
 		//Takes in the UUID
 		UUID liviningEntityId = livingEntity.getUniqueId();
+		if (livingEntity instanceof Player player) {
+			PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
+			//sets the puffer posioned to true, meaning that the player is poisioned with the puffer fish sword right now
+			if (pd != null) {
+				pd.pufferPoisoned = true;
+			}
+			//Adds the fake poision effect to make the hearts look poisioned
+			player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, PUFFER_POISON_DURATION, 0, false,
+					false,
+					true
+			));
+		}
 		//OLD taks from V1
 			//BukkitTask previousTask = currentBleedingPuffer.remove(liviningEntityId);
 			/*
@@ -141,8 +155,10 @@ public class CustomSwords implements Listener {
 									new Particle.DustOptions(Color.LIME, 1.0F)
 							);
 							//As there is no way to make the hearts green, sends the action bar while blood is poisioned
+							//Eddit: There is a way, discovered it while was developing the supporting arrow
+							//now I want the action bar dedicated for it, and puffer sword can have the fake poision effect
 							if (livingEntity instanceof Player player) {
-								player.sendActionBar(Component.text("Poisoned blood ☠ ", NamedTextColor.GREEN));
+								//player.sendActionBar(Component.text("Poisoned blood ☠ ", NamedTextColor.GREEN));
 							}
 						}
 						//Takes away one puffer damage.
@@ -168,8 +184,13 @@ public class CustomSwords implements Listener {
 		//This is to makes sure that the action bar is empty as soon as the poision is caneled
 		Player player = Bukkit.getPlayer(playerId);
 
+		//Removes the fake puffer pottion effect
 		if (player != null && player.isOnline()) {
-			player.sendActionBar(Component.empty());
+			PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
+			if (pd != null) {
+				pd.pufferPoisoned = false;
+			}
+			player.removePotionEffect(PotionEffectType.POISON);
 		}
 	}
 	//This is a clean up for all tasks, was meant to be called in LS code on round start
@@ -344,5 +365,28 @@ public class CustomSwords implements Listener {
 				}
 			}
 		}
+	}
+	//This allows the ability for the puffer sword to change the hearts colors without causing real poision
+	@EventHandler
+	public void onPufferPoisonDamage(EntityDamageEvent event) {
+		if (event.getCause() != EntityDamageEvent.DamageCause.POISON) {
+			return;
+		}
+		if (!(event.getEntity() instanceof Player player)) {
+			return;
+		}
+		//checks the player data, and if currently poisined with puffer makes sure it is is canceled
+		//The issue is that the sword now acts as kinda reseter for poision if you got poisioned in other ways.
+		//But it makes sense for it to take priority in other games like battler royal cause dobule poision can be op.
+		//Other things like poision orb should still poision
+		PlayerData pd = crystalized_essentials.getInstance().getPlayerData(player.getName());
+		if (pd != null && pd.pufferPoisoned) {
+			event.setCancelled(true);
+			//This is the debuger for the puffer sword
+			player.sendMessage("Cancelled vanilla poison damage. If you are seeing this msg means the sword works as intended");
+		}  else {
+			player.sendMessage("§Real poision damage. Send to developers if caused by puffer sword");
+		}
+
 	}
 }
