@@ -53,8 +53,19 @@ public class CustomSwords implements Listener {
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
 	private final Map<UUID, Integer> remainingPufferBleedingDamages = new HashMap<>();
 
+	//This is added specificly to prevent custom negative effects, it is applied in LS so to make the plugin see presistant data containers
+	//were used
+	//This is importnat mostly for the puffer sword as it is fully custom damage, which is not even an event.
+	private static final NamespacedKey NEGATIVE_EFFECT_IMMUNITY =
+			new NamespacedKey("litestrike", "negative_effect_immunity");
+
 	//This is the method which applies the new poision blood/bleeding effect to the player/or a living entity
 	private void applyNewPufferSwordBleeding(LivingEntity livingEntity){
+		//While in the supportive arrow area, it prevents the puffer fish sword effects
+		if (livingEntity.getPersistentDataContainer().has(NEGATIVE_EFFECT_IMMUNITY)) {
+			stopPufferBleeding(livingEntity.getUniqueId());
+			return;
+		}
 		//Takes in the UUID
 		UUID liviningEntityId = livingEntity.getUniqueId();
 		//OLD taks from V1
@@ -85,6 +96,11 @@ public class CustomSwords implements Listener {
 						//Ensures that the player or livinint entity is alive, and player not offline
 						if (livingEntity.isDead() || !livingEntity.isValid() || (livingEntity instanceof Player player && !player.isOnline())) {
 							//If they are dead, offline etc the task stops
+							stopPufferBleeding(liviningEntityId);
+							return;
+						}
+						//When player enters the supportive array while already beeing puffered, it stops immiditely
+						if (livingEntity.getPersistentDataContainer().has(NEGATIVE_EFFECT_IMMUNITY)) {
 							stopPufferBleeding(liviningEntityId);
 							return;
 						}
@@ -257,8 +273,13 @@ public class CustomSwords implements Listener {
 				//The damage buff from 5 to 5.75 to be closer to iron sword\
 				//With accurate crits
 				extraDamageForSwords(e, SLIME_EXTRA_DAMAGE);
+				//makes so the slowness is not applied to the player who has neggative effect immunity in the supportive arrow zone
+				Player victim = (Player) e.getEntity();
+				if (!victim.getPersistentDataContainer().has(NEGATIVE_EFFECT_IMMUNITY)) {
+					victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
+				}
 				//The same slowness as before
-				((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
+				//((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
 				//Buff to the slime sword, gives the attacking player speed and jump boost for 2 seconds, each hit
 				//To remove just comment it out
 				((Player) e.getDamager()).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2 * 20, 0));

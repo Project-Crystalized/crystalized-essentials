@@ -27,6 +27,9 @@ public class ArrowData {
 	}
 
 	enum arrowType {
+		//For now supportive arrows uses the wind arrow crossbow as place holder, will be replaced and called 5
+		//The reason is because they both kinda blue and wind arrow is not in LS.
+		supportive(4),
 		wind(4),
 		dragon(3),
 		explosive(2),
@@ -88,6 +91,9 @@ public class ArrowData {
 							builder2.color(RED);
 						} else if (arrow_data.arrType == arrowType.wind) {
 							builder2.color(WHITE);
+						} else if (arrow_data.arrType == ArrowData.arrowType.supportive) {
+							//healing arrow has the aqua color, making it pink would make it too similiar to dragon
+							builder2.color(AQUA);
 						}
 					}
 

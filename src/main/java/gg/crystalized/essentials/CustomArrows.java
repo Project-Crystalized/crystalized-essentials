@@ -2,10 +2,7 @@ package gg.crystalized.essentials;
 
 import com.destroystokyo.paper.ParticleBuilder;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -30,6 +27,10 @@ public class CustomArrows {
 	//This is a new implementation using map with UUID and Integer, storing players UUID and amount of exploding arrows in player
 	//Removes straight after the explosions happen
 	private static final Map<UUID, Integer> PLAYERS_HIT_BY_EXPLOSIVE_ARROW = new HashMap<>();
+	//This is the name space key which players have when they are immune to damage, it is added in LS presistant data type
+	//So that essentials know when to stop custom effects like puffer fish, or stop dragon arrow damage etc
+	private static final NamespacedKey NEGATIVE_EFFECT_IMMUNITY =
+			new NamespacedKey("litestrike", "negative_effect_immunity");
 
 	public static void onArrowHit(ProjectileHitEvent event) {
 		if (event.isCancelled()) {
@@ -60,6 +61,10 @@ public class CustomArrows {
 				e.addPotionEffect(new PotionEffect(GLOWING, 10 * 20, 0, false, false, true));
 			}
 			 */
+			return;
+		}
+		//All the logic is happening in LS for the supportive arrow, as it needs to know temates etc
+		if (data.arrType == ArrowData.arrowType.supportive) {
 			return;
 		}
 
@@ -149,6 +154,11 @@ public class CustomArrows {
 					//Damage wasn't touched
 					Collection<LivingEntity> collect = loc.getNearbyLivingEntities(2, 1);
 					for (LivingEntity liv : collect) {
+						//If the livining enetity has been maked as immune than the damage will not happen
+						//This will be when the supporting arrow overlaps with dragon arrow, supporting arrow wins
+						if (liv.getPersistentDataContainer().has(NEGATIVE_EFFECT_IMMUNITY)) {
+							continue;
+						}
 						liv.damage(1, source);
 					}
 					i++;

@@ -471,6 +471,10 @@ public class CustomBows implements Listener {
 				case "dragon_arrow" -> {
 					return ArrowData.arrowType.dragon;
 				}
+				//supportive arrow added
+				case "supportive_arrow" -> {
+					return ArrowData.arrowType.supportive;
+				}
 			}
 		} else {
 			if (item.getType() == Material.SPECTRAL_ARROW) {
