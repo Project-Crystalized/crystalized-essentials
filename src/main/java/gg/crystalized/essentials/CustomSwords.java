@@ -385,7 +385,8 @@ public class CustomSwords implements Listener {
 			//This is the debuger for the puffer sword
 			player.sendMessage("Cancelled vanilla poison damage. If you are seeing this msg means the sword works as intended");
 		}  else {
-			player.sendMessage("§Real poision damage. Send to developers if caused by puffer sword");
+			crystalized_essentials.getInstance().getLogger().info("[Puffer Poison Debug] Real poison damage on " + player.getName() +
+					" if not in LS that is fine");
 		}
 
 	}
