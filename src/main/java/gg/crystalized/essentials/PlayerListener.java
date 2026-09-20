@@ -60,6 +60,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerDisconnect(PlayerConnectionCloseEvent e) {
         crystalized_essentials.getInstance().DisconnectPlayerToList(e.getPlayerName());
+        CustomArrows.removeExplosiveImmunity(e.getPlayerUniqueId());
     }
 
     @EventHandler

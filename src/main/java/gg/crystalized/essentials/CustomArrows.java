@@ -19,14 +19,10 @@ import static org.bukkit.entity.AbstractArrow.PickupStatus.DISALLOWED;
 
 public class CustomArrows {
 
-	//Originaly used set to track the UUID of player's who got hit directly by explosive arrow
-	//Then I remembered that a person can get shot by 2 explosive arrows, hence removing early and exposive to damage,
-	// so had to migrate to Map
-		//private static final Set<UUID> STORES_DIRECT_EXPLOSIVE_HITS = new HashSet<>();
+	// the integer is the server tick at which the immunity should end
+	// so it is set to getCurrentTick() +2 for example, so this will have hight numbers
+	private static final Map<UUID, Integer> EXPLOSIVE_ARROW_IMMUNITY = new HashMap<>();
 
-	//This is a new implementation using map with UUID and Integer, storing players UUID and amount of exploding arrows in player
-	//Removes straight after the explosions happen
-	private static final Map<UUID, Integer> PLAYERS_HIT_BY_EXPLOSIVE_ARROW = new HashMap<>();
 	//This is the name space key which players have when they are immune to damage, it is added in LS presistant data type
 	//So that essentials know when to stop custom effects like puffer fish, or stop dragon arrow damage etc
 	private static final NamespacedKey NEGATIVE_EFFECT_IMMUNITY =
@@ -204,49 +200,14 @@ public class CustomArrows {
 			Entity hitPlayer = event.getHitEntity();
 			//Checks specificly if it is a LivingEntity instanse that has been hit
 			//Mostly for players but in the future if there are games with mobs I made it work with LivingEntities last minute
-			if (hitPlayer instanceof LivingEntity player) {
-				//Get the players unique UUID
-				UUID hitPlayerUUID = player.getUniqueId();
-				long protectionLastsTicks;
-				if (bothUsed) {
-					//Only when explosives bow and arrow used together
-					protectionLastsTicks= 18L;
-				} else {
-					//Normal just explosive arrow, or explosive bow
-					protectionLastsTicks = 2L;
-				}
-				//Ads the player UUID to the map, with the value 1. If UUID already exist it sums them together
-				//So that is why the method is called merge as it merges them together
-				//Integer::sum: sums up the new and old value
-				//So in this case, it will be on first hit (0+1) = 1, on second hit (1+1) = 2, on third (2+1) = 3
-				PLAYERS_HIT_BY_EXPLOSIVE_ARROW.merge(hitPlayerUUID, 1, Integer::sum);
-				//Sumons the explosion - same as before
-				exploArrowExplosion(arrow_loc, source, bothUsed);
-				//Scheduling the task to be after protection ticks expired
-				Bukkit.getScheduler().runTaskLater(
-						crystalized_essentials.getInstance(),
-						//If UUID exists in the map then it computes this
-						() -> PLAYERS_HIT_BY_EXPLOSIVE_ARROW.computeIfPresent(
-								//pases om the player's UUID
-								hitPlayerUUID,
-								(uuid, arrowsHitThePlayer) -> {
-									//If smaller or equal to 1 than player is removed from the map
-									if (arrowsHitThePlayer <= 1) {
-										return null;
-									}
-									//If is bigger than 1 than removes 1
-									//It should run again because the second arrow has hit and scheduled this task
-									return arrowsHitThePlayer - 1;
-								}
-						),
-						//The delay is depeneded if there is a double explosion or not
-						protectionLastsTicks
-				);
-				//Arrow removed same as before
+		if (hitPlayer instanceof LivingEntity player) {
+			UUID hitPlayerUUID = player.getUniqueId();
+			recordDirectExplosiveHit(hitPlayerUUID, bothUsed);
+			exploArrowExplosion(arrow_loc, source, bothUsed);
 
-				arrow.remove();
-				return;
-			}
+			arrow.remove();
+			return;
+		}
 			/*
 			Older implementation
 			if (hit_player != null) {
@@ -326,7 +287,23 @@ public class CustomArrows {
 	//This is a method that returns true if the uuid of the player is contained in the map
 	//If so then the protection against the explosion damage is activated in CustomBows
 	public static boolean isDirectExplosiveHit(UUID uuid) {
-		return PLAYERS_HIT_BY_EXPLOSIVE_ARROW.containsKey(uuid);
+		Integer until = EXPLOSIVE_ARROW_IMMUNITY.get(uuid);
+		if (until == null) {
+			return false;
+		}
+		if (until < Bukkit.getCurrentTick()) {
+			EXPLOSIVE_ARROW_IMMUNITY.remove(uuid);
+			return false;
+		}
+		return true;
+	}
+
+	public static void recordDirectExplosiveHit(UUID uuid, boolean bothUsed) {
+		EXPLOSIVE_ARROW_IMMUNITY.put(uuid, Bukkit.getCurrentTick() + (bothUsed ? 18 : 2));
+	}
+
+	public static void removeExplosiveImmunity(UUID uuid) {
+		EXPLOSIVE_ARROW_IMMUNITY.remove(uuid);
 	}
 
 	public static org.bukkit.util.Vector explosiveKnockback(Location blastCenter, Location victimEyeLocation) {
