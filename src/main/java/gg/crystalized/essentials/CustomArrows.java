@@ -302,6 +302,7 @@ public class CustomArrows {
 					switch (timer) {
 						case 2, 1 -> {
 							explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+							applyExplosiveKnockback(explo_loc);
 						}
 						case 0 -> {
 							cancel();
@@ -312,6 +313,7 @@ public class CustomArrows {
 			}.runTaskTimer(crystalized_essentials.getInstance(), 0, 15);
 		} else {
 			explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+			applyExplosiveKnockback(explo_loc);
 		}
 
 		ParticleBuilder builder = new ParticleBuilder(DUST);
@@ -325,5 +327,24 @@ public class CustomArrows {
 	//If so then the protection against the explosion damage is activated in CustomBows
 	public static boolean isDirectExplosiveHit(UUID uuid) {
 		return PLAYERS_HIT_BY_EXPLOSIVE_ARROW.containsKey(uuid);
+	}
+
+	public static org.bukkit.util.Vector explosiveKnockback(Location blastCenter, Location victimEyeLocation) {
+		org.bukkit.util.Vector dir = victimEyeLocation.toVector().subtract(blastCenter.toVector());
+		if (dir.lengthSquared() > 25.0) {
+			return new org.bukkit.util.Vector(0, 0, 0);
+		}
+		if (dir.length() < 0.5) {
+			dir = new org.bukkit.util.Vector(0, 1, 0);
+		}
+		double dist = Math.min(dir.length(), 5.0);
+		double strength = 1.4 * (1 - dist / 5.0) + 0.35;
+		return dir.add(new org.bukkit.util.Vector(0, 0.55, 0)).normalize().multiply(strength);
+	}
+
+	private static void applyExplosiveKnockback(Location explo_loc) {
+		for (Player p : explo_loc.getNearbyPlayers(5.0)) {
+			p.setVelocity(explosiveKnockback(explo_loc, p.getEyeLocation()));
+		}
 	}
 }
