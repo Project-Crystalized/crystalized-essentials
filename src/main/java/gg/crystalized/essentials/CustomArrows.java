@@ -7,6 +7,7 @@ import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -72,8 +73,9 @@ public class CustomArrows {
 			ItemStack item = arrow.getItemStack();
 			item.setItemMeta(null);
 			arrow.setItemStack(item);
-
-			Particle.DustOptions options = new Particle.DustOptions(PURPLE, 1);
+			//gets the team which own the dragon arrow
+			String dragonOwnerTeam = ArrowData.getPlayerTeam(data.shooter);
+			//Particle.DustOptions options = new Particle.DustOptions(PURPLE, 1);
 			// Configures the cloud before it becomes visible in the world, preventing the weird white particle appering briefly
 			AreaEffectCloud cloud = arrow_loc.getWorld().spawn(arrow_loc, AreaEffectCloud.class,
 					spawnedCloud -> {
@@ -82,8 +84,9 @@ public class CustomArrows {
 						spawnedCloud.setRadius(0.0F);
 						//The duration is 170 but should be removed before in the task at 150
 						spawnedCloud.setDuration(170);
-						//Makes sure the particcles are dust and using the options. Incase any brief particles to not look out of place
-						spawnedCloud.setParticle(DUST, options);
+						//Changed it so no particle is displayed form a ms when the arrow hits the ground,
+						//otherwise there would be one dragon particle of purple for a 1ms, which was weird
+						spawnedCloud.setParticle(Particle.BLOCK, Material.AIR.createBlockData());
 					}
 			);
 			//Old lagy cloud
@@ -136,15 +139,30 @@ public class CustomArrows {
 							//Adds the offset of the x and z to the particles location
 							//Adds a small y offset to keep it slightly above the ground
 							Location particleLocation = loc.clone().add(x, 0.15, z);
-							//spawns the one calculated particle at is' correct location
-							loc.getWorld().spawnParticle(Particle.DUST, particleLocation,
-									1,
-									0.0,
-									0.0,
-									0.0,
-									0.0,
-									options
-							);
+							//goes through all the players in the world and spawns the particle for them depending on the team
+							for (Player viewer : loc.getWorld().getPlayers()) {
+								//gets the viewers team
+								String viewerTeam = viewer.getPersistentDataContainer().get(ArrowData.TEAM_KEY, PersistentDataType.STRING);
+								Color colour;
+
+								//depnding on a team assigns a color
+								if (dragonOwnerTeam != null) {
+									colour = ArrowData.getTeamParticleColour(dragonOwnerTeam, viewerTeam, PURPLE, Color.fromRGB(0, 120, 50));
+								} else {
+									//The purple fall backl
+									colour = PURPLE;
+								}
+
+								//spawns the one calculated particle for viewer is' correct location
+								viewer.spawnParticle(Particle.DUST, particleLocation,
+										1,
+										0.0,
+										0.0,
+										0.0,
+										0.0,
+										new Particle.DustOptions(colour, 1.0F)
+								);
+							}
 						}
 					}
 					//Damage wasn't touched

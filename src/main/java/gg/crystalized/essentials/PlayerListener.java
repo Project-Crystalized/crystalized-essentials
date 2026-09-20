@@ -45,6 +45,10 @@ public class PlayerListener implements Listener {
         //This makes sure that on connection the player will not have this presistant data. As a fall black clean up
         //If LS wasn't able to clean up it propely, as most of the plugins need it, should be good to keep it here
         p.getPersistentDataContainer().remove(NEGATIVE_EFFECT_IMMUNITY);
+        //Removes the perstinat data of the team when the player connects
+        //TODO: if it happens after the LS reconect logic might overwrite the team, so need to watch out for that, as reconection handles it
+        //in LS it is handled
+        p.getPersistentDataContainer().remove(ArrowData.TEAM_KEY);
         crystalized_essentials.getInstance().addPlayerToList(p);
 
         p.discoverRecipe(new NamespacedKey("crystalized", "pufferfish_sword"));

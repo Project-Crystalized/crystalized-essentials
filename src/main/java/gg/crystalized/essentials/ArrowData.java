@@ -1,9 +1,13 @@
 package gg.crystalized.essentials;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import static org.bukkit.Color.*;
@@ -50,6 +54,8 @@ public class ArrowData {
 	public int timesBounced;
 	//The damage value which will be tracked for consistant damage - Mish
 	public double damage;
+	//This PDC is set by the game plugin so Essentials can know which players are teammates
+	public static final NamespacedKey TEAM_KEY = new NamespacedKey("crystalized", "team");
 
 	public ArrowData(LivingEntity shooter, bowType type, arrowType arrType, int timesBounced, double damage) {
 		this.shooter = shooter;
@@ -83,18 +89,25 @@ public class ArrowData {
 							builder.count(5);
 						}
 					}
-					if (arrow_data.arrType != ArrowData.arrowType.normal && arrow_data.arrType != ArrowData.arrowType.spectral) {
+					//Made supportive and and dragon arrows have team constinat particles
+					if (arrow_data.arrType == ArrowData.arrowType.supportive) {
+						spawnTeamArrowTrail(arrow, arrow_data, AQUA, Color.fromRGB(0, 70, 180));
+					}
+					else if (arrow_data.arrType == ArrowData.arrowType.dragon) {
+						spawnTeamArrowTrail(arrow, arrow_data, PURPLE, Color.fromRGB(0, 120, 50));
+					}
+					else if (arrow_data.arrType != ArrowData.arrowType.normal) {
 						builder2 = new ParticleBuilder(DUST);
-						if (arrow_data.arrType == ArrowData.arrowType.dragon) {
-							builder2.color(PURPLE);
-						} else if (arrow_data.arrType == ArrowData.arrowType.explosive) {
+						if (arrow_data.arrType == ArrowData.arrowType.explosive) {
 							builder2.color(RED);
 						} else if (arrow_data.arrType == arrowType.wind) {
 							builder2.color(WHITE);
-						} else if (arrow_data.arrType == ArrowData.arrowType.supportive) {
-							//healing arrow has the aqua color, making it pink would make it too similiar to dragon
-							builder2.color(AQUA);
 						}
+						//should allways be yellow
+						else if (arrow_data.arrType == arrowType.spectral) {
+							builder2.color(YELLOW);
+						}
+
 					}
 
 					if (builder != null) {
@@ -114,4 +127,51 @@ public class ArrowData {
 		}.runTaskTimer(crystalized_essentials.getInstance(), 1, 1);
 		// }.runTaskTimerAsynchronously(crystalized_essentials.getInstance(), 0, 1);
 	}
+	//Spwans the trail depdning on the team
+	private static void spawnTeamArrowTrail(AbstractArrow arrow, ArrowData arrowData, Color friendlyColour, Color enemyColour) {
+		//gets the shooters team
+		String shooterTeam = getPlayerTeam(arrowData.shooter);
+
+		if (shooterTeam == null) {
+			return;
+		}
+		//goes through all the players and spawns particle
+		for (Player viewer : arrow.getWorld().getPlayers()) {
+			//gets the viewers team
+			String viewerTeam = viewer.getPersistentDataContainer().get(TEAM_KEY, PersistentDataType.STRING);
+
+			//gets the color of the arrow and spawns the particles
+			Color colour = getTeamParticleColour(shooterTeam, viewerTeam, friendlyColour, enemyColour);
+			viewer.spawnParticle(DUST, arrow.getLocation(), 5, 0.0, 0.0, 0.0, 0.0,
+					new DustOptions(colour, 1.0F));
+		}
+	}
+	//This is to determing what the color of particle must be
+	public static Color getTeamParticleColour(String effectOwnerTeam, String viewerTeam, Color friendlyColour, Color enemyColour) {
+		if (viewerTeam == null) {
+			//Spectators will allways see breakers as friendly and everything else as enemy as in games with more than 2 teams it doen't matter
+			//TODO: In the future if we have more games with only two teams like LS, this can be expanded
+			if (effectOwnerTeam.equals("breaker")) {
+				return friendlyColour;
+			} else {
+				return enemyColour;
+			}
+		}
+		//This is what determines the color for the team, if the viewers team and the owner team matchers than it is friendly
+		if (viewerTeam.equals(effectOwnerTeam)) {
+			return friendlyColour;
+		}//if doesn't match enemy
+		else {
+			return enemyColour;
+		}
+	}
+	//This gets the players team
+	public static String getPlayerTeam(LivingEntity entity) {
+		if (!(entity instanceof Player)) {
+			return null;
+		}
+		Player player = (Player) entity;
+		return player.getPersistentDataContainer().get(TEAM_KEY, PersistentDataType.STRING);
+	}
+
 }
