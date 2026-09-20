@@ -9,6 +9,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -324,17 +325,19 @@ public class CustomArrows {
 		EXPLOSIVE_ARROW_IMMUNITY.remove(uuid);
 	}
 
-	public static org.bukkit.util.Vector explosiveKnockback(Location blastCenter, Location victimEyeLocation) {
-		org.bukkit.util.Vector dir = victimEyeLocation.toVector().subtract(blastCenter.toVector());
+	public static Vector explosiveKnockback(Location blastCenter, Location victimEyeLocation) {
+		Vector dir = victimEyeLocation.toVector().subtract(blastCenter.toVector());
 		if (dir.lengthSquared() > 25.0) {
-			return new org.bukkit.util.Vector(0, 0, 0);
+			return new Vector(0, 0, 0);
 		}
-		if (dir.length() < 0.5) {
-			dir = new org.bukkit.util.Vector(0, 1, 0);
+		double closeness = 1 - Math.max(dir.length(), 0.5) / 5.0;
+		dir.setY(0);
+		if (dir.lengthSquared() < 1e-6) {
+			return new Vector(0, 1.3 * closeness * closeness, 0);
 		}
-		double dist = Math.min(dir.length(), 5.0);
-		double strength = 1.4 * (1 - dist / 5.0) + 0.35;
-		return dir.add(new org.bukkit.util.Vector(0, 0.55, 0)).normalize().multiply(strength);
+		Vector vel = dir.normalize().multiply(1.3 * closeness + 0.35);
+		vel.setY(1.3 * closeness * closeness);
+		return vel;
 	}
 
 	private static void applyExplosiveKnockback(Location explo_loc) {
