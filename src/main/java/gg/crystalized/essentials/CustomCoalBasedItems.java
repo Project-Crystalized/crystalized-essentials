@@ -108,9 +108,12 @@ public class CustomCoalBasedItems implements Listener {
 							if (Bukkit.getOnlinePlayers().size() == 1) {
 								p.sendMessage(text("[!] Knockout Orb cant be used while nobody else is online"));
 							} else {
-								crystalized_essentials.getInstance().knockoutOrbList.add(new KnockoutOrb(p));
-								item.setAmount(item.getAmount() - 1);
-								p.setCooldown(Material.COAL, 20);
+								//now should only remove the orb when it spwaned sussesfuly.
+								KnockoutOrb orb = new KnockoutOrb(p);
+								if (orb.spawned) {
+									item.setAmount(item.getAmount() - 1);
+									p.setCooldown(Material.COAL, 20);
+								}
 							}
 						}
 						case "poison_orb" -> {

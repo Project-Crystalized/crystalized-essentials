@@ -30,13 +30,15 @@ public class KnockoutOrb {
     public int deflectTurnBoostTicks = 0; // faster turning for a few ticks after deflect
     public double headYawOffsetDeg = 0;   // temporary head yaw offset for the rottation around animation
     public int deflectMeleeLockTicks = 0; // ignore melee deflects for a few ticks after a deflect, so can't be punched again
+    //Tracks if the orb was spawned, and only removes the item after it
+    public boolean spawned = false;
 
     public KnockoutOrb(Player o) {
         owner = o;
 
         target = pickTarget();
         if (target == null) {
-            owner.sendMessage(text("[!] An error occurred with your Knockout Orb, target is null."));
+            owner.sendMessage(text("[!] There is no one to target right now."));
             crystalized_essentials plugin = crystalized_essentials.getInstance();
             plugin.getLogger().log(Level.WARNING, "" + owner.getName() + "'s Knockout Orb failed, target is null.");
             return;
@@ -67,7 +69,10 @@ public class KnockoutOrb {
             entity.getPersistentDataContainer().set(ORB_TAG, PersistentDataType.BYTE, (byte) 1);
             // -------------------------------------------------------------------
         });
+        //after it was spawned sets it to true
+        spawned = true;
         //makes sure it gets the instance
+        //noticed that it happened twice so now only happens here.
         crystalized_essentials.getInstance().knockoutOrbList.add(this);
         //System.out.println("The THING WAS SPAWNED NOOOOO");
         //The old bebug
