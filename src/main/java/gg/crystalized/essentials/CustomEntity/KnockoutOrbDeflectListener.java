@@ -70,6 +70,10 @@ public class KnockoutOrbDeflectListener implements Listener {
 
     //This method handels deflection
     private void handleDeflect(ArmorStand as, Player deflector) {
+        //new spectators won't be able to deflect.
+        if (deflector.getGameMode() != GameMode.SURVIVAL) {
+            return;
+        }
         KnockoutOrb orb = crystalized_essentials.getInstance().getKnockoutOrbByEntity(as);
         if (orb == null) return; // should not happen if tagged + list is correct. Just extra saftey
 
@@ -118,7 +122,7 @@ public class KnockoutOrbDeflectListener implements Listener {
         Player best = null;
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.equals(exclude)) continue;
-            if (p.getGameMode() == GameMode.SPECTATOR) continue;
+            if (p.getGameMode() != GameMode.SURVIVAL) continue;
             if (!p.getWorld().equals(origin.getWorld())) continue;
             double d2 = p.getLocation().distanceSquared(origin);
             if (d2 <= bestDistSq) { bestDistSq = d2; best = p; }

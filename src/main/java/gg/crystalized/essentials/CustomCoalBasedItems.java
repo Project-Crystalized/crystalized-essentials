@@ -42,7 +42,7 @@ public class CustomCoalBasedItems implements Listener {
 		}
 		Player p = e.getPlayer();
 		ItemStack item = p.getInventory().getItemInMainHand();
-		if (e.getHand() != EquipmentSlot.HAND || p.getGameMode().equals(GameMode.SPECTATOR)) return;
+		if (e.getHand() != EquipmentSlot.HAND || !p.getGameMode().equals(GameMode.SURVIVAL)) return;
 		if (e.getAction().isRightClick()) {
 			if (p.hasCooldown(Material.COAL) && item.getType().equals(Material.COAL)) {
 				p.sendMessage(text("[!] ᴛʜɪꜱ ɪᴛᴇᴍ ɪꜱ ᴏɴ ᴄᴏᴏʟᴅᴏᴡɴ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ").color(NamedTextColor.RED)
@@ -379,7 +379,7 @@ public class CustomCoalBasedItems implements Listener {
                 }
                 //Removes if player died, not online or in spectator as well as null
 
-                if (p == null || !p.isOnline() || p.isDead() || p.getGameMode() == GameMode.SPECTATOR) {
+                if (p == null || !p.isOnline() || p.isDead() || p.getGameMode() != GameMode.SURVIVAL) {
                     e.getEntity().remove();
                     return;
                 }
@@ -404,12 +404,13 @@ public class CustomCoalBasedItems implements Listener {
                 // --- CASE A: player hook: short pull, then auto-fling: Shift = instant fling -----
 
                 //----- CASE A ------------
-                if (hit instanceof Player && !((Player) hit).getUniqueId().equals(p.getUniqueId())) {
+                if (hit instanceof Player victim && !victim.getUniqueId().equals(p.getUniqueId()) &&
+						victim.getGameMode() == GameMode.SURVIVAL) {
 
                     // player who fired the grapple
                     final Player grappler = p;
                     // victim the player pulled toward grappler
-                    final Player victim   = (Player) hit;
+                    //final Player victim   = (Player) hit;
 
                     /* --- Timing (ticks = 1/20s) ---
                      Gives the rope a brief pull window, then automatically "fling" the victim
@@ -466,9 +467,10 @@ public class CustomCoalBasedItems implements Listener {
 
                         @Override public void run() {
                             //Checks
-                            if (!grappler.isOnline() || grappler.isDead() || grappler.getGameMode()==GameMode.SPECTATOR
-                                    || !victim.isValid() || victim.isDead() || victim.getGameMode()==GameMode.SPECTATOR) {
-                                finish(); return;
+                            if (!grappler.isOnline() || grappler.isDead() || grappler.getGameMode() != GameMode.SURVIVAL
+                                    || !victim.isValid() || victim.isDead() || victim.getGameMode() != GameMode.SURVIVAL) {
+                                finish();
+								return;
                             }
 
                             //Getting locations, vectors, and distance
@@ -595,7 +597,7 @@ public class CustomCoalBasedItems implements Listener {
 
                         @Override public void run() {
                             //checks to stop imidetely if any of this happens
-                            if (!grappler.isOnline() || grappler.isDead() || grappler.getGameMode()==GameMode.SPECTATOR) {
+                            if (!grappler.isOnline() || grappler.isDead() || grappler.getGameMode() != GameMode.SURVIVAL) {
                                 finish(); return;
                             }
 
@@ -820,7 +822,7 @@ public class CustomCoalBasedItems implements Listener {
 						builder.offset(1.5, 1.5, 1.5);
 						builder.spawn();
 						for (Player e : loc.getNearbyPlayers(2.8)) {
-							if (e != p) {
+							if (e != p && e.getGameMode() == GameMode.SURVIVAL) {
 								e.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 2 * 20, 1, false, false, true));
 								e.playSound(e, "minecraft:entity.puffer_fish.sting", 1, 1);
 							}

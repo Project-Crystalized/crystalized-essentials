@@ -119,7 +119,7 @@ public class KnockoutOrb {
 
                 //Simplified If statement which combines two of the checkers together so less if statements
                 if (target == null || !target.isOnline()
-                        || target.getGameMode() == GameMode.SPECTATOR
+                        || target.getGameMode() != GameMode.SURVIVAL
                         || timerUntilDeath <= 0
                         || (touchingTarget && deflectIFrames <= 0)) {
                     //Slightly improved knockback
@@ -290,7 +290,7 @@ public class KnockoutOrb {
         double closestDist = Double.MAX_VALUE;
         for (Entity e : owner.getNearbyEntities(80, 80, 80)) { //womp womp if this lags the server
             if (e instanceof Player p) {
-                if (!playerAllies.contains(p.getName()) && !p.getGameMode().equals(GameMode.SPECTATOR)) {
+                if (!playerAllies.contains(p.getName()) && p.getGameMode().equals(GameMode.SURVIVAL)) {
                     double angle = look.angle(p.getEyeLocation().toVector().subtract(eye));
                     if (angle < bestAngle) {
                         bestAngle = angle;
@@ -307,7 +307,7 @@ public class KnockoutOrb {
         if (best != null) {
             return best;
         } else {
-        		return closest;
-				}
+            return closest;
+        }
     }
 }
