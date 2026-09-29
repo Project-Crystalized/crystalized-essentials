@@ -56,6 +56,9 @@ public class ArrowData {
 	public double damage;
 	//This PDC is set by the game plugin so Essentials can know which players are teammates
 	public static final NamespacedKey TEAM_KEY = new NamespacedKey("crystalized", "team");
+	//Dragon arrows: own team sees bright purple, enemy team sees normal purple
+	public static final Color DRAGON_FRIENDLY = Color.fromRGB(200, 70, 255);
+	public static final Color DRAGON_ENEMY = PURPLE;
 
 	public ArrowData(LivingEntity shooter, bowType type, arrowType arrType, int timesBounced, double damage) {
 		this.shooter = shooter;
@@ -94,7 +97,7 @@ public class ArrowData {
 						spawnTeamArrowTrail(arrow, arrow_data, AQUA, Color.fromRGB(0, 70, 180));
 					}
 					else if (arrow_data.arrType == ArrowData.arrowType.dragon) {
-						spawnTeamArrowTrail(arrow, arrow_data, PURPLE, Color.fromRGB(0, 120, 50));
+						spawnTeamArrowTrail(arrow, arrow_data, DRAGON_FRIENDLY, DRAGON_ENEMY);
 					}
 					else if (arrow_data.arrType != ArrowData.arrowType.normal) {
 						builder2 = new ParticleBuilder(DUST);

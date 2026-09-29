@@ -148,7 +148,7 @@ public class CustomArrows {
 
 								//depnding on a team assigns a color
 								if (dragonOwnerTeam != null) {
-									colour = ArrowData.getTeamParticleColour(dragonOwnerTeam, viewerTeam, PURPLE, Color.fromRGB(0, 120, 50));
+									colour = ArrowData.getTeamParticleColour(dragonOwnerTeam, viewerTeam, ArrowData.DRAGON_FRIENDLY, ArrowData.DRAGON_ENEMY);
 								} else {
 									//The purple fall backl
 									colour = PURPLE;
