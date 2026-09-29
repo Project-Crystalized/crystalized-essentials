@@ -47,9 +47,9 @@ public class CustomSwords implements Listener {
 	//Puffer nerfed from 0.75 to 0.15
 	private static final double PUFFER_EXTRA_DAMAGE = 0.15;
 	//Seperated Slime and puffer so it is easier to nerf in the future
-	//Nerf to the slime sword to do extra 0 damage, don't delete this variable or it's functionality incase we need to buff it more
+	//Slime sword buff to do extra 0.5 damage, keep this variable and it's functionality incase we need to tweak it more
 	//in the future.
-	private static final double SLIME_EXTRA_DAMAGE = 0;
+	private static final double SLIME_EXTRA_DAMAGE = 0.5;
 	//This stores the player's UUID and the task that will be damaging them
 	private final Map<UUID, BukkitTask> currentBleedingPuffer = new HashMap<>();
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
@@ -293,16 +293,9 @@ public class CustomSwords implements Listener {
 			NamespacedKey item_model = held_item.getItemMeta().getItemModel();
 
 			if (item_model.equals(new NamespacedKey("crystalized", "slime_sword"))) {
-				//The damage buff from 5 to 5.75 to be closer to iron sword\
+				//The damage buff from 5 to 5.5 to be closer to iron sword\
 				//With accurate crits
 				extraDamageForSwords(e, SLIME_EXTRA_DAMAGE);
-				//makes so the slowness is not applied to the player who has neggative effect immunity in the supportive arrow zone
-				Player victim = (Player) e.getEntity();
-				if (!victim.getPersistentDataContainer().has(NEGATIVE_EFFECT_IMMUNITY)) {
-					victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
-				}
-				//The same slowness as before
-				//((Player) e.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
 				//Buff to the slime sword, gives the attacking player speed and jump boost for 2 seconds, each hit
 				//To remove just comment it out
 				((Player) e.getDamager()).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2 * 20, 0));
