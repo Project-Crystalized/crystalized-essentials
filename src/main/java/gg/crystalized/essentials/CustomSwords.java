@@ -296,6 +296,12 @@ public class CustomSwords implements Listener {
 				//The damage buff from 5 to 5.5 to be closer to iron sword\
 				//With accurate crits
 				extraDamageForSwords(e, SLIME_EXTRA_DAMAGE);
+				//Slowness on the victim, commented out for now, uncomment the block below to bring it back
+				//makes so the slowness is not applied to the player who has neggative effect immunity in the supportive arrow zone
+				//Player victim = (Player) e.getEntity();
+				//if (!victim.getPersistentDataContainer().has(NEGATIVE_EFFECT_IMMUNITY)) {
+				//	victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 0));
+				//}
 				//Buff to the slime sword, gives the attacking player speed and jump boost for 2 seconds, each hit
 				//To remove just comment it out
 				((Player) e.getDamager()).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2 * 20, 0));
