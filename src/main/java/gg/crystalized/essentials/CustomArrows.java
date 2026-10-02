@@ -333,10 +333,10 @@ public class CustomArrows {
 		double closeness = 1 - Math.max(dir.length(), 0.5) / 5.0;
 		dir.setY(0);
 		if (dir.lengthSquared() < 1e-6) {
-			return new Vector(0, 1.3 * closeness * closeness, 0);
+			return new Vector(0, 1.3 * closeness * closeness * closeness, 0);
 		}
 		Vector vel = dir.normalize().multiply(1.3 * closeness + 0.35);
-		vel.setY(1.3 * closeness * closeness);
+		vel.setY(1.3 * closeness * closeness * closeness);
 		return vel;
 	}
 
