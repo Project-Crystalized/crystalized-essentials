@@ -56,6 +56,8 @@ public class CustomSwords implements Listener {
 	private final Map<UUID, Integer> remainingPufferBleedingDamages = new HashMap<>();
 	//it lasts around 50 ticks right now, this is to sync it with the fake poision
 	private static final int PUFFER_POISON_DURATION = 50;
+	//made so it can easily be turned off in the future if we don't need it
+	private static final boolean PUFFER_POISION_RESPECT_RESISTANSE = true;
 
 	//This is added specificly to prevent custom negative effects, it is applied in LS so to make the plugin see presistant data containers
 	//were used
@@ -136,7 +138,7 @@ public class CustomSwords implements Listener {
 							double pufferDemageEffect = DAMAGE_BY_PUFFER_BLEEDING_EFFECT;
 							PotionEffect resistance = livingEntity.getPotionEffect(PotionEffectType.RESISTANCE);
 							//made it more like vanial poision so that it would respect resistanse.
-							if (resistance != null) {
+							if (resistance != null && PUFFER_POISION_RESPECT_RESISTANSE) {
 								//gets the currect resistanse level, will usualy be 1 because amplifier on res pottion is 0
 								int resistanceLevel = resistance.getAmplifier() + 1;
 								//is 20% reduction of damage
