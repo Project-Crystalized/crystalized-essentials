@@ -43,7 +43,7 @@ public class CustomSwords implements Listener {
 	private static final long DELAY_BEFORE_REPETING_PUFFER_DAMAGE = 15L;
 	//1hp/half a heart per one cycle of puffer blood poision effect
 	private static final double DAMAGE_BY_PUFFER_BLEEDING_EFFECT = 1.0;
-	//This is extra damage for both puffer and slime by default, now they deal 5.75 on initial hit close to iron
+	//This is extra damage for both puffer and slime by default
 	//Puffer nerfed from 0.75 to 0.15
 	private static final double PUFFER_EXTRA_DAMAGE = 0.15;
 	//Seperated Slime and puffer so it is easier to nerf in the future
@@ -134,6 +134,18 @@ public class CustomSwords implements Listener {
 							//TODO: If too op after play tests the armor and resistanse effect can be checked here
 							//sets the damage from the value, so it can easily be tweaked without having to go here
 							double pufferDemageEffect = DAMAGE_BY_PUFFER_BLEEDING_EFFECT;
+							PotionEffect resistance = livingEntity.getPotionEffect(PotionEffectType.RESISTANCE);
+							//made it more like vanial poision so that it would respect resistanse.
+							if (resistance != null) {
+								//gets the currect resistanse level, will usualy be 1 because amplifier on res pottion is 0
+								int resistanceLevel = resistance.getAmplifier() + 1;
+								//is 20% reduction of damage
+								double resistanceReduction = resistanceLevel * 0.20;
+								//Makes sure it never excitieds 1 or else will be below zero
+								resistanceReduction = Math.min(resistanceReduction, 1.0);
+								//In the cause of it being 1 by default, and reduction is 0.20. Will be 0.8
+								pufferDemageEffect = pufferDemageEffect * (1.0 - resistanceReduction);
+							}
 							//Sets the health exactly, math.max ensures that it will not kill the player
 							double newHealth = Math.max(1.0, livingEntity.getHealth() - pufferDemageEffect);
 							//sets the health of the entity directly without the damage effects taken place, this is basicly custom damage - Mish
