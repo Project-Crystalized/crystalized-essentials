@@ -35,8 +35,8 @@ public class CustomSwords implements Listener {
 
 	///Important: If you want to play around with values they are here no need to modify the methods - Mish
 
-	//This is the amount of how many times the player will be repetedly damage with a puffer sword.
-	private static final int PUFFER_DAMAGES_REPETION_NUMBER = 3;
+	//This is the amount of how many times the player will be repetedly damage with a puffer sword. Buffed from 3 to 4
+	private static final int PUFFER_DAMAGES_REPETION_NUMBER = 4;
 	//The delay after the hit that the puffer sword effect starts
 	private static final long DELAY_BEFORE_STARTING_PUFFER_DAMAGE = 5L;
 	//This is a delay before the puffer health reducticion happens again, trying to match poision roughly
@@ -44,8 +44,8 @@ public class CustomSwords implements Listener {
 	//1hp/half a heart per one cycle of puffer blood poision effect
 	private static final double DAMAGE_BY_PUFFER_BLEEDING_EFFECT = 1.0;
 	//This is extra damage for both puffer and slime by default
-	//Puffer nerfed from 0.75 to 0.15
-	private static final double PUFFER_EXTRA_DAMAGE = 0.15;
+	//Puffer nerfed from 0.15 to 0, don't remove this variable as we will probobly revert this change
+	private static final double PUFFER_EXTRA_DAMAGE = 0;
 	//Seperated Slime and puffer so it is easier to nerf in the future
 	//Slime sword buff to do extra 0.5 damage, keep this variable and it's functionality incase we need to tweak it more
 	//in the future.
@@ -54,8 +54,8 @@ public class CustomSwords implements Listener {
 	private final Map<UUID, BukkitTask> currentBleedingPuffer = new HashMap<>();
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
 	private final Map<UUID, Integer> remainingPufferBleedingDamages = new HashMap<>();
-	//it lasts around 50 ticks right now, this is to sync it with the fake poision
-	private static final int PUFFER_POISON_DURATION = 50;
+	//it lasts around 55 ticks right now, this is to sync it with the fake poision. Revert to 50 if 3
+	private static final int PUFFER_POISON_DURATION = 55;
 	//made so it can easily be turned off in the future if we don't need it
 	private static final boolean PUFFER_POISION_RESPECT_RESISTANSE = true;
 
