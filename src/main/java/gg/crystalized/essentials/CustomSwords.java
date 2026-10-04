@@ -35,17 +35,17 @@ public class CustomSwords implements Listener {
 
 	///Important: If you want to play around with values they are here no need to modify the methods - Mish
 
-	//This is the amount of how many times the player will be repetedly damage with a puffer sword.
-	private static final int PUFFER_DAMAGES_REPETION_NUMBER = 3;
+	//This is the amount of how many times the player will be repetedly damage with a puffer sword. Buffed from 3 to 4
+	private static final int PUFFER_DAMAGES_REPETION_NUMBER = 4;
 	//The delay after the hit that the puffer sword effect starts
 	private static final long DELAY_BEFORE_STARTING_PUFFER_DAMAGE = 5L;
 	//This is a delay before the puffer health reducticion happens again, trying to match poision roughly
 	private static final long DELAY_BEFORE_REPETING_PUFFER_DAMAGE = 15L;
 	//1hp/half a heart per one cycle of puffer blood poision effect
 	private static final double DAMAGE_BY_PUFFER_BLEEDING_EFFECT = 1.0;
-	//This is extra damage for both puffer and slime by default, now they deal 5.75 on initial hit close to iron
-	//Puffer nerfed from 0.75 to 0.15
-	private static final double PUFFER_EXTRA_DAMAGE = 0.15;
+	//This is extra damage for both puffer and slime by default
+	//Puffer nerfed from 0.15 to 0, don't remove this variable as we will probobly revert this change
+	private static final double PUFFER_EXTRA_DAMAGE = 0;
 	//Seperated Slime and puffer so it is easier to nerf in the future
 	//Slime sword buff to do extra 0.5 damage, keep this variable and it's functionality incase we need to tweak it more
 	//in the future.
@@ -54,8 +54,10 @@ public class CustomSwords implements Listener {
 	private final Map<UUID, BukkitTask> currentBleedingPuffer = new HashMap<>();
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
 	private final Map<UUID, Integer> remainingPufferBleedingDamages = new HashMap<>();
-	//it lasts around 50 ticks right now, this is to sync it with the fake poision
-	private static final int PUFFER_POISON_DURATION = 50;
+	//it lasts around 55 ticks right now, this is to sync it with the fake poision. Revert to 50 if 3
+	private static final int PUFFER_POISON_DURATION = 55;
+	//made so it can easily be turned off in the future if we don't need it
+	private static final boolean PUFFER_POISION_RESPECT_RESISTANSE = true;
 
 	//This is added specificly to prevent custom negative effects, it is applied in LS so to make the plugin see presistant data containers
 	//were used
@@ -134,6 +136,18 @@ public class CustomSwords implements Listener {
 							//TODO: If too op after play tests the armor and resistanse effect can be checked here
 							//sets the damage from the value, so it can easily be tweaked without having to go here
 							double pufferDemageEffect = DAMAGE_BY_PUFFER_BLEEDING_EFFECT;
+							PotionEffect resistance = livingEntity.getPotionEffect(PotionEffectType.RESISTANCE);
+							//made it more like vanial poision so that it would respect resistanse.
+							if (resistance != null && PUFFER_POISION_RESPECT_RESISTANSE) {
+								//gets the currect resistanse level, will usualy be 1 because amplifier on res pottion is 0
+								int resistanceLevel = resistance.getAmplifier() + 1;
+								//is 20% reduction of damage
+								double resistanceReduction = resistanceLevel * 0.20;
+								//Makes sure it never excitieds 1 or else will be below zero
+								resistanceReduction = Math.min(resistanceReduction, 1.0);
+								//In the cause of it being 1 by default, and reduction is 0.20. Will be 0.8
+								pufferDemageEffect = pufferDemageEffect * (1.0 - resistanceReduction);
+							}
 							//Sets the health exactly, math.max ensures that it will not kill the player
 							double newHealth = Math.max(1.0, livingEntity.getHealth() - pufferDemageEffect);
 							//sets the health of the entity directly without the damage effects taken place, this is basicly custom damage - Mish
@@ -384,7 +398,8 @@ public class CustomSwords implements Listener {
 		if (pd != null && pd.pufferPoisoned) {
 			event.setCancelled(true);
 			//This is the debuger for the puffer sword
-			player.sendMessage("Cancelled vanilla poison damage. If you are seeing this msg means the sword works as intended");
+			crystalized_essentials.getInstance().getLogger().info(
+					"[Puffer Poison Debug] Cancelled vanilla poison damage. If you are seeing this msg means the sword works as intended");
 		}  else {
 			crystalized_essentials.getInstance().getLogger().info("[Puffer Poison Debug] Real poison damage on " + player.getName() +
 					" if not in LS that is fine");
