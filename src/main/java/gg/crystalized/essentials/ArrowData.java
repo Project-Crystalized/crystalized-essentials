@@ -31,9 +31,7 @@ public class ArrowData {
 	}
 
 	enum arrowType {
-		//For now supportive arrows uses the wind arrow crossbow as place holder, will be replaced and called 5
-		//The reason is because they both kinda blue and wind arrow is not in LS.
-		supportive(4),
+		supportive(5),
 		wind(4),
 		dragon(3),
 		explosive(2),
