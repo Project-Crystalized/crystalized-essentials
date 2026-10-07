@@ -46,8 +46,8 @@ public class CustomBows implements Listener {
 	private static final double CROSSBOW_DAMAGE = 8.0;
 	//Change the extra damage that the player gets here from the direct hit exploision
 	//I had to change it as otherwise player wasn't getting any explosion damage - Mish
-	//Nerfed from 3.5 to 3.0
-	private static final double EXPLOSION_DAMAGE_BONUCE = 3.0;
+	//Nerfed from 3.0 to 2.0 due to complaints about it
+	private static final double EXPLOSION_DAMAGE_BONUCE = 2.0;
 	//This is extra bonuce that applies to explosion when both explosibe bow and explosive arrow are used
 	//So on top of 3.5 damage
 	private static final double EXPLOSION_BOW_AND_ARROW_EXTRA_BONUCE = 1.5;
