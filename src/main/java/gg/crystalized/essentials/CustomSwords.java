@@ -49,7 +49,7 @@ public class CustomSwords implements Listener {
 	//Seperated Slime and puffer so it is easier to nerf in the future
 	//Slime sword buff to do extra 0.5 damage, keep this variable and it's functionality incase we need to tweak it more
 	//in the future.
-	private static final double SLIME_EXTRA_DAMAGE = 0.5;
+	private static final double SLIME_EXTRA_DAMAGE = 0;
 	//This stores the player's UUID and the task that will be damaging them
 	private final Map<UUID, BukkitTask> currentBleedingPuffer = new HashMap<>();
 	//Stores how many bleeds/puffers are left per each entity. If you have 3 left it will store it, and refresh it to 5 on new hit
