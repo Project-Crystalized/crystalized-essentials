@@ -270,6 +270,8 @@ public class CustomArrows {
 
 
 	private static void exploArrowExplosion(Location explo_loc, DamageSource source, Boolean explosiveBowUsed) {
+		// Blast power of the vanilla explosion; was 1.5, nerfed to 1.3.
+		final float blastPower = (float) 1.3;
 		Collection<LivingEntity> nearby = explo_loc.getNearbyLivingEntities(2);
 		Collection<LivingEntity> notSoNearby = explo_loc.getNearbyLivingEntities(4);
 
@@ -281,7 +283,7 @@ public class CustomArrows {
 				public void run() {
 					switch (timer) {
 						case 2, 1 -> {
-							explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+							explo_loc.createExplosion(source.getCausingEntity(), blastPower, false, false);
 							applyExplosiveKnockback(explo_loc);
 						}
 						case 0 -> {
@@ -292,7 +294,7 @@ public class CustomArrows {
 				}
 			}.runTaskTimer(crystalized_essentials.getInstance(), 0, 15);
 		} else {
-			explo_loc.createExplosion(source.getCausingEntity(), (float) 1.5, false, false);
+			explo_loc.createExplosion(source.getCausingEntity(), blastPower, false, false);
 			applyExplosiveKnockback(explo_loc);
 		}
 
